@@ -17,16 +17,25 @@ public class Population<State> {
     /**
      * container of agents.
      */
-    private final Map<Integer, AbstractAgent<State>> agents;
-    private final Map<String, AbstractAgent<State>> links;
+    private final HashMap<Integer, AbstractAgent<State>> agents;
 
+    /**
+     * counter of agents states.
+     */
+    private final Map<State, Long> stateAgentsCount;
+
+    /**
+     * list of agents per state.
+     */
+    private final Map<State, ArrayList<AbstractAgent<State>>> stateAgents;
 
     /**
      * Constructor that initializes the container of agents.
      */
     public Population() {
-        agents = new HashMap<>();
-        links = new HashMap<>();
+        agents = new HashMap<Integer, AbstractAgent<State>>();
+        stateAgentsCount = new HashMap<State, Long>();
+        stateAgents = new HashMap<State, ArrayList<AbstractAgent<State>>>();
     }
 
     /**
@@ -35,8 +44,9 @@ public class Population<State> {
      * @param size the initial size of the population.
      */
     public Population(final int size) {
-        agents = new HashMap<>(size);
-        links = new HashMap<>();
+        agents = new HashMap<Integer, AbstractAgent<State>>(size);
+        stateAgentsCount = new HashMap<State, Long>();
+        stateAgents = new HashMap<State, ArrayList<AbstractAgent<State>>>();
     }
 
     /**
