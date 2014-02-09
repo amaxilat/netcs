@@ -3,22 +3,18 @@ package org.ppsim.model.population;
 import org.jgrapht.graph.DefaultEdge;
 
 /**
- * Created with IntelliJ IDEA.
- * User: amaxilatis
- * Date: 2/9/14
- * Time: 11:23 AM
- * To change this template use File | Settings | File Templates.
+ * Describes a population link.
  */
-public class PopulationEdge<State> extends DefaultEdge {
+public class PopulationLink<State> extends DefaultEdge {
     private final DefaultEdge defaultEdge;
 
-    public PopulationEdge(final DefaultEdge defaultEdge) {
+    public PopulationLink(final DefaultEdge defaultEdge) {
         this.defaultEdge = defaultEdge;
     }
 
     @Override
     public String toString() {
-        return "PopulationEdge{" + defaultEdge + '}';
+        return "PopulationLink{" + defaultEdge + '}';
     }
 
     @Override
@@ -26,7 +22,7 @@ public class PopulationEdge<State> extends DefaultEdge {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        PopulationEdge that = (PopulationEdge) o;
+        PopulationLink that = (PopulationLink) o;
 
         if (!defaultEdge.equals(that.defaultEdge)) return false;
 

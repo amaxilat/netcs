@@ -19,7 +19,7 @@ public class Population<State> {
     protected static final Logger LOGGER = Logger.getLogger(Population.class);
 
     private final SimpleGraph<PopulationNode<State>, DefaultEdge> graph;
-    private final Map<DefaultEdge, PopulationEdge<State>> edges;
+    private final Map<DefaultEdge, PopulationLink<State>> edges;
 
     /**
      * Constructor that initializes the container of agents.
@@ -61,7 +61,7 @@ public class Population<State> {
         edges = new HashMap<>();
         LOGGER.debug("Creating Population Edges...");
         for (DefaultEdge defaultEdge : graph.edgeSet()) {
-            edges.put(defaultEdge, new PopulationEdge<State>(defaultEdge));
+            edges.put(defaultEdge, new PopulationLink<State>(defaultEdge));
         }
         LOGGER.debug("Created Edges in " + (System.currentTimeMillis() - start) + "ms");
     }
@@ -75,7 +75,7 @@ public class Population<State> {
         return graph.vertexSet().size();
     }
 
-    public Collection<PopulationEdge<State>> getEdges() {
+    public Collection<PopulationLink<State>> getEdges() {
         return edges.values();
     }
 }

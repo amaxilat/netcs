@@ -4,7 +4,7 @@ import junit.framework.Assert;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.ppsim.model.population.Population;
-import org.ppsim.model.population.PopulationEdge;
+import org.ppsim.model.population.PopulationLink;
 
 import java.util.Collection;
 
@@ -35,7 +35,7 @@ public class PopulationTest {
     public void testPopulationEdges() {
         final int populationSize = 100;
         final Population population = new Population(populationSize);
-        Collection<PopulationEdge> edges = population.getEdges();
+        Collection<PopulationLink> edges = population.getEdges();
         int expectedEdgeCount = 0;
         for (int j = populationSize - 1; j > 0; j--) {
             expectedEdgeCount += j;
