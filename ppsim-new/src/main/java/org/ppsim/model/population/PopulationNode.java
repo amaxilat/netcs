@@ -8,6 +8,7 @@ public class PopulationNode<State> {
      * The name of the node.
      */
     private final String nodeName;
+    private State state;
 
     /**
      * Name Constructor.
@@ -18,9 +19,17 @@ public class PopulationNode<State> {
         this.nodeName = nodeName;
     }
 
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
     @Override
     public String toString() {
-        return "PopulationNode{" + nodeName + '}';
+        return "PopulationNode{" + nodeName + ":" + state + "}";
     }
 
     @Override

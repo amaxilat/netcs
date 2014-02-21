@@ -7,14 +7,23 @@ import org.jgrapht.graph.DefaultEdge;
  */
 public class PopulationLink<State> extends DefaultEdge {
     private final DefaultEdge defaultEdge;
+    private State state;
 
     public PopulationLink(final DefaultEdge defaultEdge) {
         this.defaultEdge = defaultEdge;
     }
 
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
     @Override
     public String toString() {
-        return "PopulationLink{" + defaultEdge + '}';
+        return "PopulationLink{" + defaultEdge + ":" + state + "}";
     }
 
     @Override

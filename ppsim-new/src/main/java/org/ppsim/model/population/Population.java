@@ -4,7 +4,9 @@ import org.apache.log4j.Logger;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents the population of agents.
@@ -77,5 +79,18 @@ public class Population<State> {
 
     public Collection<PopulationLink<State>> getEdges() {
         return edges.values();
+    }
+
+    public Collection<PopulationNode<State>> getNodes() {
+        return graph.vertexSet();
+    }
+
+    public PopulationNode<State> getAgent(int index) {
+        return (PopulationNode<State>) graph.vertexSet().toArray()[index];
+    }
+
+    public PopulationLink<State> getEdge(PopulationNode<State> inititiatorPopulationNode, PopulationNode<State> responderPopulationNode) {
+        DefaultEdge edge = graph.getEdge(inititiatorPopulationNode, responderPopulationNode);
+        return edges.get(edge);
     }
 }
