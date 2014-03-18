@@ -177,17 +177,27 @@ public class StateTriple<State> {
     @Override
     public int hashCode() {
         if (getInitiatorState() == null) {
+            System.out.println("null:initiatorState");
             return 0;
 
         } else if (getResponderState() == null) {
+            System.out.println("null:getResponderState");
             return 0;
 
         } else if (getLinkState() == null) {
+            System.out.println("null:getLinkState");
             return 0;
 
         } else {
+            if (getLinkState().hashCode() == 0) {
+                return getInitiatorState().hashCode() * getResponderState().hashCode();
+            }
             return getInitiatorState().hashCode() * getResponderState().hashCode() * getLinkState().hashCode();
         }
     }
 
+    @Override
+    public String toString() {
+        return "(" + initiator + "," + responder + "," + link + ')';
+    }
 }

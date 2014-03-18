@@ -3,6 +3,7 @@ package org.ppsim.model;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.ppsim.model.population.Population;
+import org.ppsim.scheduler.AbstractScheduler;
 
 
 /**
@@ -45,7 +46,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      * @param protocol  the population protocol.
      * @param scheduler the scheduler.
      */
-    public AbstractExperiment(final int size, final Protocol protocol, final Scheduler<State> scheduler) {
+    public AbstractExperiment(final int size, final Protocol protocol, final AbstractScheduler<State> scheduler) {
         // Construct population
         this.protocol = protocol;
         this.population = new Population<>(size);
@@ -53,6 +54,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         // Initialize Population
         initPopulation();
 
+        scheduler.connect(population, protocol);
         // Connect scheduler
         this.scheduler = scheduler;
         //this.scheduler.connect(this.population, this.protocol);
@@ -73,6 +75,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 
         while (true) {
             try {
+                reportStatus("interact " + round);
                 // Invoke scheduler to conduct next interaction
                 scheduler.interact();
 
@@ -88,6 +91,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 
                 // increase round counter
                 round++;
+                Thread.sleep(100);
             } catch (Exception ex) {
                 LOGGER.error("Exception occured", ex);
             }

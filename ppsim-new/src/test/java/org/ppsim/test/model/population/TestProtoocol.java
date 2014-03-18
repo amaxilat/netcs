@@ -4,12 +4,13 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.ppsim.model.AbstractExperiment;
 import org.ppsim.model.AbstractProtocol;
-import org.ppsim.model.Scheduler;
 import org.ppsim.model.StateTriple;
 import org.ppsim.model.population.PopulationLink;
 import org.ppsim.model.population.PopulationNode;
+import org.ppsim.scheduler.AbstractScheduler;
 import org.ppsim.scheduler.RandomScheduler;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -26,7 +27,8 @@ public class TestProtoocol {
     @Test
     public void testPopulation() {
         TestExperiment experiment = new TestExperiment(10, new TestProtocol(), new RandomScheduler<Boolean>());
-
+        experiment.initPopulation();
+        experiment.run();
     }
 
     class TestExperiment extends AbstractExperiment<Boolean, AbstractProtocol<Boolean>> {
@@ -38,7 +40,7 @@ public class TestProtoocol {
          * @param protocol  the population protocol.
          * @param scheduler the scheduler.
          */
-        public TestExperiment(final int size, final AbstractProtocol<Boolean> protocol, final Scheduler<Boolean> scheduler) {
+        public TestExperiment(final int size, final AbstractProtocol<Boolean> protocol, final AbstractScheduler<Boolean> scheduler) {
             super(size, protocol, scheduler);
         }
 
@@ -62,7 +64,17 @@ public class TestProtoocol {
 
         @Override
         protected boolean checkStability() {
-            return false;
+            Boolean result = true;
+            int count = 0;
+            Collection<PopulationNode<Boolean>> nodes = getPopulation().getNodes();
+            for (PopulationNode<Boolean> node : nodes) {
+                result &= node.getState();
+                if (node.getState()) {
+                    count++;
+                }
+            }
+            LOGGER.info(count);
+            return result;
         }
 
         @Override
@@ -81,7 +93,7 @@ public class TestProtoocol {
         /**
          * Define the entries of the transision map.
          */
-        protected void setupTransisionsMap() {
+        protected void setupTransitionsMap() {
 
             addEntry(new StateTriple<>(true, true, false),
                     new StateTriple<>(true, true, true));
@@ -89,11 +101,6 @@ public class TestProtoocol {
                     new StateTriple<>(true, true, true));
             addEntry(new StateTriple<>(false, true, false),
                     new StateTriple<>(true, true, true));
-
-        }
-
-        @Override
-        public void interact(PopulationNode initiator, PopulationNode responder, PopulationLink link) {
 
         }
     }

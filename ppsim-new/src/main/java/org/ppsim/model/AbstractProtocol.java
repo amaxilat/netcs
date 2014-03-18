@@ -22,17 +22,17 @@ public abstract class AbstractProtocol<State> {
      * Default constructor.
      */
     public AbstractProtocol() {
-        // Initialize transisions map
+        // Initialize transitions map
         transitions = new HashMap<>();
 
         // Setup entries.
-        setupTransisionsMap();
+        setupTransitionsMap();
     }
 
     /**
-     * Implemented by subclasses to define the entries of the transision map.
+     * Implemented by subclasses to define the entries of the transition map.
      */
-    protected abstract void setupTransisionsMap();
+    protected abstract void setupTransitionsMap();
 
     /**
      * Adds an entry to the transision map.
@@ -49,7 +49,7 @@ public abstract class AbstractProtocol<State> {
      *
      * @return A Map of StateTriple to StateTriple objects.
      */
-    public final Map<StateTriple<State>, StateTriple<State>> getTransisionMap() {
+    public final Map<StateTriple<State>, StateTriple<State>> getTransitionMap() {
         return transitions;
     }
 
@@ -71,5 +71,4 @@ public abstract class AbstractProtocol<State> {
             link.setState(newState.getLinkState());
         }
     }
-
 }

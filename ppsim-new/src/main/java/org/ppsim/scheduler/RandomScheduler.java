@@ -24,12 +24,13 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
             responder = randomNodeId();
         }
 
-        final PopulationNode<State> inititiatorPopulationNode = getNode(initiator);
+        final PopulationNode<State> initiatorPopulationNode = getNode(initiator);
         final PopulationNode<State> responderPopulationNode = getNode(responder);
-        final PopulationLink<State> link = population.getEdge(inititiatorPopulationNode, responderPopulationNode);
-
+        final PopulationLink<State> link = population.getEdge(initiatorPopulationNode, responderPopulationNode);
+        System.out.println(link);
         // Conduct interaction for given pair of agents
-        interact(inititiatorPopulationNode, responderPopulationNode, link);
+        interact(initiatorPopulationNode, responderPopulationNode, link);
+        System.out.println("\t" + link);
     }
 
 }
