@@ -1,11 +1,17 @@
 package org.ppsim.model;
 
+import org.apache.log4j.Logger;
+
 /**
  * Represents a pair of states.
  *
  * @param <State> the variable type for the state of the agent.
  */
 public class StateTriple<State> {
+    /**
+     * a log4j logger to print messages.
+     */
+    protected static final Logger LOGGER = Logger.getLogger(StateTriple.class);
 
     /**
      * The state of the initiator.
@@ -177,15 +183,15 @@ public class StateTriple<State> {
     @Override
     public int hashCode() {
         if (getInitiatorState() == null) {
-            System.out.println("null:initiatorState");
+            LOGGER.error("null:initiatorState");
             return 0;
 
         } else if (getResponderState() == null) {
-            System.out.println("null:getResponderState");
+            LOGGER.error("null:getResponderState");
             return 0;
 
         } else if (getLinkState() == null) {
-            System.out.println("null:getLinkState");
+            LOGGER.error("null:getLinkState");
             return 0;
 
         } else {

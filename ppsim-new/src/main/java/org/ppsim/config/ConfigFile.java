@@ -34,6 +34,14 @@ public class ConfigFile {
      * The name of the Scheduler to be used.
      */
     private String scheduler;
+    /**
+     * The size of the population to experiment with.
+     */
+    private long populationSize;
+    /**
+     * The number of experiments to execute to generate mean values.
+     */
+    private long iterations;
 
     /**
      * Creates a ConfigFile object based on the file provided.
@@ -51,6 +59,12 @@ public class ConfigFile {
             LOGGER.error("Could not locate Initial_Link_State");
         }
         if (readScheduler(fileName)) {
+            LOGGER.error("Could not locate Scheduler");
+        }
+        if (readPopulationSize(fileName)) {
+            LOGGER.error("Could not locate Scheduler");
+        }
+        if (readIterations(fileName)) {
             LOGGER.error("Could not locate Scheduler");
         }
         readTransitionMap(fileName);
@@ -73,62 +87,47 @@ public class ConfigFile {
     }
 
     private boolean readInitialNodeState(final String fileName) throws FileNotFoundException {
-        BufferedReader bin = new BufferedReader(new FileReader(fileName));
-        try {
-            String line = bin.readLine();
-            while (line != null) {
-                if (line.startsWith("Initial_Node_State:")) {
-                    line = line.replaceAll("Initial_Node_State:", "");
-                    initialNodeState = line;
-                    LOGGER.info("Initial_Node_State:" + initialNodeState);
-                    return false;
-                }
-                line = bin.readLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        String retVal = readProperty(fileName, "Initial_Node_State");
+        if (retVal != null) {
+            initialNodeState = retVal;
+            return false;
         }
-        LOGGER.error("Initial_Node_State not found!");
         return true;
     }
 
     private boolean readInitialLinkState(final String fileName) throws FileNotFoundException {
-        BufferedReader bin = new BufferedReader(new FileReader(fileName));
-        try {
-            String line = bin.readLine();
-            while (line != null) {
-                if (line.startsWith("Initial_Link_State:")) {
-                    line = line.replaceAll("Initial_Link_State:", "");
-                    initialLinkState = line;
-                    LOGGER.info("Initial_Link_State:" + initialLinkState);
-                    return false;
-                }
-                line = bin.readLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        String retVal = readProperty(fileName, "Initial_Link_State");
+        if (retVal != null) {
+            initialLinkState = retVal;
+            return false;
         }
-        LOGGER.error("Initial_Link_State not found!");
         return true;
     }
 
     private boolean readScheduler(final String fileName) throws FileNotFoundException {
-        BufferedReader bin = new BufferedReader(new FileReader(fileName));
-        try {
-            String line = bin.readLine();
-            while (line != null) {
-                if (line.startsWith("Scheduler:")) {
-                    line = line.replaceAll("Scheduler:", "");
-                    scheduler = line;
-                    LOGGER.info("Scheduler:" + scheduler);
-                    return false;
-                }
-                line = bin.readLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        String retVal = readProperty(fileName, "Scheduler");
+        if (retVal != null) {
+            scheduler = retVal;
+            return false;
         }
-        LOGGER.error("Scheduler not found!");
+        return true;
+    }
+
+    private boolean readIterations(final String fileName) throws FileNotFoundException {
+        String retVal = readProperty(fileName, "Iterations");
+        if (retVal != null) {
+            iterations = Long.parseLong(retVal);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean readPopulationSize(final String fileName) throws FileNotFoundException {
+        String retVal = readProperty(fileName, "PopulationSize");
+        if (retVal != null) {
+            populationSize = Long.parseLong(retVal);
+            return false;
+        }
         return true;
     }
 
@@ -152,5 +151,32 @@ public class ConfigFile {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private String readProperty(final String fileName, final String propertyName) throws FileNotFoundException {
+        BufferedReader bin = new BufferedReader(new FileReader(fileName));
+        try {
+            String line = bin.readLine();
+            while (line != null) {
+                if (line.startsWith(propertyName + ":")) {
+                    line = line.replaceAll(propertyName + ":", "");
+                    LOGGER.info(propertyName + ":" + line);
+                    return line;
+                }
+                line = bin.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        LOGGER.error(propertyName + " not found!");
+        return null;
+    }
+
+    public long getPopulationSize() {
+        return populationSize;
+    }
+
+    public long getIterations() {
+        return iterations;
     }
 }

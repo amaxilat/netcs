@@ -21,6 +21,10 @@ public class PopulationLink<State> extends DefaultEdge {
         this.state = state;
     }
 
+    public DefaultEdge getDefaultEdge() {
+        return defaultEdge;
+    }
+
     @Override
     public String toString() {
         return "PopulationLink{" + defaultEdge + ":" + state + "}";

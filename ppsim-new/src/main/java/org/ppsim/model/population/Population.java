@@ -36,7 +36,7 @@ public class Population<State> {
      *
      * @param size the initial size of the population.
      */
-    public Population(final int size) {
+    public Population(final long size) {
         graph = new SimpleGraph<>(DefaultEdge.class);
         long start = System.currentTimeMillis();
         LOGGER.debug("Creating " + size + " GraphNodes...");

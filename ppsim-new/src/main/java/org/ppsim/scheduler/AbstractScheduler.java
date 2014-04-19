@@ -52,7 +52,7 @@ public abstract class AbstractScheduler<State> implements Scheduler<State> {
      * Performs an interaction between an initiator agent and a responder agent.
      * The scheduler uniformly randomly selects the initiator and responder agents from the population.
      */
-    public abstract void interact();
+    public abstract boolean interact();
 
     /**
      * The size of the population.
@@ -89,8 +89,8 @@ public abstract class AbstractScheduler<State> implements Scheduler<State> {
      * @param initiator the initiator of the interaction.
      * @param responder the responder of the interaction.
      */
-    protected void interact(final PopulationNode<State> initiator, final PopulationNode<State> responder, final PopulationLink<State> link) {
-        protocol.interact(initiator, responder, link);
+    protected boolean interact(final PopulationNode<State> initiator, final PopulationNode<State> responder, final PopulationLink<State> link) {
+        return protocol.interact(initiator, responder, link);
     }
 
 }

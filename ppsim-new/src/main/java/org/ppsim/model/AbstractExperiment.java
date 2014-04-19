@@ -2,8 +2,13 @@ package org.ppsim.model;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.ppsim.config.ConfigFile;
 import org.ppsim.model.population.Population;
+import org.ppsim.model.population.PopulationLink;
+import org.ppsim.model.population.PopulationNode;
 import org.ppsim.scheduler.AbstractScheduler;
+
+import java.util.Iterator;
 
 
 /**
@@ -38,19 +43,20 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      * Scheduler.
      */
     private final Scheduler<State> scheduler;
+    public ConfigFile configFile;
+    public String resultString;
 
     /**
      * Default constructor.
      *
-     * @param size      the number of agents.
      * @param protocol  the population protocol.
      * @param scheduler the scheduler.
      */
-    public AbstractExperiment(final int size, final Protocol protocol, final AbstractScheduler<State> scheduler) {
+    public AbstractExperiment(final ConfigFile configFile, final AbstractProtocol<State> protocol, final AbstractScheduler<State> scheduler) {
         // Construct population
         this.protocol = protocol;
-        this.population = new Population<>(size);
-
+        this.population = new Population<>(configFile.getPopulationSize());
+        this.configFile = configFile;
         // Initialize Population
         initPopulation();
 
@@ -59,39 +65,58 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         this.scheduler = scheduler;
         //this.scheduler.connect(this.population, this.protocol);
 
-        reportStatus("initialized");
+        //reportStatus("initialized");
     }
 
     /**
      * Initialize the population.
      */
-    protected abstract void initPopulation();
+    public void initPopulation() {
+        Iterator<PopulationNode<State>> nodeIterator = getPopulation().getNodes().iterator();
+        while (nodeIterator.hasNext()) {
+            PopulationNode node = nodeIterator.next();
+            node.setState(configFile.getInitialNodeState());
+            LOGGER.debug(node);
+        }
+        Iterator<PopulationLink<State>> edgeIterator = getPopulation().getEdges().iterator();
+        while (edgeIterator.hasNext()) {
+            PopulationLink edge = edgeIterator.next();
+            edge.setState(configFile.getInitialLinkState());
+            LOGGER.debug(edge);
+        }
+    }
+
+    ;
 
     /**
      * Start the execution of the experiment.
      */
     public void run() {
-        reportStatus("started");
+        //reportStatus("started");
 
         while (true) {
             try {
-                reportStatus("interact " + round);
+                LOGGER.debug("interact " + round);
                 // Invoke scheduler to conduct next interaction
-                scheduler.interact();
+                boolean interactionStatus = scheduler.interact();
 
-                // produce debug information
-                if (LOGGER.getLevel() == Level.DEBUG) {
-                    debugRound();
-                }
+                if (interactionStatus) {
+                    // produce debug information
+                    if (LOGGER.getLevel() == Level.DEBUG) {
+                        debugRound();
+                    }
 
-                // Check if we have reached a stable state
-                if (checkStability()) {
-                    break;
+                    // Check if we have reached a stable state
+                    if (checkStability()) {
+                        break;
+                    }
                 }
 
                 // increase round counter
                 round++;
-                Thread.sleep(100);
+                if (round % 1000000 == 0) {
+//                    reportStatus("Round: " + round);
+                }
             } catch (Exception ex) {
                 LOGGER.error("Exception occured", ex);
             }
@@ -100,7 +125,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         // Finalize experiment
         completeExperiment();
 
-        reportStatus("completed at round " + round);
+        reportStatus("Experiment Completed after " + round + " rounds.");
     }
 
     /**
@@ -170,9 +195,10 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     }
 
     private void reportStatus(final String status) {
-        System.out.println("AbstractExperiment<" + protocol.getClass().getSimpleName() + ","
-                + scheduler.getClass().getSimpleName() + ","
-                + population.size() + "> " + status);
+        LOGGER.info(status);
     }
 
+    public String getResultString() {
+        return resultString;
+    }
 }

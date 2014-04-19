@@ -48,4 +48,8 @@ public class PopulationNode<State> {
     public int hashCode() {
         return nodeName.hashCode();
     }
+
+    public String getNodeName() {
+        return nodeName;
+    }
 }

@@ -1,5 +1,6 @@
 package org.ppsim.model;
 
+import org.ppsim.config.ConfigFile;
 import org.ppsim.model.population.PopulationLink;
 import org.ppsim.model.population.PopulationNode;
 
@@ -17,6 +18,7 @@ public abstract class AbstractProtocol<State> {
      * Map of state-pairs to state-pairs.
      */
     private final Map<StateTriple<State>, StateTriple<State>> transitions;
+    public ConfigFile configFile;
 
     /**
      * Default constructor.
@@ -25,8 +27,6 @@ public abstract class AbstractProtocol<State> {
         // Initialize transitions map
         transitions = new HashMap<>();
 
-        // Setup entries.
-        setupTransitionsMap();
     }
 
     /**
@@ -59,7 +59,7 @@ public abstract class AbstractProtocol<State> {
      * @param initiator the initiator of the interaction.
      * @param responder the responder of the interaction.
      */
-    public void interact(final PopulationNode<State> initiator, final PopulationNode<State> responder, final PopulationLink<State> link) {
+    public boolean interact(final PopulationNode<State> initiator, final PopulationNode<State> responder, final PopulationLink<State> link) {
         final StateTriple<State> startingState = new StateTriple<>(initiator.getState(), responder.getState(), link.getState());
         final StateTriple<State> newState = transitions.get(startingState);
 
@@ -69,6 +69,8 @@ public abstract class AbstractProtocol<State> {
             initiator.setState(newState.getInitiatorState());
             responder.setState(newState.getResponderState());
             link.setState(newState.getLinkState());
+            return true;
         }
+        return false;
     }
 }
