@@ -6,6 +6,9 @@ Scheduler:RandomScheduler
 Transition_function:
 (q0, q0, 0, q1, l, 1)
 (l, q0, 0, q2, l, 1)
-(l, l, 0, q2 , w, 1)
-(w, q2, 1, q2, w, 1)
-(w, q1, 1, q2, l, 1)
+(l, l, 0, q2' , l', 1)
+(l', q2, 1, l'', f1, 0)
+(l', q1, 1, l'', f0, 0)
+(l'', q2', 1, l, q2, 1)
+(l, f0, 0, q2, l, 1)
+(l, f1, 0, q2', l', 1)
