@@ -9,6 +9,14 @@
     <artifactId>netcs</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <repositories>
+
+    </repositories>
+    
     <pluginRepositories>
         <pluginRepository>
             <id>onejar-maven-plugin.googlecode.com</id>
@@ -17,6 +25,7 @@
     </pluginRepositories>
 
     <dependencies>
+        <!--## Graph ##-->
         <dependency>
             <groupId>jgrapht</groupId>
             <artifactId>jgrapht</artifactId>
@@ -25,22 +34,26 @@
             <systemPath>${project.basedir}/lib/jgrapht-core-0.9.0.jar</systemPath>
         </dependency>
 
+        <!--## Logging ##-->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.8.2</version>
-        </dependency>
-
+        <!--## Apache Math Statistics ##-->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math</artifactId>
             <version>2.0</version>
+        </dependency>
+
+        <!--## Testing ##-->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.2</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
@@ -75,17 +88,6 @@
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>com.mycompany.mypackage.MyMainClass</mainClass>
-                        </manifest>
-                    </archive>
                 </configuration>
             </plugin>
             <plugin>
