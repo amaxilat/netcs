@@ -10,7 +10,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>ppsim-old</module>
-        <module>ppsim-new</module>
     </modules>
 
 </project>

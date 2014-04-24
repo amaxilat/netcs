@@ -1,2 +1,2 @@
-ppsim
+Network Constructor Simulator (NETCS)
 =====
