@@ -1,3 +1,4 @@
+Debug_Level:1
 Iterations:10
 PopulationSize:200
 Initial_Node_State:q0
