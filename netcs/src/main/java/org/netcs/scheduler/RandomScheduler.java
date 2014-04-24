@@ -15,7 +15,7 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
     /**
      * a log4j logger to print messages.
      */
-    protected static final Logger LOGGER = Logger.getLogger(RandomScheduler.class);
+    private static final Logger LOGGER = Logger.getLogger(RandomScheduler.class);
 
     /**
      * Performs an interaction between an initiator agent and a responder agent.

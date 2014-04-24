@@ -16,7 +16,7 @@
     <repositories>
 
     </repositories>
-    
+
     <pluginRepositories>
         <pluginRepository>
             <id>onejar-maven-plugin.googlecode.com</id>

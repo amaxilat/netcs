@@ -3,7 +3,7 @@ package org.netcs.config;
 import junit.framework.TestCase;
 
 /**
- * Created by amaxilatis on 4/19/14.
+ * Tests parsing of Config files.
  */
 public class ConfigurationParserTest extends TestCase {
     public void testParseConfigFile() throws Exception {

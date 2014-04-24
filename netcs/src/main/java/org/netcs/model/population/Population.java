@@ -18,7 +18,7 @@ public class Population<State> {
     /**
      * a log4j logger to print messages.
      */
-    protected static final Logger LOGGER = Logger.getLogger(Population.class);
+    private static final Logger LOGGER = Logger.getLogger(Population.class);
 
     private final SimpleGraph<PopulationNode<State>, DefaultEdge> graph;
     private final Map<DefaultEdge, PopulationLink<State>> edges;
@@ -89,8 +89,8 @@ public class Population<State> {
         return (PopulationNode<State>) graph.vertexSet().toArray()[index];
     }
 
-    public PopulationLink<State> getEdge(PopulationNode<State> inititiatorPopulationNode, PopulationNode<State> responderPopulationNode) {
-        DefaultEdge edge = graph.getEdge(inititiatorPopulationNode, responderPopulationNode);
+    public PopulationLink<State> getEdge(PopulationNode<State> initiatorPopulationNode, PopulationNode<State> responderPopulationNode) {
+        DefaultEdge edge = graph.getEdge(initiatorPopulationNode, responderPopulationNode);
         return edges.get(edge);
     }
 }

@@ -39,9 +39,8 @@ public class PopulationNode<State> {
 
         PopulationNode that = (PopulationNode) o;
 
-        if (!nodeName.equals(that.nodeName)) return false;
+        return nodeName.equals(that.nodeName);
 
-        return true;
     }
 
     @Override

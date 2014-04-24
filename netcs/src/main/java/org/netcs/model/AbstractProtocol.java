@@ -35,7 +35,7 @@ public abstract class AbstractProtocol<State> {
     protected abstract void setupTransitionsMap();
 
     /**
-     * Adds an entry to the transision map.
+     * Adds an entry to the transition map.
      *
      * @param fromPair the starting pair of states.
      * @param toPair   the ending pair of states.
@@ -45,7 +45,7 @@ public abstract class AbstractProtocol<State> {
     }
 
     /**
-     * Access the protocol state transision map.
+     * Access the protocol state transition map.
      *
      * @return A Map of StateTriple to StateTriple objects.
      */

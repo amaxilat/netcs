@@ -37,9 +37,7 @@ public class PopulationLink<State> extends DefaultEdge {
 
         PopulationLink that = (PopulationLink) o;
 
-        if (!defaultEdge.equals(that.defaultEdge)) return false;
-
-        return true;
+        return defaultEdge.equals(that.defaultEdge);
     }
 
     @Override

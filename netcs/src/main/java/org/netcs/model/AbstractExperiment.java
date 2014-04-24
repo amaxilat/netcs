@@ -44,8 +44,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      * Scheduler.
      */
     private final Scheduler<State> scheduler;
-    public ConfigFile configFile;
-    public String resultString;
+    private final ConfigFile configFile;
+    protected String resultString;
 
 
     /**
@@ -88,8 +88,6 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         }
     }
 
-    ;
-
     /**
      * Start the execution of the experiment.
      */
@@ -117,11 +115,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 
                 // increase interactions counter
                 interactions++;
-                if (interactions % 1000000 == 0) {
-//                    reportStatus("Round: " + interactions);
-                }
             } catch (Exception ex) {
-                LOGGER.error("Exception occured", ex);
+                LOGGER.error("Exception occurred", ex);
             }
         }
 
@@ -147,7 +142,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     /**
      * Prepares a debug output with the total number of agents per protocol state.
      */
-    protected void debugRound() {
+    void debugRound() {
 //        final StringBuffer strbuf = new StringBuffer();
 //        strbuf.append(interactions);
 //        final Set<Map.Entry<State, Long>> states = population.getStateCount();

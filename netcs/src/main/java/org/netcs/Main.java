@@ -29,9 +29,9 @@ public class Main {
     /**
      * a log4j logger to print messages.
      */
-    protected static final Logger LOGGER = Logger.getLogger(Main.class);
+    private static final Logger LOGGER = Logger.getLogger(Main.class);
 
-    public void runExperiment(final String configFileName, final String outputFile, final Long nodeCount) throws FileNotFoundException {
+    void runExperiment(final String configFileName, final String outputFile, final Long nodeCount) throws FileNotFoundException {
         final ConfigFile configFile = ConfigurationParser.parseConfigFile(configFileName);
 
         if (nodeCount != null) {
@@ -99,7 +99,7 @@ public class Main {
 //                        minEffectiveInteractions[0] = experiment.getEffectiveInteractions();
 //                    }
                     if (configFile.getDebugLevel() > 1) {
-                        totalExecutionStatistics.append(finalI + ":" + experiment.getInteractions() + ":" + experiment.getEffectiveInteractions()).append("\n");
+                        totalExecutionStatistics.append(finalI).append(":").append(experiment.getInteractions()).append(":").append(experiment.getEffectiveInteractions()).append("\n");
                     }
                     detailedStatistics[finalI].append("Iteration:").append(finalI).append("\n");
                     detailedStatistics[finalI].append(experiment.getResultString()).append("\n");
@@ -143,7 +143,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws FileNotFoundException {
-        PropertyConfigurator.configure("log4j.properties");
+        PropertyConfigurator.configure(Thread.currentThread().getContextClassLoader().getResourceAsStream("log4j.properties"));
 
         final String inputFile = args[0];
         final String outputFile = args[1];
@@ -154,10 +154,6 @@ public class Main {
         new Main().runExperiment(inputFile, outputFile, nodeCount);
     }
 
-    /**
-     * Boolean
-     * Implements the Aproximate Majority Protocol.
-     */
     public class ConfigurableProtocol extends AbstractProtocol<String> {
 
         public ConfigurableProtocol(final ConfigFile configFile) {
@@ -166,7 +162,7 @@ public class Main {
         }
 
         /**
-         * Define the entries of the transision map.
+         * Define the entries of the transition map.
          */
         protected void setupTransitionsMap() {
             for (Transition tr : configFile.getTransitions()) {
@@ -183,8 +179,8 @@ public class Main {
         /**
          * Default constructor.
          *
-         * @param configFile
-         * @param scheduler
+         * @param configFile the configuration file to use.
+         * @param scheduler  the scheduler to use.
          */
         public ConfigurableExperiment(ConfigFile configFile, final AbstractProtocol<String> protocol, AbstractScheduler<String> scheduler) {
             super(configFile, protocol, scheduler);

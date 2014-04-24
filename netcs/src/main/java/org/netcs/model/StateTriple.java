@@ -11,7 +11,7 @@ public class StateTriple<State> {
     /**
      * a log4j logger to print messages.
      */
-    protected static final Logger LOGGER = Logger.getLogger(StateTriple.class);
+    private static final Logger LOGGER = Logger.getLogger(StateTriple.class);
 
     /**
      * The state of the initiator.
