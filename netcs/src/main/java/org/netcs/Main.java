@@ -76,28 +76,6 @@ public class Main {
                     //get statistics
                     summaryStatistics.addValue(experiment.getInteractions());
                     effectiveSummaryStatistics.addValue(experiment.getEffectiveInteractions());
-//                    averageInteractions[0] += experiment.getInteractions();
-//                    averageEffectiveInteractions[0] += experiment.getEffectiveInteractions();
-//                    if (maxInteractions[0] == -1) {
-//                        maxInteractions[0] = experiment.getInteractions();
-//                    } else if (maxInteractions[0] < experiment.getInteractions()) {
-//                        maxInteractions[0] = experiment.getInteractions();
-//                    }
-//                    if (maxEffectiveInteractions[0] == -1) {
-//                        maxEffectiveInteractions[0] = experiment.getEffectiveInteractions();
-//                    } else if (maxEffectiveInteractions[0] < experiment.getEffectiveInteractions()) {
-//                        maxEffectiveInteractions[0] = experiment.getEffectiveInteractions();
-//                    }
-//                    if (minInteractions[0] == -1) {
-//                        minInteractions[0] = experiment.getInteractions();
-//                    } else if (minInteractions[0] > experiment.getInteractions()) {
-//                        minInteractions[0] = experiment.getInteractions();
-//                    }
-//                    if (minEffectiveInteractions[0] == -1) {
-//                        minEffectiveInteractions[0] = experiment.getEffectiveInteractions();
-//                    } else if (minEffectiveInteractions[0] > experiment.getEffectiveInteractions()) {
-//                        minEffectiveInteractions[0] = experiment.getEffectiveInteractions();
-//                    }
                     if (configFile.getDebugLevel() > 1) {
                         totalExecutionStatistics.append(finalI).append(":").append(experiment.getInteractions()).append(":").append(experiment.getEffectiveInteractions()).append("\n");
                     }
