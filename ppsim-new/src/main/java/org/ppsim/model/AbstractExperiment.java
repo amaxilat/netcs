@@ -25,9 +25,10 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     protected static final Logger LOGGER = Logger.getLogger(AbstractExperiment.class);
 
     /**
-     * Current round of experiment.
+     * Current interactions of experiment.
      */
-    private long round = 0;
+    private long interactions = 0;
+    private long effectiveInteractions = 0;
 
     /**
      * Population holder.
@@ -45,6 +46,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     private final Scheduler<State> scheduler;
     public ConfigFile configFile;
     public String resultString;
+
 
     /**
      * Default constructor.
@@ -96,11 +98,12 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 
         while (true) {
             try {
-                LOGGER.debug("interact " + round);
+                LOGGER.debug("interact " + interactions);
                 // Invoke scheduler to conduct next interaction
                 boolean interactionStatus = scheduler.interact();
 
                 if (interactionStatus) {
+                    effectiveInteractions++;
                     // produce debug information
                     if (LOGGER.getLevel() == Level.DEBUG) {
                         debugRound();
@@ -112,10 +115,10 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
                     }
                 }
 
-                // increase round counter
-                round++;
-                if (round % 1000000 == 0) {
-//                    reportStatus("Round: " + round);
+                // increase interactions counter
+                interactions++;
+                if (interactions % 1000000 == 0) {
+//                    reportStatus("Round: " + interactions);
                 }
             } catch (Exception ex) {
                 LOGGER.error("Exception occured", ex);
@@ -125,7 +128,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         // Finalize experiment
         completeExperiment();
 
-        reportStatus("Experiment Completed after " + round + " rounds.");
+        reportStatus("Experiment Completed after " + interactions + " rounds.");
     }
 
     /**
@@ -146,7 +149,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      */
     protected void debugRound() {
 //        final StringBuffer strbuf = new StringBuffer();
-//        strbuf.append(round);
+//        strbuf.append(interactions);
 //        final Set<Map.Entry<State, Long>> states = population.getStateCount();
 //        for (Map.Entry<State, Long> state : states) {
 //            strbuf.append(" [");
@@ -168,12 +171,12 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     }
 
     /**
-     * The round of execution.
+     * The interactions of execution.
      *
      * @return the number of rounds executed.
      */
-    public long getRound() {
-        return round;
+    public long getInteractions() {
+        return interactions;
     }
 
     /**
@@ -200,5 +203,9 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 
     public String getResultString() {
         return resultString;
+    }
+
+    public long getEffectiveInteractions() {
+        return effectiveInteractions;
     }
 }

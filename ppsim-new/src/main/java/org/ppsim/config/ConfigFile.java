@@ -42,6 +42,10 @@ public class ConfigFile {
      * The number of experiments to execute to generate mean values.
      */
     private long iterations;
+    /**
+     * Debug Level on the outputFile.
+     */
+    private int debugLevel;
 
     /**
      * Creates a ConfigFile object based on the file provided.
@@ -62,10 +66,13 @@ public class ConfigFile {
             LOGGER.error("Could not locate Scheduler");
         }
         if (readPopulationSize(fileName)) {
-            LOGGER.error("Could not locate Scheduler");
+            LOGGER.error("Could not locate PopulationSize");
         }
         if (readIterations(fileName)) {
-            LOGGER.error("Could not locate Scheduler");
+            LOGGER.error("Could not locate Iterations");
+        }
+        if (readDebugLevel(fileName)) {
+            LOGGER.error("Could not locate DebugLevel");
         }
         readTransitionMap(fileName);
     }
@@ -85,6 +92,16 @@ public class ConfigFile {
     public String getScheduler() {
         return scheduler;
     }
+
+    private boolean readDebugLevel(final String fileName) throws FileNotFoundException {
+        String retVal = readProperty(fileName, "Debug_Level");
+        if (retVal != null) {
+            debugLevel = Integer.parseInt(retVal);
+            return false;
+        }
+        return true;
+    }
+
 
     private boolean readInitialNodeState(final String fileName) throws FileNotFoundException {
         String retVal = readProperty(fileName, "Initial_Node_State");
@@ -178,5 +195,13 @@ public class ConfigFile {
 
     public long getIterations() {
         return iterations;
+    }
+
+    public void setPopulationSize(Long populationSize) {
+        this.populationSize = populationSize;
+    }
+
+    public int getDebugLevel() {
+        return debugLevel;
     }
 }

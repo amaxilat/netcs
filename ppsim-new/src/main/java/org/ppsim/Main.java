@@ -1,5 +1,6 @@
 package org.ppsim;
 
+import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.ppsim.config.ConfigFile;
@@ -30,24 +31,31 @@ public class Main {
      */
     protected static final Logger LOGGER = Logger.getLogger(Main.class);
 
-    public void runExperiment(final String configFileName, final String outputFile) throws FileNotFoundException {
+    public void runExperiment(final String configFileName, final String outputFile, final Long nodeCount) throws FileNotFoundException {
         final ConfigFile configFile = ConfigurationParser.parseConfigFile(configFileName);
 
+        if (nodeCount != null) {
+            configFile.setPopulationSize(nodeCount);
+        }
         //the number of experiments to run.
         final int iterations = (int) configFile.getIterations();
 
         //Used for statistics.
-        final long[] averageRounds = {0};
-        final long[] maxRounds = {-1};
-        final long[] minRounds = {-1};
+        final SummaryStatistics summaryStatistics = new SummaryStatistics();
+        final SummaryStatistics effectiveSummaryStatistics = new SummaryStatistics();
+
         final StringBuilder[] detailedStatistics = new StringBuilder[iterations];
 
         final StringBuilder totalExecutionStatistics = new StringBuilder();
-        totalExecutionStatistics.append("========DetailedStatistics========" + "\n");
-        totalExecutionStatistics.append("Execution:Iterations").append("\n");
+        if (configFile.getDebugLevel() > 1) {
+            totalExecutionStatistics.append("#========DetailedStatistics========" + "\n");
+            totalExecutionStatistics.append("Execution:Iterations").append("\n");
+        }
         final CountDownLatch latch = new CountDownLatch(iterations);
 
         ExecutorService executor = Executors.newFixedThreadPool(5);
+
+
         for (int i = 0; i < iterations; i++) {
             final int finalI = i;
             executor.submit(new Runnable() {
@@ -66,18 +74,33 @@ public class Main {
                     experiment.run();
 
                     //get statistics
-                    averageRounds[0] += experiment.getRound();
-                    if (maxRounds[0] == -1) {
-                        maxRounds[0] = experiment.getRound();
-                    } else if (maxRounds[0] < experiment.getRound()) {
-                        maxRounds[0] = experiment.getRound();
+                    summaryStatistics.addValue(experiment.getInteractions());
+                    effectiveSummaryStatistics.addValue(experiment.getEffectiveInteractions());
+//                    averageInteractions[0] += experiment.getInteractions();
+//                    averageEffectiveInteractions[0] += experiment.getEffectiveInteractions();
+//                    if (maxInteractions[0] == -1) {
+//                        maxInteractions[0] = experiment.getInteractions();
+//                    } else if (maxInteractions[0] < experiment.getInteractions()) {
+//                        maxInteractions[0] = experiment.getInteractions();
+//                    }
+//                    if (maxEffectiveInteractions[0] == -1) {
+//                        maxEffectiveInteractions[0] = experiment.getEffectiveInteractions();
+//                    } else if (maxEffectiveInteractions[0] < experiment.getEffectiveInteractions()) {
+//                        maxEffectiveInteractions[0] = experiment.getEffectiveInteractions();
+//                    }
+//                    if (minInteractions[0] == -1) {
+//                        minInteractions[0] = experiment.getInteractions();
+//                    } else if (minInteractions[0] > experiment.getInteractions()) {
+//                        minInteractions[0] = experiment.getInteractions();
+//                    }
+//                    if (minEffectiveInteractions[0] == -1) {
+//                        minEffectiveInteractions[0] = experiment.getEffectiveInteractions();
+//                    } else if (minEffectiveInteractions[0] > experiment.getEffectiveInteractions()) {
+//                        minEffectiveInteractions[0] = experiment.getEffectiveInteractions();
+//                    }
+                    if (configFile.getDebugLevel() > 1) {
+                        totalExecutionStatistics.append(finalI + ":" + experiment.getInteractions() + ":" + experiment.getEffectiveInteractions()).append("\n");
                     }
-                    if (minRounds[0] == -1) {
-                        minRounds[0] = experiment.getRound();
-                    } else if (minRounds[0] > experiment.getRound()) {
-                        minRounds[0] = experiment.getRound();
-                    }
-                    totalExecutionStatistics.append(finalI + ":" + experiment.getRound()).append("\n");
                     detailedStatistics[finalI].append("Iteration:").append(finalI).append("\n");
                     detailedStatistics[finalI].append(experiment.getResultString()).append("\n");
                     latch.countDown();
@@ -92,14 +115,17 @@ public class Main {
                 e.printStackTrace();
             }
         }
-
-        totalExecutionStatistics.insert(0, "MinRounds:" + minRounds[0] + "\n");
-        totalExecutionStatistics.insert(0, "AverageRounds:" + averageRounds[0] / iterations + "\n");
-        totalExecutionStatistics.insert(0, "MaxRounds:" + maxRounds[0] + "\n");
-        totalExecutionStatistics.insert(0, "========GlobalStatistics========" + "\n");
-        totalExecutionStatistics.append("========DetailedInformation========").append("\n");
-        for (StringBuilder detailedStatistic : detailedStatistics) {
-            totalExecutionStatistics.append(detailedStatistic);
+        totalExecutionStatistics.insert(0, "MinInteractions:" + summaryStatistics.getMin() + ":" + effectiveSummaryStatistics.getMin() + "\n");
+        totalExecutionStatistics.insert(0, "AverageInteractions:" + summaryStatistics.getMean() + ":" + effectiveSummaryStatistics.getMean() + "\n");
+        totalExecutionStatistics.insert(0, "MaxInteractions:" + summaryStatistics.getMax() + ":" + effectiveSummaryStatistics.getMax() + "\n");
+        totalExecutionStatistics.insert(0, "Variance:" + summaryStatistics.getVariance() + ":" + effectiveSummaryStatistics.getVariance() + "\n");
+        totalExecutionStatistics.insert(0, "StandardDeviation:" + summaryStatistics.getStandardDeviation() + ":" + effectiveSummaryStatistics.getStandardDeviation() + "\n");
+        totalExecutionStatistics.insert(0, "#========GlobalStatistics========" + "\n");
+        if (configFile.getDebugLevel() > 2) {
+            totalExecutionStatistics.append("#========DetailedInformation========").append("\n");
+            for (StringBuilder detailedStatistic : detailedStatistics) {
+                totalExecutionStatistics.append(detailedStatistic);
+            }
         }
 
         //write statistics to file
@@ -121,7 +147,11 @@ public class Main {
 
         final String inputFile = args[0];
         final String outputFile = args[1];
-        new Main().runExperiment(inputFile, outputFile);
+        Long nodeCount = null;
+        if (args.length > 2) {
+            nodeCount = Long.valueOf(args[2]);
+        }
+        new Main().runExperiment(inputFile, outputFile, nodeCount);
     }
 
     /**
@@ -183,7 +213,7 @@ public class Main {
         protected void completeExperiment() {
             StringBuilder resultString = new StringBuilder();
 
-            resultString.append("ExperimentEnded after ").append(getRound()).append(" interactions.\n");
+            resultString.append("ExperimentEnded after ").append(getInteractions()).append(" interactions.\n");
             resultString.append("NodeStatuses:").append("\n");
             for (PopulationNode<String> node : getPopulation().getNodes()) {
                 resultString.append(node.getNodeName()).append(":").append(node.getState()).append("\n");
