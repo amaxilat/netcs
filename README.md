@@ -1,3 +1,5 @@
+![build status](https://travis-ci.org/amaxilat/netcs.svg?branch=master "Build Status")
+
 
 Network Constructor Simulator (NETCS)
 =====
