@@ -3,4 +3,5 @@ language: java
 jdk:
   - oraclejdk7
 
-mvn install -DskipTests=true
+mvn clean install -f netcs/pom.xml
+
