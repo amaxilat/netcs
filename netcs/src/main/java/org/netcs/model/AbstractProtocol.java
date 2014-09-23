@@ -62,7 +62,7 @@ public abstract class AbstractProtocol<State> {
     public boolean interact(final PopulationNode<State> initiator, final PopulationNode<State> responder, final PopulationLink<State> link) {
         final StateTriple<State> startingState = new StateTriple<>(initiator.getState(), responder.getState(), link.getState());
         final StateTriple<State> newState = transitions.get(startingState);
-
+        //System.out.println(startingState);
         // undefined interaction
         if (newState != null) {
             // Change the states of the agents.

@@ -1,12 +1,10 @@
 Debug_Level:1
-Iterations:10
+Iterations:1
 PopulationSize:100
 Initial_Node_State:q0
 Initial_Link_State:0
 Scheduler:RandomScheduler
 Transition_function:
-(q0, q0, 0, q1, l, 1)
-(l, q0, 0, q2, l, 1)
-(l, l, 0, q2, w, 1)
-(w, q2, 1, q2, w, 1)
-(w, q1, 1, q2, l, 1)
+(q0, q0, 0, q1, q1, 1)
+(q1, q0, 0, q2, q1, 1)
+(q1, q1, 0, q2 , q2, 1)

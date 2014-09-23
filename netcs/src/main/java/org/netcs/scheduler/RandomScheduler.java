@@ -22,6 +22,7 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
      * The scheduler uniformly randomly selects the initiator and responder agents from the population.
      */
     public boolean interact() {
+        final long start = System.currentTimeMillis();
         final int initiator = randomNodeId();
         int responder = randomNodeId();
 
@@ -35,7 +36,11 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
         final PopulationLink<State> link = population.getEdge(initiatorPopulationNode, responderPopulationNode);
         LOGGER.debug(link);
         // Conduct interaction for given pair of agents
-        return interact(initiatorPopulationNode, responderPopulationNode, link);
+        final boolean result = interact(initiatorPopulationNode, responderPopulationNode, link);
+        if (result) {
+            LOGGER.debug("[randomScheduler:interact] " + (System.currentTimeMillis() - start) + " ms");
+        }
+        return result;
         //LOGGER.debug("\t" + link);
     }
 

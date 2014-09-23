@@ -1,6 +1,6 @@
 Debug_Level:1
-Iterations:10
-PopulationSize:200
+Iterations:1
+PopulationSize:100
 Initial_Node_State:q0
 Initial_Link_State:0
 Scheduler:RandomScheduler

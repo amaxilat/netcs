@@ -106,11 +106,14 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
                     if (LOGGER.getLevel() == Level.DEBUG) {
                         debugRound();
                     }
-
-                    // Check if we have reached a stable state
-                    if (checkStability()) {
-                        break;
-                    }
+//                    if (interactions % 10 == 0) {
+                        final long start = System.currentTimeMillis();
+                        // Check if we have reached a stable state
+                        if (checkStability()) {
+                            break;
+                        }
+                        LOGGER.debug("[checkStability] " + (System.currentTimeMillis() - start) + " ms");
+//                    }
                 }
 
                 // increase interactions counter

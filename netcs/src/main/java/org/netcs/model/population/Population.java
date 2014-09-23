@@ -93,4 +93,18 @@ public class Population<State> {
         DefaultEdge edge = graph.getEdge(initiatorPopulationNode, responderPopulationNode);
         return edges.get(edge);
     }
+
+    public long getDegree(PopulationNode<State> node) {
+        long nodeDegree = 0;
+        for (final PopulationNode<State> node1 : getNodes()) {
+            if (node.equals(node1)) {
+                continue;
+            }
+            if (getEdge(node, node1).getState().equals("1") ||
+                    getEdge(node1, node).getState().equals("1")) {
+                nodeDegree++;
+            }
+        }
+        return nodeDegree;
+    }
 }

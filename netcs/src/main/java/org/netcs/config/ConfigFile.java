@@ -165,6 +165,7 @@ public class ConfigFile {
                 }
                 line = bin.readLine();
             }
+            LOGGER.info("Read " + transitions.size() + " transitions.");
         } catch (IOException e) {
             e.printStackTrace();
         }
