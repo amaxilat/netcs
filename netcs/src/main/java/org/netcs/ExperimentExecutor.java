@@ -33,12 +33,7 @@ public class ExperimentExecutor {
      */
     private static final Logger LOGGER = Logger.getLogger(ExperimentExecutor.class);
 
-    private static ExperimentExecutor instance = new ExperimentExecutor();
     private List<ConfigurableExperiment> experiments;
-
-    public static ExperimentExecutor getInstance() {
-        return instance;
-    }
 
 
     public ExperimentExecutor() {
@@ -68,21 +63,23 @@ public class ExperimentExecutor {
         final CountDownLatch latch = new CountDownLatch(iterations);
 
         ExecutorService executor = Executors.newFixedThreadPool(5);
-
+        LOGGER.info("iterations : " + iterations);
         for (int i = 0; i < iterations; i++) {
             final int finalI = i;
             executor.submit(new Runnable() {
                 @Override
                 public void run() {
-
+                    LOGGER.info("newRunnalbe");
                     detailedStatistics[finalI] = new StringBuilder();
 
                     //prepare experiment
                     final ConfigurableProtocol protocol = new ConfigurableProtocol(configFile);
                     final RandomScheduler<String> scheduler = new RandomScheduler<>();
-                    final ConfigurableExperiment experiment = new ConfigurableExperiment(configFile, protocol, scheduler);
-                    experiment.initPopulation();
                     LOGGER.info("experiment:" + finalI);
+                    final ConfigurableExperiment experiment = new ConfigurableExperiment(configFile, protocol, scheduler);
+                    LOGGER.info("willinit:" + finalI);
+                    experiment.initPopulation();
+                    LOGGER.info("initdone:" + finalI);
                     experiments.add(experiment);
                     //run experiment
                     experiment.run();

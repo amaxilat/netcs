@@ -2,11 +2,13 @@ package org.netcs.web;
 
 import org.netcs.ExperimentExecutor;
 import org.netcs.model.population.PopulationLink;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -17,9 +19,41 @@ import java.util.Map;
 @Controller
 public class ExperimentController {
 
+    @Autowired
+    ExperimentExecutor experimentExecutor;
+
+    @PostConstruct
+    public void init() throws Exception {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    experimentExecutor.start(new String[]{"global-line3.prop", "global-line3.out", "10", "5"});
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+
+
+    }
+
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String home(final Map<String, Object> model) {
         return "redirect:/experiment";
+    }
+
+    @RequestMapping(value = "/experiment/add", method = RequestMethod.GET)
+    public String addNewExperiment(final Map<String, Object> model) {
+        model.put("title", "Add Experiment");
+        return "experiment/add";
+    }
+
+    @RequestMapping(value = "/experiment/add", method = RequestMethod.POST)
+    public String addNewExperimentPost(final Map<String, Object> model) {
+        return "add";
     }
 
     @RequestMapping(value = "/experiment", method = RequestMethod.GET)
@@ -29,7 +63,8 @@ public class ExperimentController {
 
     @RequestMapping(value = "/experiment/{experimentId}", method = RequestMethod.GET)
     public String viewExperiment(final Map<String, Object> model, @PathVariable("experimentId") int experimentId) {
-        ExperimentExecutor.ConfigurableExperiment experiment = ExperimentExecutor.getInstance().getExperiment(experimentId);
+
+        ExperimentExecutor.ConfigurableExperiment experiment = experimentExecutor.getExperiment(experimentId);
 
         System.out.println("experiment:" + experiment.getPopulation().getNodes().size() + "nodes");
         model.put("population", experiment.getPopulation());
@@ -44,6 +79,6 @@ public class ExperimentController {
         }
         model.put("edges", edges);
         model.put("experimentId", experimentId);
-        return "graph";
+        return "experiment/view";
     }
 }
