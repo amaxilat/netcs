@@ -1,0 +1,10 @@
+Debug_Level:1
+Iterations:10
+PopulationSize:10
+Initial_Node_State:c
+Initial_Link_State:0
+Scheduler:RandomScheduler
+Transition_function:
+(c, c, 0, c, p, 1)
+(p, p, 1, p, p, 0)
+(c, p, 0, c, p, 1)

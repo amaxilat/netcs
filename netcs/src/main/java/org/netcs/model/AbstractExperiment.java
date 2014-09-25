@@ -96,11 +96,13 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 
         while (true) {
             try {
-                LOGGER.debug("interact " + interactions);
                 // Invoke scheduler to conduct next interaction
                 boolean interactionStatus = scheduler.interact();
 
                 if (interactionStatus) {
+                    LOGGER.info("interact " + interactions + ":" + interactionStatus);
+
+                    //printExperimentStatus();
                     effectiveInteractions++;
                     // produce debug information
                     if (LOGGER.getLevel() == Level.DEBUG) {
@@ -112,7 +114,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
                         if (checkStability()) {
                             break;
                         }
-                        LOGGER.debug("[checkStability] " + (System.currentTimeMillis() - start) + " ms");
+                        LOGGER.info("[checkStability] " + (System.currentTimeMillis() - start) + " ms");
                     }
                 }
 
@@ -127,6 +129,12 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         completeExperiment();
 
         reportStatus("Experiment Completed after " + interactions + " rounds.");
+    }
+
+    protected void printExperimentStatus() {
+        for (PopulationLink<State> statePopulationLink : getPopulation().getEdges()) {
+            LOGGER.info(statePopulationLink);
+        }
     }
 
     /**

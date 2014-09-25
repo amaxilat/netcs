@@ -31,13 +31,17 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
             responder = randomNodeId();
         }
 
+
         final PopulationNode<State> initiatorPopulationNode = getNode(initiator);
+        State initiatorPopulationNodeState = initiatorPopulationNode.getState();
         final PopulationNode<State> responderPopulationNode = getNode(responder);
+        State responderPopulationNodeState = responderPopulationNode.getState();
         final PopulationLink<State> link = population.getEdge(initiatorPopulationNode, responderPopulationNode);
         LOGGER.debug(link);
         // Conduct interaction for given pair of agents
         final boolean result = interact(initiatorPopulationNode, responderPopulationNode, link);
         if (result) {
+            LOGGER.info(String.format("Interaction [ %s:%s -- %s:%s ]", initiatorPopulationNode.getNodeName(), initiatorPopulationNodeState, responderPopulationNode.getNodeName(), responderPopulationNodeState));
             LOGGER.debug("[randomScheduler:interact] " + (System.currentTimeMillis() - start) + " ms");
         }
         return result;

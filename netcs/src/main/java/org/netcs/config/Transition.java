@@ -57,13 +57,6 @@ public class Transition {
 
     @Override
     public String toString() {
-        return "Transition{" +
-                "'" + node1 + "\'" +
-                "-['" + link + "\']" +
-                "-'" + node2 + "\'" +
-                ">>'" + node1New + "\'" +
-                "-['" + linkNew + "\']" +
-                "-'" + node2New + "\'" +
-                '}';
+        return String.format("Transition{%s-[%s]-%s>>%s-[%s]-%s}", node1, link, node2, node1New, linkNew, node2New);
     }
 }
