@@ -42,7 +42,7 @@ public class ExperimentExecutor {
                 experiment.setLookingForCircle(true);
             } else if (configFileName.toLowerCase().contains("star")) {
                 experiment.setLookingForStar(true);
-            } else if (configFileName.toLowerCase().contains("cyclecover")) {
+            } else if (configFileName.toLowerCase().contains("cycle-cover")) {
                 experiment.setLookingForCycleCover(true);
             }
             Thread thread = new Thread(experiment);

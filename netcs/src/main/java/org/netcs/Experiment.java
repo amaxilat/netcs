@@ -245,18 +245,23 @@ public class Experiment implements Runnable {
         }
 
         private boolean checkCycleCover() {
-            LOGGER.info("Check for CycleCover");
+            System.out.println("Check for CycleCover");
 
             Boolean result = false;
             long edgeCount;
+            long degreeZeroNodes = 0;
             long degreeTwoNodes = 0;
             long totalDegree = 0;
 
             final Collection<PopulationNode<String>> nodes = getPopulation().getNodes();
             for (final PopulationNode<String> node : nodes) {
                 final long nodeDegree = getPopulation().getDegree(node);
-                if (nodeDegree == 2) {
+                if (nodeDegree == 0) {
+                    degreeZeroNodes++;
+                } else if (nodeDegree == 2) {
                     degreeTwoNodes++;
+                } else {
+                    return false;
                 }
                 totalDegree += nodeDegree;
             }
@@ -264,8 +269,7 @@ public class Experiment implements Runnable {
             LOGGER.info("degrees: '2'=" + degreeTwoNodes + ", total=" + totalDegree + ", edges=" + edgeCount);
 
             //TODO: check for more terminating conditions
-            if (edgeCount == getPopulationSize()
-                    && degreeTwoNodes == getPopulationSize()) {
+            if (degreeTwoNodes + degreeZeroNodes == getPopulationSize()) {
                 LOGGER.info("Detected Terminating Condition: CycleCover");
                 return true;
             }

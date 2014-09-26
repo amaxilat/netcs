@@ -10,7 +10,7 @@ Transition_function:
 (l, l, 0, q2, w, 1)
 (w, q2, 1, q2, w, 1)
 (w, q1, 1, q2, l, 1)
-(l, q1, 0, l', q1', 0)
+(l, q1, 0, l', q1', 1)
 (l', l, 0, l'', l, 0)
 (l', w, 0, l'', w, 0)
 (l', q1, 0, l'', q1, 0)

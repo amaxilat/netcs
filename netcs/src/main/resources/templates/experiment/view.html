@@ -77,9 +77,9 @@
                 <h3>Finished:<span th:text="${experiment.finished}"></span></h3>
                 <th:block th:if="${experiment.finished}!=true">
                     <script>
-                        setTimeout(function (){
+                        setTimeout(function () {
                             location.reload();
-                        },10000);
+                        }, 10000);
                     </script>
 
                 </th:block>
