@@ -5,4 +5,4 @@ jdk:
 
 
 before_install:
-  - mvn install:install-file -Dfile=netcs/lib/jgrapht-core-0.9.0.jar -DgroupId=jgrapht -DartifactId=jgrapht -Dversion=0.9.0
+  - mvn install:install-file -Dfile=netcs/lib/jgrapht-core-0.9.0.jar -DgroupId=jgrapht -DartifactId=jgrapht -Dversion=0.9.0 -Dpackaging=jar
