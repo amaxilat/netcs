@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by amaxilatis on 9/20/14.
@@ -42,9 +40,13 @@ public class ExperimentController {
 
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String home(final Map<String, Object> model) {
-        return "redirect:/experiment";
+    @RequestMapping(value = "/experiment", method = RequestMethod.GET)
+    public String listExperiments(final Map<String, Object> model) {
+        model.put("title", "Experiments");
+        Set<Experiment> experimentSet = new HashSet<>();
+        experimentSet.addAll(experimentExecutor.getExperiments());
+        model.put("experiments", experimentSet);
+        return "experiment/list";
     }
 
     @RequestMapping(value = "/experiment/add", method = RequestMethod.GET)
@@ -58,13 +60,9 @@ public class ExperimentController {
         return "add";
     }
 
-    @RequestMapping(value = "/experiment", method = RequestMethod.GET)
-    public String experiment(final Map<String, Object> model) {
-        return "redirect:/experiment/0";
-    }
-
     @RequestMapping(value = "/experiment/{experimentId}", method = RequestMethod.GET)
     public String viewExperiment(final Map<String, Object> model, @PathVariable("experimentId") int experimentId) {
+        model.put("title", experimentId);
 
         Experiment experiment = experimentExecutor.getExperiment(experimentId);
 
@@ -94,6 +92,7 @@ public class ExperimentController {
         }
         model.put("logs", sb.toString());
         model.put("edges", edges);
+        model.put("experiment", experiment);
         model.put("experimentId", experimentId);
         return "experiment/view";
     }

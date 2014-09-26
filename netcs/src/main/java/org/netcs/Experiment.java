@@ -30,19 +30,91 @@ public class Experiment implements Runnable {
     private final String configFileName;
     private final String outputFile;
     private final Long nodeCount;
+    private final String algorithmName;
     private StringBuilder detailedStatistics;
     private ConfigurableExperiment experiment;
+    private boolean finished;
+    private boolean lookingForStar;
+    private boolean lookingForCircle;
+    private boolean lookingForCycleCover;
+    private boolean lookingForLine;
 
     public ConfigurableExperiment getExperiment() {
         return experiment;
     }
 
     public Experiment(String configFileName, String outputFile, Long nodeCount, final long index) {
+        this.algorithmName = configFileName.replaceAll(".prop", "");
         this.configFileName = configFileName;
         this.outputFile = outputFile;
         this.nodeCount = nodeCount;
         this.index = index;
+        this.finished = false;
+        this.lookingForStar = false;
+        this.lookingForCircle = false;
+        this.lookingForCycleCover = false;
+        this.lookingForLine = false;
 
+    }
+
+    public long getIndex() {
+        return index;
+    }
+
+    public String getAlgorithmName() {
+        return algorithmName;
+    }
+
+    public String getConfigFileName() {
+        return configFileName;
+    }
+
+    public String getOutputFile() {
+        return outputFile;
+    }
+
+    public Long getNodeCount() {
+        return nodeCount;
+    }
+
+    public StringBuilder getDetailedStatistics() {
+        return detailedStatistics;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public boolean isLookingForStar() {
+        return lookingForStar;
+    }
+
+    public void setLookingForStar(boolean lookingForStar) {
+        this.lookingForStar = lookingForStar;
+    }
+
+    public boolean isLookingForCircle() {
+        return lookingForCircle;
+    }
+
+    public void setLookingForCircle(boolean lookingForCircle) {
+        this.lookingForCircle = lookingForCircle;
+    }
+
+    public boolean isLookingForCycleCover() {
+        return lookingForCycleCover;
+    }
+
+    public void setLookingForCycleCover(boolean lookingForCycleCover) {
+        this.lookingForCycleCover = lookingForCycleCover;
+    }
+
+    public boolean isLookingForLine() {
+        return lookingForLine;
+    }
+
+    public void setLookingForLine(boolean lookingForLine) {
+        this.lookingForLine = lookingForLine;
     }
 
     @Override
@@ -152,18 +224,23 @@ public class Experiment implements Runnable {
         @Override
         protected boolean checkStability() {
 
-            if (checkStar()) {
+            if (lookingForStar && checkStar()) {
+                finished = true;
                 return true;
             }
-            if (checkCircle()) {
+            if (lookingForCircle && checkCircle()) {
+                finished = true;
                 return true;
             }
-            if (checkCycleCover()) {
+            if (lookingForCycleCover && checkCycleCover()) {
+                finished = true;
                 return true;
             }
-            if (checkLine()) {
+            if (lookingForLine && checkLine()) {
+                finished = true;
                 return true;
             }
+            finished = false;
             return false;
         }
 
@@ -306,21 +383,50 @@ public class Experiment implements Runnable {
         }
 
         private Boolean checkLine() {
-            Boolean result = false;
-            int edgeCount = 0;
+            LOGGER.info("Check for Line");
 
-            for (PopulationLink<String> edge : getPopulation().getEdges()) {
-                if (edge.getState().equals("1")) {
-                    edgeCount++;
-                    LOGGER.info("edges:" + edgeCount);
-                    if (edgeCount > getPopulationSize()) return false;
+            Boolean result = false;
+            long edgeCount;
+            long degreeOneNodes = 0;
+            long degreeTwoNodes = 0;
+            long totalDegree = 0;
+
+            final Collection<PopulationNode<String>> nodes = getPopulation().getNodes();
+            for (final PopulationNode<String> node : nodes) {
+                final long nodeDegree = getPopulation().getDegree(node);
+                if (nodeDegree == 1) {
+                    degreeOneNodes++;
+                } else if (nodeDegree == 2) {
+                    degreeTwoNodes++;
                 }
+                totalDegree += nodeDegree;
             }
+            edgeCount = totalDegree / 2;
+            LOGGER.info("degrees: '1'=" + degreeOneNodes + ", '2'=" + degreeTwoNodes + ", total=" + totalDegree + ", edges=" + edgeCount);
+
             //TODO: check for more terminating conditions
-            if (edgeCount == getPopulationSize() - 1) {
+            if (edgeCount == getPopulationSize() - 1
+                    && degreeOneNodes == 2
+                    && degreeTwoNodes == getPopulationSize() - 2) {
                 LOGGER.info("Detected Terminating Condition: Line");
                 return true;
             }
+
+            final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
+            for (final PopulationNode<String> node : getPopulation().getNodes()) {
+                nodesStringBuilder.append(node).append(",");
+            }
+            nodesStringBuilder.append("]");
+            LOGGER.info(nodesStringBuilder.toString());
+
+            final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
+            for (final PopulationLink<String> edge : getPopulation().getEdges()) {
+                if (edge.getState().equals("1")) {
+                    edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
+                }
+            }
+            LOGGER.info(edgesStringBuilder.toString());
+
             return result;
         }
 

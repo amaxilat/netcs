@@ -36,6 +36,15 @@ public class ExperimentExecutor {
             Experiment experiment = new Experiment(configFileName, outputFile, nodeCount, i);
 
             experiments.add(experiment);
+            if (configFileName.toLowerCase().contains("line")) {
+                experiment.setLookingForLine(true);
+            } else if (configFileName.toLowerCase().contains("ring")) {
+                experiment.setLookingForCircle(true);
+            } else if (configFileName.toLowerCase().contains("star")) {
+                experiment.setLookingForStar(true);
+            } else if (configFileName.toLowerCase().contains("cyclecover")) {
+                experiment.setLookingForCycleCover(true);
+            }
             Thread thread = new Thread(experiment);
             thread.start();
             experimentThreads.add(thread);
@@ -57,6 +66,10 @@ public class ExperimentExecutor {
             LOGGER.info("experiment:" + experiment);
         }
         return experiments.get(i);
+    }
+
+    public List<Experiment> getExperiments() {
+        return experiments;
     }
 }
 
