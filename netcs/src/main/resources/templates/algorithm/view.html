@@ -113,12 +113,14 @@
                     <th>Eff. Interactions</th>
                     </thead>
                     <tbody>
-                    <tr th:each="stat :${stats.statistics}">
+                    <th:block th:if="${stats}">
+                        <tr th:each="stat :${stats.statistics}">
 
-                        <td th:text="${stat.time}"></td>
-                        <td th:text="${stat.interactions}"></td>
-                        <td th:text="${stat.effectiveInteractions}"></td>
-                    </tr>
+                            <td th:text="${stat.time}"></td>
+                            <td th:text="${stat.interactions}"></td>
+                            <td th:text="${stat.effectiveInteractions}"></td>
+                        </tr>
+                    </th:block>
                     </tbody>
                 </table>
             </div>
@@ -144,71 +146,74 @@
 
 <script th:inline="javascript" type="text/javascript">
     /*<![CDATA[*/
-    stats = /*[[${stats.statistics}]]*/ {};
+    stats = /*[[${stats.statistics}]]*/ null;
     /*]]>*/
-
-    mystats = [];
-    sizes = [];
-    means = [];
-    for (var i = 0; i != stats.length; i++) {
-        console.log(stats[i].populationSize);
-        if (sizes.indexOf(stats[i].populationSize) == -1) {
-            sizes.push(stats[i].populationSize);
-        }
-        mystats[stats[i].populationSize] = [];
-        means[stats[i].populationSize] = 0;
-    }
-    sizes = sizes.sort(function(a, b){return a-b});
-    sizes.forEach(function (size) {
-        total = 0;
-        count = 0;
+    if (stats != null) {
+        mystats = [];
+        sizes = [];
+        means = [];
         for (var i = 0; i != stats.length; i++) {
-            if (stats[i].populationSize == size) {
-                total = total + stats[i].effectiveInteractions;
-                count = count + 1;
+            console.log(stats[i].populationSize);
+            if (sizes.indexOf(stats[i].populationSize) == -1) {
+                sizes.push(stats[i].populationSize);
             }
+            mystats[stats[i].populationSize] = [];
+            means[stats[i].populationSize] = 0;
         }
-        console.log({'size': size, 'avg': total / count});
-        means.push({'size': size, 'avg': total / count});
-    });
-    effectiveInteractions = [];
-    means.forEach(function (elem) {
-        effectiveInteractions.push(elem.avg);
-    });
-
-    $(function () {
-        $('#chartdiv').highcharts({
-            chart: {
-                type: 'line'
-            },
-            title: {
-                text: 'Monthly Average Temperature'
-            },
-            subtitle: {
-                text: 'Source: WorldClimate.com'
-            },
-            xAxis: {
-                categories: sizes
-            },
-            yAxis: {
-                title: {
-                    text: 'Interactions'
-                }
-            },
-            plotOptions: {
-                line: {
-                    dataLabels: {
-                        enabled: true
-                    },
-                    enableMouseTracking: false
-                }
-            },
-            series: [{
-                name: 'Tokyo',
-                data: effectiveInteractions.slice(effectiveInteractions.length / 2)
-            }]
+        sizes = sizes.sort(function (a, b) {
+            return a - b
         });
-    });
+        sizes.forEach(function (size) {
+            total = 0;
+            count = 0;
+            for (var i = 0; i != stats.length; i++) {
+                if (stats[i].populationSize == size) {
+                    total = total + stats[i].effectiveInteractions;
+                    count = count + 1;
+                }
+            }
+            console.log({'size': size, 'avg': total / count});
+            means.push({'size': size, 'avg': total / count});
+        });
+        effectiveInteractions = [];
+        means.forEach(function (elem) {
+            effectiveInteractions.push(elem.avg);
+        });
+
+        $(function () {
+            $('#chartdiv').highcharts({
+                chart: {
+                    type: 'line'
+                },
+                title: {
+                    text: 'Monthly Average Temperature'
+                },
+                subtitle: {
+                    text: 'Source: WorldClimate.com'
+                },
+                xAxis: {
+                    categories: sizes
+                },
+                yAxis: {
+                    title: {
+                        text: 'Interactions'
+                    }
+                },
+                plotOptions: {
+                    line: {
+                        dataLabels: {
+                            enabled: true
+                        },
+                        enableMouseTracking: false
+                    }
+                },
+                series: [{
+                    name: 'Tokyo',
+                    data: effectiveInteractions.slice(effectiveInteractions.length / 2)
+                }]
+            });
+        });
+    }
 </script>
 </body>
 </html>
