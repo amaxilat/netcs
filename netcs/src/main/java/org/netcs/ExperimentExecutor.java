@@ -88,7 +88,7 @@ public class ExperimentExecutor {
         for (Experiment experiment : experiments) {
             if (experiment.isFinished()) {
                 if (experiment.isStored()) continue;
-                final Algorithm algo = algorithmRepository.findByName("global-star");
+                final Algorithm algo = algorithmRepository.findByName(experiment.getAlgorithmName());
                 AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithm(algo);
                 if (stats == null) {
                     stats = new AlgorithmStatistics();
