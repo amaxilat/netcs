@@ -83,6 +83,11 @@
                     </script>
 
                 </th:block>
+                <h3>Stats:</h3>
+
+                <div>Interactions:<span th:text="${experiment.experiment.interactions}"></span></div>
+                <div>Eff. Interactions:<span th:text="${experiment.experiment.effectiveInteractions}"></span></div>
+
                 <h3>Logs</h3>
                 <pre th:text="${logs}">
 
@@ -197,11 +202,11 @@
     }).style("fill", "#555").style("font-family", "Arial").style("font-size", 12);
 
     var updateLink = function () {
-        this.attr("x1",function (d) {
+        this.attr("x1", function (d) {
             return d.source.x;
-        }).attr("y1",function (d) {
+        }).attr("y1", function (d) {
             return d.source.y;
-        }).attr("x2",function (d) {
+        }).attr("x2", function (d) {
             return d.target.x;
         }).attr("y2", function (d) {
             return d.target.y;

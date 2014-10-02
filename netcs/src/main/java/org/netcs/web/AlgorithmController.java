@@ -2,6 +2,10 @@ package org.netcs.web;
 
 import org.netcs.ExperimentExecutor;
 import org.netcs.config.ConfigFile;
+import org.netcs.model.mongo.Algorithm;
+import org.netcs.model.mongo.AlgorithmRepository;
+import org.netcs.model.mongo.AlgorithmStatistics;
+import org.netcs.model.mongo.AlgorithmStatisticsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +25,10 @@ public class AlgorithmController {
 
     @Autowired
     ExperimentExecutor experimentExecutor;
+    @Autowired
+    AlgorithmRepository algorithmRepository;
+    @Autowired
+    AlgorithmStatisticsRepository algorithmStatisticsRepository;
 
     @PostConstruct
     public void init() throws Exception {
@@ -33,6 +41,10 @@ public class AlgorithmController {
         try {
             final ConfigFile configFile = new ConfigFile("algorithms/" + algorithm + ".prop");
             model.put("configFile", configFile);
+            Algorithm algorithmObj = algorithmRepository.findByName(algorithm);
+            model.put("algorithm", algorithmObj);
+            AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithm(algorithmObj);
+            model.put("stats", stats);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -44,7 +56,12 @@ public class AlgorithmController {
                                   @PathVariable("algorithm") final String algorithm,
                                   @RequestParam("populationSize") final String populationSize
     ) {
-
+        Algorithm algorithmObj = algorithmRepository.findByName(algorithm);
+        if (algorithmObj == null) {
+            algorithmObj = new Algorithm();
+            algorithmObj.setName(algorithm);
+            algorithmRepository.save(algorithmObj);
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {

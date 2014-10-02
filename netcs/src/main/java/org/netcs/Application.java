@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Main class that executes the experiment.
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.PropertySource;
 @EnableAutoConfiguration
 @Configuration
 @ComponentScan
+@EnableScheduling
 @PropertySource("classpath:application.properties")
 public class Application
         implements CommandLineRunner {

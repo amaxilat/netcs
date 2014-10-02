@@ -1,15 +1,24 @@
 package org.netcs;
 
 import org.apache.log4j.Logger;
+import org.netcs.model.mongo.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
  * Main class that executes the experiment.
  */
 public class ExperimentExecutor {
+
+    @Autowired
+    AlgorithmRepository algorithmRepository;
+    @Autowired
+    AlgorithmStatisticsRepository algorithmStatisticsRepository;
 
     /**
      * a log4j logger to print messages.
@@ -59,6 +68,8 @@ public class ExperimentExecutor {
             nodeCount = Long.valueOf(args[2]);
         }
         runExperiment(inputFile, outputFile, nodeCount);
+
+
     }
 
     public Experiment getExperiment(int i) {
@@ -70,6 +81,32 @@ public class ExperimentExecutor {
 
     public List<Experiment> getExperiments() {
         return experiments;
+    }
+
+    @Scheduled(fixedRate = 1000L)
+    public void checker() {
+        for (Experiment experiment : experiments) {
+            if (experiment.isFinished()) {
+                if (experiment.isStored()) continue;
+                final Algorithm algo = algorithmRepository.findByName("global-star");
+                AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithm(algo);
+                if (stats == null) {
+                    stats = new AlgorithmStatistics();
+                    stats.setAlgorithm(algo);
+                    stats.setStatistics(new ArrayList<ExecutionStatistics>());
+                    algorithmStatisticsRepository.save(stats);
+                }
+                final ExecutionStatistics statistics = new ExecutionStatistics();
+                statistics.setEffectiveInteractions(experiment.getExperiment().getEffectiveInteractions());
+                statistics.setInteractions(experiment.getExperiment().getInteractions());
+                statistics.setTime(new Date().getTime());
+                statistics.setPopulationSize((long) experiment.getExperiment().getPopulationSize());
+                stats.getStatistics().add(statistics);
+                algorithmStatisticsRepository.save(stats);
+
+                experiment.setStored(true);
+            }
+        }
     }
 }
 

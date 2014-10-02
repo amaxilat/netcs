@@ -109,12 +109,12 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
                         debugRound();
                     }
                     //if (interactions % 10 == 0) {
-                        final long start = System.currentTimeMillis();
-                        // Check if we have reached a stable state
-                        if (checkStability()) {
-                            break;
-                        }
-                        LOGGER.info("[checkStability] " + (System.currentTimeMillis() - start) + " ms");
+                    final long start = System.currentTimeMillis();
+                    // Check if we have reached a stable state
+                    if (checkStability()) {
+                        break;
+                    }
+                    LOGGER.info("[checkStability] " + (System.currentTimeMillis() - start) + " ms");
                     //}
                 }
 

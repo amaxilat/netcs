@@ -38,6 +38,7 @@ public class Experiment implements Runnable {
     private boolean lookingForCircle;
     private boolean lookingForCycleCover;
     private boolean lookingForLine;
+    private boolean stored;
 
     public ConfigurableExperiment getExperiment() {
         return experiment;
@@ -54,6 +55,7 @@ public class Experiment implements Runnable {
         this.lookingForCircle = false;
         this.lookingForCycleCover = false;
         this.lookingForLine = false;
+        this.stored = false;
 
     }
 
@@ -188,6 +190,13 @@ public class Experiment implements Runnable {
         }
     }
 
+    public boolean isStored() {
+        return stored;
+    }
+
+    public void setStored(boolean stored) {
+        this.stored = stored;
+    }
 
     public class ConfigurableProtocol extends AbstractProtocol<String> {
 
