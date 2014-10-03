@@ -1,5 +1,6 @@
 package org.netcs.web;
 
+import org.apache.log4j.Logger;
 import org.netcs.Experiment;
 import org.netcs.ExperimentExecutor;
 import org.netcs.model.population.PopulationLink;
@@ -12,13 +13,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by amaxilatis on 9/20/14.
  */
 @Controller
 public class ExperimentController {
+    /**
+     * a log4j logger to print messages.
+     */
+    private static final Logger LOGGER = Logger.getLogger(ExperimentController.class);
 
     @Autowired
     ExperimentExecutor experimentExecutor;
@@ -88,7 +97,7 @@ public class ExperimentController {
             }
             br.close();
         } catch (Exception e) {
-
+            LOGGER.error(e, e);
         }
         model.put("logs", sb.toString());
         model.put("edges", edges);

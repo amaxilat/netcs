@@ -32,10 +32,11 @@ public class Application
     private static final Logger LOGGER = Logger.getLogger(Application.class);
 
     public static void main(String[] args) throws Exception {
+        LOGGER.debug("staring netcs...");
         //PropertyConfigurator.configure(Thread.currentThread().getContextClassLoader().getResourceAsStream("log4j.properties"));
 
         SpringApplication.run(Application.class, args);
-
+        LOGGER.debug("netcs started.");
 //        final String inputFile = args[0];
 //        final String outputFile = args[1];
 //        Long nodeCount = null;
