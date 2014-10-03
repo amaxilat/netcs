@@ -39,7 +39,7 @@ public class AlgorithmController {
         model.put("title", "View " + algorithm);
 
         try {
-            final ConfigFile configFile = new ConfigFile("algorithms/" + algorithm + ".prop");
+            final ConfigFile configFile = new ConfigFile(algorithm + ".prop");
             model.put("configFile", configFile);
             Algorithm algorithmObj = algorithmRepository.findByName(algorithm);
             model.put("algorithm", algorithmObj);
