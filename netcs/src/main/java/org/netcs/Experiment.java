@@ -365,6 +365,8 @@ public class Experiment implements Runnable {
                     degreeOneNodes++;
                 } else if (nodeDegree == 2) {
                     degreeTwoNodes++;
+                } else if (nodeDegree > 2) {
+                    return false;
                 }
                 totalDegree += nodeDegree;
             }
@@ -372,7 +374,8 @@ public class Experiment implements Runnable {
             LOGGER.info("degrees: '1'=" + degreeOneNodes + ", '2'=" + degreeTwoNodes + ", total=" + totalDegree + ", edges=" + edgeCount);
 
             //TODO: check for more terminating conditions
-            if (edgeCount == getPopulationSize()) {
+            if (edgeCount == getPopulationSize() &&
+                    degreeTwoNodes == getPopulationSize()) {
                 LOGGER.info("Detected Terminating Condition: Circle");
                 return true;
             }
