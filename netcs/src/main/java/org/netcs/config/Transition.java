@@ -57,6 +57,6 @@ public class Transition {
 
     @Override
     public String toString() {
-        return String.format("Transition{%s-[%s]-%s>>%s-[%s]-%s}", node1, link, node2, node1New, linkNew, node2New);
+        return String.format("(%s, %s, %s, %s, %s, %s)", node1, node2, link, node1New, node2New, linkNew);
     }
 }
