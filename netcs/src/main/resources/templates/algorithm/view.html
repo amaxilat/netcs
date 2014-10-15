@@ -90,11 +90,17 @@
                                                th:value="${configFile.populationSize}"/>
                     </div>
                     <div class="col-md-12">
-                        <!--iterations: <span th:text="${configFile.iterations}"></span>-->
+                        populationSizeEnd: <input type="text" name="populationSizeEnd"
+                                               th:value="${configFile.populationSize}"/>
+                    </div>
+                    <div class="col-md-12">
+                        iterations: <input type="text" name="iterations" value="1"/>
                     </div>
 
                     <div class="col-md-12">
-                        <h4>Transitions <small>(node1, node2, link, node1New, node2New, linkNew)</small></h4>
+                        <h4>Transitions
+                            <small>(node1, node2, link, node1New, node2New, linkNew)</small>
+                        </h4>
 
                         <div th:each="transition : ${configFile.transitions}" th:text="${transition}"></div>
                     </div>
@@ -207,10 +213,12 @@
                         enableMouseTracking: false
                     }
                 },
-                series: [{
-                    name: 'execution time',
-                    data: effectiveInteractions.slice(effectiveInteractions.length / 2)
-                }]
+                series: [
+                    {
+                        name: 'execution time',
+                        data: effectiveInteractions.slice(effectiveInteractions.length / 2)
+                    }
+                ]
             });
         });
     }

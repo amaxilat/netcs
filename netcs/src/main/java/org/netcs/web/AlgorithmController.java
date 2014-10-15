@@ -54,7 +54,9 @@ public class AlgorithmController {
     @RequestMapping(value = "/algorithm/{algorithm}", method = RequestMethod.POST)
     public String startExperiment(final Map<String, Object> model,
                                   @PathVariable("algorithm") final String algorithm,
-                                  @RequestParam("populationSize") final String populationSize
+                                  @RequestParam("populationSize") final String populationSize,
+                                  @RequestParam("populationSizeEnd") final String populationSizeEnd,
+                                  @RequestParam("iterations") final String iterations
     ) {
         Algorithm algorithmObj = algorithmRepository.findByName(algorithm);
         if (algorithmObj == null) {
@@ -66,7 +68,7 @@ public class AlgorithmController {
             @Override
             public void run() {
                 try {
-                    experimentExecutor.start(new String[]{algorithm + ".prop", "exp.out", populationSize, "1"});
+                    experimentExecutor.start(new String[]{algorithm + ".prop", "exp.out", populationSize, iterations, populationSizeEnd});
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

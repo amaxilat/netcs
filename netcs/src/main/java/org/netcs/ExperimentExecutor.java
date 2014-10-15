@@ -34,30 +34,36 @@ public class ExperimentExecutor {
         this.experimentThreads = new ArrayList<>();
     }
 
-    void runExperiment(final String configFileName, final String outputFile, final Long nodeCount) throws FileNotFoundException {
+    void runExperiment(final String configFileName, final String outputFile, Long nodeCount, final long iterations, final long nodeLimit) throws FileNotFoundException {
         for (Thread thread : experimentThreads) {
             thread.stop();
         }
         experimentThreads.clear();
         experiments.clear();
 
-        for (int i = 0; i < 1; i++) {
-            Experiment experiment = new Experiment(configFileName, outputFile, nodeCount, i);
+        int totalCount = 0;
+        do {
+            for (int i = 0; i < iterations; i++) {
+                Experiment experiment = new Experiment(configFileName, outputFile, nodeCount, totalCount++);
 
-            experiments.add(experiment);
-            if (configFileName.toLowerCase().contains("line")) {
-                experiment.setLookingForLine(true);
-            } else if (configFileName.toLowerCase().contains("ring")) {
-                experiment.setLookingForCircle(true);
-            } else if (configFileName.toLowerCase().contains("star")) {
-                experiment.setLookingForStar(true);
-            } else if (configFileName.toLowerCase().contains("cycle-cover")) {
-                experiment.setLookingForCycleCover(true);
+                experiments.add(experiment);
+                if (configFileName.toLowerCase().contains("line")) {
+                    experiment.setLookingForLine(true);
+                } else if (configFileName.toLowerCase().contains("ring")) {
+                    experiment.setLookingForCircle(true);
+                } else if (configFileName.toLowerCase().contains("star")) {
+                    experiment.setLookingForStar(true);
+                } else if (configFileName.toLowerCase().contains("cycle-cover")) {
+                    experiment.setLookingForCycleCover(true);
+                }
+                Thread thread = new Thread(experiment);
+                thread.start();
+                experimentThreads.add(thread);
             }
-            Thread thread = new Thread(experiment);
-            thread.start();
-            experimentThreads.add(thread);
-        }
+            nodeCount += 5;
+        } while (nodeCount < nodeLimit);
+
+
     }
 
     public void start(String[] args) throws Exception {
@@ -66,8 +72,11 @@ public class ExperimentExecutor {
         Long nodeCount = null;
         if (args.length > 2) {
             nodeCount = Long.valueOf(args[2]);
+
         }
-        runExperiment(inputFile, outputFile, nodeCount);
+        Long iterations = Long.valueOf(args[3]);
+        Long nodeLimit = Long.valueOf(args[4]);
+        runExperiment(inputFile, outputFile, nodeCount, iterations, nodeLimit);
 
 
     }

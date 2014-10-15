@@ -72,11 +72,11 @@
         <!-- Main content -->
         <section class="content">
 
-            <div class="col-md-12">
+            <div class="col-md-6">
                 <ul class="media-list">
 
                     <th:block th:each="experiment : ${experiments}">
-                        <li class="media">
+                        <li class="media" th:if="${experiment.finished}">
                             <a class="pull-left" href="#" th:href="'/experiment/'+${experiment.index}">
                                 <img class="media-object"
                                      src="https://openclipart.org/image/300px/svg_to_png/75397/punto.png"
@@ -85,6 +85,32 @@
 
                             <div class="media-body">
                                 <h4 class="media-heading">Experiment <span th:text="${experiment.index}"></span> <small>(<span th:text="${experiment.algorithmName}"></span>)</small></h4>
+                                <!---->
+                                <!--<span th:text="${experiment.outputFile}"></span>-->
+                                <!--<br/>-->
+                                Finished:<span th:text="${experiment.finished}"></span>
+                            </div>
+                        </li>
+                    </th:block>
+
+                </ul>
+            </div>
+
+            <div class="col-md-6">
+                <ul class="media-list">
+
+                    <th:block th:each="experiment : ${experiments}">
+                        <li class="media" th:unless="${experiment.finished}">
+                            <a class="pull-left" href="#" th:href="'/experiment/'+${experiment.index}">
+                                <img class="media-object"
+                                     src="https://openclipart.org/image/300px/svg_to_png/75397/punto.png"
+                                     style="height: 50px"/>
+                            </a>
+
+                            <div class="media-body">
+                                <h4 class="media-heading">Experiment <span th:text="${experiment.index}"></span>
+                                    <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
+                                </h4>
                                 <!---->
                                 <!--<span th:text="${experiment.outputFile}"></span>-->
                                 <!--<br/>-->
@@ -112,6 +138,13 @@
 <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js?2.6.0"></script>
 <script type="text/javascript" src="http://mbostock.github.com/d3/d3.layout.js?2.6.0"></script>
 <script type="text/javascript" src="http://mbostock.github.com/d3/d3.geom.js?2.6.0"></script>
+
+<script>
+    setTimeout(function () {
+        location.reload();
+    }, 10000);
+</script>
+
 
 </body>
 </html>
