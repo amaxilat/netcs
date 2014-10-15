@@ -9,12 +9,15 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Main class that executes the experiment.
  */
 public class ExperimentExecutor {
 
+    private final ExecutorService executor;
     @Autowired
     AlgorithmRepository algorithmRepository;
     @Autowired
@@ -30,6 +33,7 @@ public class ExperimentExecutor {
 
 
     public ExperimentExecutor() {
+        this.executor = Executors.newFixedThreadPool(10);
         this.experiments = new ArrayList<>();
         this.experimentThreads = new ArrayList<>();
     }
@@ -57,7 +61,7 @@ public class ExperimentExecutor {
                     experiment.setLookingForCycleCover(true);
                 }
                 Thread thread = new Thread(experiment);
-                thread.start();
+                executor.submit(thread);
                 experimentThreads.add(thread);
             }
             nodeCount += 5;
