@@ -33,7 +33,7 @@ public class ExperimentExecutor {
 
 
     public ExperimentExecutor() {
-        this.executor = Executors.newFixedThreadPool(10);
+        this.executor = Executors.newFixedThreadPool(3);
         this.experiments = new ArrayList<>();
         this.experimentThreads = new ArrayList<>();
     }
@@ -66,8 +66,6 @@ public class ExperimentExecutor {
             }
             nodeCount += 5;
         } while (nodeCount < nodeLimit);
-
-
     }
 
     public void start(String[] args) throws Exception {
@@ -81,8 +79,6 @@ public class ExperimentExecutor {
         Long iterations = Long.valueOf(args[3]);
         Long nodeLimit = Long.valueOf(args[4]);
         runExperiment(inputFile, outputFile, nodeCount, iterations, nodeLimit);
-
-
     }
 
     public Experiment getExperiment(int i) {

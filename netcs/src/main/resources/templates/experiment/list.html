@@ -73,34 +73,11 @@
         <section class="content">
 
             <div class="col-md-6">
+                <h4>Finished Experiments</h4>
                 <ul class="media-list">
 
                     <th:block th:each="experiment : ${experiments}">
                         <li class="media" th:if="${experiment.finished}">
-                            <a class="pull-left" href="#" th:href="'/experiment/'+${experiment.index}">
-                                <img class="media-object"
-                                     src="https://openclipart.org/image/300px/svg_to_png/75397/punto.png"
-                                     style="height: 50px"/>
-                            </a>
-
-                            <div class="media-body">
-                                <h4 class="media-heading">Experiment <span th:text="${experiment.index}"></span> <small>(<span th:text="${experiment.algorithmName}"></span>)</small></h4>
-                                <!---->
-                                <!--<span th:text="${experiment.outputFile}"></span>-->
-                                <!--<br/>-->
-                                Finished:<span th:text="${experiment.finished}"></span>
-                            </div>
-                        </li>
-                    </th:block>
-
-                </ul>
-            </div>
-
-            <div class="col-md-6">
-                <ul class="media-list">
-
-                    <th:block th:each="experiment : ${experiments}">
-                        <li class="media" th:unless="${experiment.finished}">
                             <a class="pull-left" href="#" th:href="'/experiment/'+${experiment.index}">
                                 <img class="media-object"
                                      src="https://openclipart.org/image/300px/svg_to_png/75397/punto.png"
@@ -114,12 +91,69 @@
                                 <!---->
                                 <!--<span th:text="${experiment.outputFile}"></span>-->
                                 <!--<br/>-->
-                                Finished:<span th:text="${experiment.finished}"></span>
+
+                                Size :<span th:text="${experiment.experiment.populationSize}"></span>
                             </div>
                         </li>
                     </th:block>
 
                 </ul>
+            </div>
+
+            <div class="col-md-6">
+                <div class="col-md-12">
+                    <h4>Running Experiments</h4>
+                    <ul class="media-list">
+                        <th:block th:each="experiment : ${experiments}">
+                            <th:block th:if="${experiment.experiment}!=null">
+                                <li class="media" th:unless="${experiment.finished}">
+                                    <a class="pull-left" href="#" th:href="'/experiment/'+${experiment.index}">
+                                        <img class="media-object"
+                                             src="https://openclipart.org/image/300px/svg_to_png/75397/punto.png"
+                                             style="height: 50px"/>
+                                    </a>
+
+                                    <div class="media-body">
+                                        <h4 class="media-heading">Experiment <span th:text="${experiment.index}"></span>
+                                            <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
+                                        </h4>
+                                        <!---->
+                                        <!--<span th:text="${experiment.outputFile}"></span>-->
+                                        <!--<br/>-->
+                                        Size :<span th:text="${experiment.experiment.populationSize}"></span>,
+                                        Interactions:<span th:text="${experiment.experiment.interactions}"></span>
+                                        Ef. Interactions:<span th:text="${experiment.experiment.effectiveInteractions}"></span>
+                                    </div>
+                                </li>
+                            </th:block>
+                        </th:block>
+                    </ul>
+                </div>
+                <div class="col-md-12">
+                    <h4>Pending Experiments</h4>
+                    <ul class="media-list">
+                        <th:block th:each="experiment : ${experiments}">
+                            <th:block th:unless="${experiment.experiment}!=null">
+                                <li class="media" th:unless="${experiment.finished}">
+                                    <a class="pull-left" href="#" th:href="'/experiment/'+${experiment.index}">
+                                        <img class="media-object"
+                                             src="https://openclipart.org/image/300px/svg_to_png/75397/punto.png"
+                                             style="height: 50px"/>
+                                    </a>
+
+                                    <div class="media-body">
+                                        <h4 class="media-heading">Experiment <span th:text="${experiment.index}"></span>
+                                            <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
+                                        </h4>
+                                        <!---->
+                                        <!--<span th:text="${experiment.outputFile}"></span>-->
+                                        <!--<br/>-->
+                                    </div>
+                                </li>
+                            </th:block>
+                        </th:block>
+                    </ul>
+                </div>
             </div>
         </section>
         <!-- /.content -->

@@ -91,7 +91,7 @@
                     </div>
                     <div class="col-md-12">
                         populationSizeEnd: <input type="text" name="populationSizeEnd"
-                                               th:value="${configFile.populationSize}"/>
+                                                  th:value="${configFile.populationSize}"/>
                     </div>
                     <div class="col-md-12">
                         iterations: <input type="text" name="iterations" value="1"/>
@@ -169,27 +169,44 @@
         sizes = sizes.sort(function (a, b) {
             return a - b
         });
+
+        theoreticalInteractionsN5 = [];
+        theoreticalInteractionsN4 = [];
+        theoreticalInteractionsN3 = [];
+        theoreticalInteractionsN2 = [];
+        theoreticalInteractionsStar = [];
         sizes.forEach(function (size) {
             total = 0;
+            total1 = 0;
             count = 0;
             for (var i = 0; i != stats.length; i++) {
                 if (stats[i].populationSize == size) {
                     total = total + stats[i].effectiveInteractions;
+                    total1 = total1 + stats[i].interactions;
                     count = count + 1;
                 }
             }
-            console.log({'size': size, 'avg': total / count});
-            means.push({'size': size, 'avg': total / count});
+            console.log({'size': size, 'avg': total / count, 'avg1': total1 / count});
+            means.push({'size': size, 'avg': total / count, 'avg1': total1 / count});
+
         });
+
+        interactions = [];
         effectiveInteractions = [];
         means.forEach(function (elem) {
+            theoreticalInteractionsN5.push(Math.pow(elem.size, 5));
+            theoreticalInteractionsN4.push(Math.pow(elem.size, 4));
+            theoreticalInteractionsN3.push(Math.pow(elem.size, 3));
+            theoreticalInteractionsN2.push(Math.pow(elem.size, 2));
+            theoreticalInteractionsStar.push(Math.pow(elem.size, 2) * Math.log(elem.size));
+            interactions.push(elem.avg1);
             effectiveInteractions.push(elem.avg);
         });
 
         $(function () {
             $('#chartdiv').highcharts({
                 chart: {
-                    type: 'line'
+                    type: 'spline'
                 },
                 title: {
                     text: 'Execution Time'
@@ -208,15 +225,45 @@
                 plotOptions: {
                     line: {
                         dataLabels: {
-                            enabled: true
+                            enabled: false
+                        },
+                        marker: {
+                            enabled: false
                         },
                         enableMouseTracking: false
                     }
                 },
                 series: [
                     {
-                        name: 'execution time',
+                        name: 'interactions',
+                        data: interactions.slice(interactions.length / 2)
+                    }, {
+                        name: 'ef. interactions',
                         data: effectiveInteractions.slice(effectiveInteractions.length / 2)
+                    }, {
+                        name: 'Ω(n^5)',
+                        data: theoreticalInteractionsN5.slice(theoreticalInteractionsN5.length / 2),
+                        marker: {
+                            enabled: false
+                        }
+                    }, {
+                        name: 'Ω(n^3)',
+                        data: theoreticalInteractionsN3.slice(theoreticalInteractionsN3.length / 2),
+                        marker: {
+                            enabled: false
+                        }
+                    }, {
+                        name: 'Ω(n^2)',
+                        data: theoreticalInteractionsN2.slice(theoreticalInteractionsN2.length / 2),
+                        marker: {
+                            enabled: false
+                        }
+                    }, {
+                        name: 'Ω(n^2long(n))',
+                        data: theoreticalInteractionsStar.slice(theoreticalInteractionsStar.length / 2),
+                        marker: {
+                            enabled: false
+                        }
                     }
                 ]
             });

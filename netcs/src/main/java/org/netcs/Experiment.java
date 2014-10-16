@@ -16,6 +16,8 @@ import org.netcs.scheduler.RandomScheduler;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Main class that executes the experiment.
@@ -353,29 +355,52 @@ public class Experiment implements Runnable {
             LOGGER.info("Check for Circle");
 
             Boolean result = false;
-            long edgeCount;
-            long degreeOneNodes = 0;
+
             long degreeTwoNodes = 0;
-            long totalDegree = 0;
 
             final Collection<PopulationNode<String>> nodes = getPopulation().getNodes();
             for (final PopulationNode<String> node : nodes) {
-                final long nodeDegree = getPopulation().getDegree(node);
-                if (nodeDegree == 1) {
-                    degreeOneNodes++;
-                } else if (nodeDegree == 2) {
+                if (getPopulation().getDegree(node) == 2) {
                     degreeTwoNodes++;
-                } else if (nodeDegree > 2) {
+                } else {
                     return false;
                 }
-                totalDegree += nodeDegree;
             }
-            edgeCount = totalDegree / 2;
-            LOGGER.info("degrees: '1'=" + degreeOneNodes + ", '2'=" + degreeTwoNodes + ", total=" + totalDegree + ", edges=" + edgeCount);
+            LOGGER.error("degrees: '2'=" + degreeTwoNodes);
+            System.out.println("degrees: '2'=" + degreeTwoNodes);
+
+            final PopulationNode<String> startingNode = getPopulation().getNodes().iterator().next();
+            final Set<String> allNodes = new HashSet<>();
+            final Set<PopulationNode<String>> pendingNodes = new HashSet<>();
+            allNodes.add(startingNode.getNodeName());
+            pendingNodes.add(startingNode);
+            PopulationNode<String> currentNode;
+            while (!pendingNodes.isEmpty()) {
+                currentNode = pendingNodes.iterator().next();
+                for (PopulationNode<String> otherNode : getPopulation().getNodes()) {
+                    final PopulationLink<String> edge = getPopulation().getEdge(currentNode, otherNode);
+                    if (edge != null && edge.getState().equals("1")) {
+                        if (!allNodes.contains(otherNode.getNodeName())) {
+                            pendingNodes.add(otherNode);
+                            allNodes.add(otherNode.getNodeName());
+                        }
+                    }
+                    final PopulationLink<String> edgeInv = getPopulation().getEdge(otherNode, currentNode);
+                    if (edgeInv != null && edgeInv.getState().equals("1")) {
+                        if (!allNodes.contains(otherNode.getNodeName())) {
+                            pendingNodes.add(otherNode);
+                            allNodes.add(otherNode.getNodeName());
+                        }
+                    }
+                }
+                pendingNodes.remove(currentNode);
+            }
+
+            LOGGER.error("degrees: '2'=" + degreeTwoNodes + " connectedNodes=" + allNodes.size());
+            System.out.println("degrees: '2'=" + degreeTwoNodes + " connectedNodes=" + allNodes.size());
 
             //TODO: check for more terminating conditions
-            if (edgeCount == getPopulationSize() &&
-                    degreeTwoNodes == getPopulationSize()) {
+            if (degreeTwoNodes == getPopulationSize() && allNodes.size() == getPopulationSize()) {
                 LOGGER.info("Detected Terminating Condition: Circle");
                 return true;
             }
