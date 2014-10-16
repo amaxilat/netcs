@@ -35,6 +35,10 @@ public class ConfigFile {
      */
     private String scheduler;
     /**
+     * The name of the terminating condition to be used.
+     */
+    private String terminating;
+    /**
      * The size of the population to experiment with.
      */
     private long populationSize;
@@ -65,6 +69,9 @@ public class ConfigFile {
         if (readScheduler(fileName)) {
             LOGGER.error("Could not locate Scheduler");
         }
+//        if (readTerminating(fileName)) {
+//            LOGGER.error("Could not locate Terminating");
+//        }
         if (readPopulationSize(fileName)) {
             LOGGER.error("Could not locate PopulationSize");
         }
@@ -123,6 +130,15 @@ public class ConfigFile {
 
     private boolean readScheduler(final String fileName) throws FileNotFoundException {
         String retVal = readProperty(fileName, "Scheduler");
+        if (retVal != null) {
+            scheduler = retVal;
+            return false;
+        }
+        return true;
+    }
+
+    private boolean readTerminating(final String fileName) throws FileNotFoundException {
+        String retVal = readProperty(fileName, "Terminating");
         if (retVal != null) {
             scheduler = retVal;
             return false;
@@ -196,6 +212,10 @@ public class ConfigFile {
 
     public long getIterations() {
         return iterations;
+    }
+
+    public String getTerminating() {
+        return terminating;
     }
 
     public void setPopulationSize(Long populationSize) {

@@ -41,6 +41,9 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
         // Conduct interaction for given pair of agents
         final boolean result = interact(initiatorPopulationNode, responderPopulationNode, link);
         if (result) {
+            population.fixCacheDegree(initiatorPopulationNode);
+            population.fixCacheDegree(responderPopulationNode);
+
             LOGGER.info(String.format("Interaction [ %s:%s -- %s:%s ]", initiatorPopulationNode.getNodeName(), initiatorPopulationNodeState, responderPopulationNode.getNodeName(), responderPopulationNodeState));
             LOGGER.debug("[randomScheduler:interact] " + (System.currentTimeMillis() - start) + " ms");
         }

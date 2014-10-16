@@ -22,6 +22,7 @@ public class Population<State> {
 
     private final SimpleGraph<PopulationNode<State>, DefaultEdge> graph;
     private final Map<DefaultEdge, PopulationLink<State>> edges;
+    private Map<String, Long> nodesDegree;
 
     /**
      * Constructor that initializes the container of agents.
@@ -29,6 +30,7 @@ public class Population<State> {
     public Population() {
         graph = new SimpleGraph<>(DefaultEdge.class);
         edges = new HashMap<>();
+        nodesDegree = new HashMap<>();
     }
 
     /**
@@ -95,6 +97,10 @@ public class Population<State> {
     }
 
     public long getDegree(PopulationNode<State> node) {
+        return nodesDegree.get(node.getNodeName());
+    }
+
+    public long getActualDegree(PopulationNode<State> node) {
         long nodeDegree = 0;
         for (final PopulationNode<State> node1 : getNodes()) {
             if (node.equals(node1)) {
@@ -106,5 +112,18 @@ public class Population<State> {
             }
         }
         return nodeDegree;
+    }
+
+    public void initCache() {
+        if (nodesDegree == null) {
+            nodesDegree = new HashMap<>();
+        }
+        for (final PopulationNode<State> node : getNodes()) {
+            nodesDegree.put(node.getNodeName(), getActualDegree(node));
+        }
+    }
+
+    public void fixCacheDegree(PopulationNode<State> node) {
+        nodesDegree.put(node.getNodeName(), getActualDegree(node));
     }
 }
