@@ -216,11 +216,13 @@
                 },
                 xAxis: {
                     categories: sizes
+                    , minTickInterval:10
                 },
                 yAxis: {
                     title: {
                         text: 'Interactions'
-                    }
+                    },
+                    min: 0
                 },
                 plotOptions: {
                     line: {
@@ -237,29 +239,34 @@
                     {
                         name: 'interactions',
                         data: interactions.slice(interactions.length / 2)
-                    }, {
-                        name: 'ef. interactions',
+                    }
+                    ,{
+                        name: 'effective interactions',
                         data: effectiveInteractions.slice(effectiveInteractions.length / 2)
-                    }, {
+                    }
+                    , {
                         name: 'Ω(n^5)',
                         data: theoreticalInteractionsN5.slice(theoreticalInteractionsN5.length / 2),
                         marker: {
                             enabled: false
                         }
-                    }, {
-                        name: 'Ω(n^3)',
+                    }
+                    , {
+                        name: 'O(n^3)',
                         data: theoreticalInteractionsN3.slice(theoreticalInteractionsN3.length / 2),
                         marker: {
                             enabled: false
                         }
-                    }, {
-                        name: 'Ω(n^2)',
+                    }
+                    , {
+                        name: 'Θ(n^2)',
                         data: theoreticalInteractionsN2.slice(theoreticalInteractionsN2.length / 2),
                         marker: {
                             enabled: false
                         }
-                    }, {
-                        name: 'Ω(n^2long(n))',
+                    }
+                    , {
+                        name: 'Θ(n^2long(n))',
                         data: theoreticalInteractionsStar.slice(theoreticalInteractionsStar.length / 2),
                         marker: {
                             enabled: false

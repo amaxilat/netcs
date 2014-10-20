@@ -37,7 +37,7 @@ public class ExperimentExecutor {
 
 
     public ExperimentExecutor() {
-        this.executor = Executors.newFixedThreadPool(6);
+        this.executor = Executors.newFixedThreadPool(3);
         this.experiments = new ArrayList<>();
         this.experimentThreads = new ArrayList<>();
     }
