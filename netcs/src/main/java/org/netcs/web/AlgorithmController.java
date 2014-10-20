@@ -80,6 +80,6 @@ public class AlgorithmController {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return "redirect:/experiment/0";
+        return "redirect:/experiment";
     }
 }

@@ -3,6 +3,7 @@ package org.netcs;
 import org.apache.log4j.Logger;
 import org.netcs.model.mongo.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.io.FileNotFoundException;
@@ -16,6 +17,9 @@ import java.util.concurrent.Executors;
  * Main class that executes the experiment.
  */
 public class ExperimentExecutor {
+
+    @Autowired
+    private MessageSendingOperations<String> messagingTemplate;
 
     private final ExecutorService executor;
     @Autowired
@@ -33,7 +37,7 @@ public class ExperimentExecutor {
 
 
     public ExperimentExecutor() {
-        this.executor = Executors.newFixedThreadPool(3);
+        this.executor = Executors.newFixedThreadPool(6);
         this.experiments = new ArrayList<>();
         this.experimentThreads = new ArrayList<>();
     }
@@ -114,7 +118,58 @@ public class ExperimentExecutor {
                 algorithmStatisticsRepository.save(stats);
 
                 experiment.setStored(true);
+                sendWs(experiment);
             }
+        }
+    }
+
+    private void sendWs(Experiment experiment) {
+        final ExperimentResult res = new ExperimentResult();
+
+        res.setId(String.valueOf(experiment.getIndex()));
+        res.setSize(String.valueOf(experiment.getExperiment().getPopulationSize()));
+        res.setEffectiveInteractions(String.valueOf(experiment.getExperiment().getEffectiveInteractions()));
+        res.setInteractions(String.valueOf(experiment.getExperiment().getInteractions()));
+
+        this.messagingTemplate.convertAndSend("/topic/experiments", res);
+    }
+
+    class ExperimentResult {
+        private String id;
+        private String size;
+        private String interactions;
+        private String effectiveInteractions;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getSize() {
+            return size;
+        }
+
+        public void setSize(String size) {
+            this.size = size;
+        }
+
+        public String getInteractions() {
+            return interactions;
+        }
+
+        public void setInteractions(String interactions) {
+            this.interactions = interactions;
+        }
+
+        public String getEffectiveInteractions() {
+            return effectiveInteractions;
+        }
+
+        public void setEffectiveInteractions(String effectiveInteractions) {
+            this.effectiveInteractions = effectiveInteractions;
         }
     }
 }

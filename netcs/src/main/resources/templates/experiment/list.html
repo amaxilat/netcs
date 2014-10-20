@@ -20,6 +20,58 @@
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
     <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
     <![endif]-->
+
+    <script src="sockjs-0.3.4.js"></script>
+    <script src="stomp.js"></script>
+
+    <script type="text/javascript">
+        var stompClient = null;
+
+        function setConnected(connected) {
+            document.getElementById('connect').disabled = connected;
+            document.getElementById('disconnect').disabled = !connected;
+            document.getElementById('conversationDiv').style.visibility = connected ? 'visible' : 'hidden';
+            document.getElementById('response').innerHTML = '';
+        }
+
+        function connect() {
+            var socket = new SockJS('/ws/experiment');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                //setConnected(true);
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/experiments', function (greeting) {
+                    showGreeting(JSON.parse(greeting.body));
+                });
+            });
+        }
+
+        function disconnect() {
+            stompClient.disconnect();
+            //setConnected(false);
+            console.log("Disconnected");
+        }
+
+        function sendName() {
+            stompClient.send("/app/hello", {}, JSON.stringify({'name': "me"}));
+        }
+
+        function numberWithCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function showGreeting(message) {
+            console.log(message.body);
+            $.notify("Experiment " + message.id + " ended after " + numberWithCommas(message.interactions) + " interactions.", "success");
+            $('#exp-' + message.id).removeClass("panel-info");
+            $('#exp-' + message.id).addClass("panel-success");
+//            var response = document.getElementById('response');
+//            var p = document.createElement('p');
+//            p.style.wordWrap = 'break-word';
+//            p.appendChild(document.createTextNode(message));
+//            response.appendChild(p);
+        }
+    </script>
 </head>
 <body class="skin-blue">
 <!-- header logo: style can be found in header.less -->
@@ -72,88 +124,52 @@
         <!-- Main content -->
         <section class="content">
 
-            <div class="col-md-6">
-                <h4>Finished Experiments</h4>
-                <ul class="media-list">
+            <div class="col-md-12">
+                <th:block th:each="experiment : ${experiments}">
 
-                    <th:block th:each="experiment : ${experiments}">
-                        <li class="media" th:if="${experiment.finished}">
-                            <a class="pull-left" href="#" th:href="'/experiment/'+${experiment.index}">
-                                <img class="media-object"
-                                     src="https://openclipart.org/image/300px/svg_to_png/75397/punto.png"
-                                     style="height: 50px"/>
+                    <th:block th:if="${experiment.finished}">
+                        <div class="col-md-2">
+                            <a th:href="'/experiment/'+${experiment.index}" shape="rect">
+                                <div class="panel panel-success" th:id="'exp-'+${experiment.index}">
+                                    <div class="panel-heading">
+                                        <div class="row">
+                                            <div>
+                                                <div class="col-md-11"
+                                                     style="margin-bottom:15px; text-overflow: ellipsis; overflow:hidden; white-space: nowrap;">
+                                                    Experiment <span
+                                                        th:text="${experiment.index}"></span>
+                                                    <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </a>
-
-                            <div class="media-body">
-                                <h4 class="media-heading">Experiment <span th:text="${experiment.index}"></span>
-                                    <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
-                                </h4>
-                                <!---->
-                                <!--<span th:text="${experiment.outputFile}"></span>-->
-                                <!--<br/>-->
-
-                                Size :<span th:text="${experiment.experiment.populationSize}"></span>
-                            </div>
-                        </li>
+                        </div>
                     </th:block>
+                    <th:block th:unless="${experiment.finished}">
+                        <div class="col-md-2">
+                            <a th:href="'/experiment/'+${experiment.index}" shape="rect">
+                                <div class="panel panel-info" th:id="'exp-'+${experiment.index}">
+                                    <div class="panel-heading">
+                                        <div class="row">
+                                            <div>
+                                                <div class="col-md-11"
+                                                     style="margin-bottom:15px; text-overflow: ellipsis; overflow:hidden; white-space: nowrap;">
+                                                    Experiment <span
+                                                        th:text="${experiment.index}"></span>
+                                                    <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
+                                                </div>
 
-                </ul>
-            </div>
-
-            <div class="col-md-6">
-                <div class="col-md-12">
-                    <h4>Running Experiments</h4>
-                    <ul class="media-list">
-                        <th:block th:each="experiment : ${experiments}">
-                            <th:block th:if="${experiment.experiment}!=null">
-                                <li class="media" th:unless="${experiment.finished}">
-                                    <a class="pull-left" href="#" th:href="'/experiment/'+${experiment.index}">
-                                        <img class="media-object"
-                                             src="https://openclipart.org/image/300px/svg_to_png/75397/punto.png"
-                                             style="height: 50px"/>
-                                    </a>
-
-                                    <div class="media-body">
-                                        <h4 class="media-heading">Experiment <span th:text="${experiment.index}"></span>
-                                            <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
-                                        </h4>
-                                        <!---->
-                                        <!--<span th:text="${experiment.outputFile}"></span>-->
-                                        <!--<br/>-->
-                                        Size :<span th:text="${experiment.experiment.populationSize}"></span>,
-                                        Interactions:<span th:text="${experiment.experiment.interactions}"></span>
-                                        Ef. Interactions:<span th:text="${experiment.experiment.effectiveInteractions}"></span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </li>
-                            </th:block>
-                        </th:block>
-                    </ul>
-                </div>
-                <div class="col-md-12">
-                    <h4>Pending Experiments</h4>
-                    <ul class="media-list">
-                        <th:block th:each="experiment : ${experiments}">
-                            <th:block th:unless="${experiment.experiment}!=null">
-                                <li class="media" th:unless="${experiment.finished}">
-                                    <a class="pull-left" href="#" th:href="'/experiment/'+${experiment.index}">
-                                        <img class="media-object"
-                                             src="https://openclipart.org/image/300px/svg_to_png/75397/punto.png"
-                                             style="height: 50px"/>
-                                    </a>
-
-                                    <div class="media-body">
-                                        <h4 class="media-heading">Experiment <span th:text="${experiment.index}"></span>
-                                            <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
-                                        </h4>
-                                        <!---->
-                                        <!--<span th:text="${experiment.outputFile}"></span>-->
-                                        <!--<br/>-->
-                                    </div>
-                                </li>
-                            </th:block>
-                        </th:block>
-                    </ul>
-                </div>
+                                </div>
+                            </a>
+                        </div>
+                    </th:block>
+                </th:block>
             </div>
         </section>
         <!-- /.content -->
@@ -173,10 +189,47 @@
 <script type="text/javascript" src="http://mbostock.github.com/d3/d3.layout.js?2.6.0"></script>
 <script type="text/javascript" src="http://mbostock.github.com/d3/d3.geom.js?2.6.0"></script>
 
+<script src="notify.min.js"></script>
+
 <script>
+
+    $.notify.defaults({
+        // whether to hide the notification on click
+        clickToHide: true,
+        // whether to auto-hide the notification
+        autoHide: true,
+        // if autoHide, hide after milliseconds
+        autoHideDelay: 5000,
+        // show the arrow pointing at the element
+        arrowShow: true,
+        // arrow size in pixels
+        arrowSize: 5,
+        // default positions
+        elementPosition: 'bottom left',
+        globalPosition: 'bottom right',
+        // default style
+        style: 'bootstrap',
+        // default class (string or [string])
+        className: 'error',
+        // show animation
+        showAnimation: 'slideDown',
+        // show animation duration
+        showDuration: 400,
+        // hide animation
+        hideAnimation: 'slideUp',
+        // hide animation duration
+        hideDuration: 200,
+        // padding between element and notification
+        gap: 2
+    });
+
     setTimeout(function () {
-        location.reload();
-    }, 10000);
+        connect()
+    }, 1000);
+//    setTimeout(function () {
+//        location.reload()
+//    }, 60000);
+
 </script>
 
 

@@ -290,7 +290,7 @@ public class Experiment implements Runnable {
                 nodesStringBuilder.append(node).append(",");
             }
             nodesStringBuilder.append("]");
-            LOGGER.info(nodesStringBuilder.toString());
+            LOGGER.debug(nodesStringBuilder.toString());
 
             final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
             for (final PopulationLink<String> edge : getPopulation().getEdges()) {
@@ -298,7 +298,7 @@ public class Experiment implements Runnable {
                     edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
                 }
             }
-            LOGGER.info(edgesStringBuilder.toString());
+            LOGGER.debug(edgesStringBuilder.toString());
 
             return result;
         }
@@ -338,7 +338,7 @@ public class Experiment implements Runnable {
                 nodesStringBuilder.append(node).append(",");
             }
             nodesStringBuilder.append("]");
-            LOGGER.info(nodesStringBuilder.toString());
+            LOGGER.debug(nodesStringBuilder.toString());
 
             final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
             for (final PopulationLink<String> edge : getPopulation().getEdges()) {
@@ -346,7 +346,7 @@ public class Experiment implements Runnable {
                     edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
                 }
             }
-            LOGGER.info(edgesStringBuilder.toString());
+            LOGGER.debug(edgesStringBuilder.toString());
 
             return result;
         }
@@ -410,7 +410,7 @@ public class Experiment implements Runnable {
                 nodesStringBuilder.append(node).append(",");
             }
             nodesStringBuilder.append("]");
-            LOGGER.info(nodesStringBuilder.toString());
+            LOGGER.debug(nodesStringBuilder.toString());
 
             final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
             for (final PopulationLink<String> edge : getPopulation().getEdges()) {
@@ -418,7 +418,7 @@ public class Experiment implements Runnable {
                     edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
                 }
             }
-            LOGGER.info(edgesStringBuilder.toString());
+            LOGGER.debug(edgesStringBuilder.toString());
 
             return result;
         }
@@ -458,7 +458,7 @@ public class Experiment implements Runnable {
                 nodesStringBuilder.append(node).append(",");
             }
             nodesStringBuilder.append("]");
-            LOGGER.info(nodesStringBuilder.toString());
+            LOGGER.debug(nodesStringBuilder.toString());
 
             final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
             for (final PopulationLink<String> edge : getPopulation().getEdges()) {
@@ -466,7 +466,7 @@ public class Experiment implements Runnable {
                     edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
                 }
             }
-            LOGGER.info(edgesStringBuilder.toString());
+            LOGGER.debug(edgesStringBuilder.toString());
 
             return result;
         }

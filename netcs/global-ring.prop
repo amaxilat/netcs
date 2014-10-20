@@ -5,7 +5,7 @@ Initial_Node_State:q0
 Initial_Link_State:0
 Scheduler:RandomScheduler
 Transition_function:
-#rule1                                                                                                                                                                                                                                                                         
+#rule1
 (q0, q0, 0, q1, l_, 1)                                                                                                                                                                                                                                                         
 #rule2                                                                                                                                                                                                                                                                         
 (l, q0, 0, q2, l, 1)                                                                                                                                                                                                                                                           

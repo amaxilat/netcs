@@ -13,11 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by amaxilatis on 9/20/14.
@@ -52,7 +48,12 @@ public class ExperimentController {
     @RequestMapping(value = "/experiment", method = RequestMethod.GET)
     public String listExperiments(final Map<String, Object> model) {
         model.put("title", "Experiments");
-        Set<Experiment> experimentSet = new HashSet<>();
+        SortedSet<Experiment> experimentSet = new TreeSet<Experiment>(new Comparator<Experiment>() {
+            @Override
+            public int compare(Experiment o1, Experiment o2) {
+                return (int) (o1.getIndex() - o2.getIndex());
+            }
+        });
         experimentSet.addAll(experimentExecutor.getExperiments());
         model.put("experiments", experimentSet);
         return "experiment/list";
