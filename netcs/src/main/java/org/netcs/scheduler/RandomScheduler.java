@@ -20,8 +20,10 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
     /**
      * Performs an interaction between an initiator agent and a responder agent.
      * The scheduler uniformly randomly selects the initiator and responder agents from the population.
+     *
+     * @param index
      */
-    public boolean interact() {
+    public boolean interact(long index) {
         final long start = System.currentTimeMillis();
         final int initiator = randomNodeId();
         int responder = randomNodeId();
@@ -48,7 +50,8 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
                 population.fixCacheDegree(responderPopulationNode);
             }
 
-            LOGGER.info(String.format("Interaction [ %s:%s -- %s:%s ]", initiatorPopulationNode.getNodeName(), initiatorPopulationNodeState, responderPopulationNode.getNodeName(), responderPopulationNodeState));
+            population.get
+            LOGGER.info(String.format("[%d] interaction [ %s:%s -- %s:%s ]", index, initiatorPopulationNode.getNodeName(), initiatorPopulationNodeState, responderPopulationNode.getNodeName(), responderPopulationNodeState));
             LOGGER.debug("[randomScheduler:interact] " + (System.currentTimeMillis() - start) + " ms");
         }
         return result;

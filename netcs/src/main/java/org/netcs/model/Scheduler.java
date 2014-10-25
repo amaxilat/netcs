@@ -10,8 +10,9 @@ public interface Scheduler<State> {
     /**
      * Performs an interaction between an initiator agent and a responder agent.
      * The scheduler defines how the initiator and responder agent are selected from the population.
+     * @param index
      */
-    boolean interact();
+    boolean interact(long index);
 
 
 }

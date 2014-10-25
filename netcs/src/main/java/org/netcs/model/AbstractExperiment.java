@@ -8,7 +8,10 @@ import org.netcs.model.population.PopulationLink;
 import org.netcs.model.population.PopulationNode;
 import org.netcs.scheduler.AbstractScheduler;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 
 /**
@@ -23,6 +26,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      * Apache Log4J logger.
      */
     protected static final Logger LOGGER = Logger.getLogger(AbstractExperiment.class);
+    private final long index;
 
     /**
      * Current interactions of experiment.
@@ -53,12 +57,14 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      *
      * @param protocol  the population protocol.
      * @param scheduler the scheduler.
+     * @param index
      */
-    public AbstractExperiment(final ConfigFile configFile, final AbstractProtocol<State> protocol, final AbstractScheduler<State> scheduler) {
+    public AbstractExperiment(final ConfigFile configFile, final AbstractProtocol<State> protocol, final AbstractScheduler<State> scheduler, long index) {
         // Construct population
         this.protocol = protocol;
         this.population = new Population<>(configFile.getPopulationSize());
         this.configFile = configFile;
+        this.index = index;
         // Initialize Population
         initPopulation();
 
@@ -96,13 +102,14 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     public void run() {
         //reportStatus("started");
 
+        final long start = System.currentTimeMillis();
+
         while (true) {
             try {
                 // Invoke scheduler to conduct next interaction
-                boolean interactionStatus = scheduler.interact();
+                boolean interactionStatus = scheduler.interact(index);
 
                 if (interactionStatus) {
-                    LOGGER.info("interact " + interactions + ":" + interactionStatus);
 
                     //printExperimentStatus();
                     effectiveInteractions++;
@@ -110,14 +117,14 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
                     if (LOGGER.getLevel() == Level.DEBUG) {
                         debugRound();
                     }
-                    //if (interactions % 100 == 0) {
-                    final long start = System.currentTimeMillis();
+                    final long startCheckStability = System.currentTimeMillis();
+                    final boolean stability = checkStability();
+                    reportStatus(String.format("[%d] %d:%s:%s", index, interactions, interactionStatus, stability));
                     // Check if we have reached a stable state
-                    if (checkStability()) {
+                    if (stability) {
                         break;
                     }
-                    LOGGER.info("[checkStability] " + (System.currentTimeMillis() - start) + " ms");
-                    //}
+                    reportStatus(String.format("[%d] checkStability %dms", index, System.currentTimeMillis() - startCheckStability));
                 }
 
 
@@ -131,7 +138,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         // Finalize experiment
         completeExperiment();
 
-        reportStatus("Experiment Completed after " + interactions + " rounds.");
+        reportStatus(String.format("[%d] completed-interactions %d", index, interactions));
+        reportStatus(String.format("[%d] completed-time%dms", index, System.currentTimeMillis() - start));
     }
 
     protected void printExperimentStatus() {
@@ -216,5 +224,219 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 
     public long getEffectiveInteractions() {
         return effectiveInteractions;
+    }
+
+
+    protected boolean checkCycleCover() {
+        reportStatus(String.format("[%d] check-cycleCover", index));
+
+        Boolean result = false;
+        long edgeCount;
+        long degreeZeroNodes = 0;
+        long degreeTwoNodes = 0;
+        long totalDegree = 0;
+
+        final Collection<PopulationNode<State>> nodes = getPopulation().getNodes();
+        for (final PopulationNode<State> node : nodes) {
+            final long nodeDegree = getPopulation().getDegree(node);
+            if (nodeDegree == 0) {
+                degreeZeroNodes++;
+            } else if (nodeDegree == 2) {
+                degreeTwoNodes++;
+            } else {
+                return false;
+            }
+            totalDegree += nodeDegree;
+        }
+        edgeCount = totalDegree / 2;
+        reportStatus(String.format("[%d] network-stats {degree2:%d, degreeTotal:%d, edges:%d}", index, degreeTwoNodes, totalDegree, edgeCount));
+
+        //TODO: check for more terminating conditions
+        if (degreeTwoNodes + degreeZeroNodes == getPopulationSize()) {
+            reportStatus(String.format("[%d] terminating-condition cycleCover", index));
+            return true;
+        }
+
+        final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
+        for (final PopulationNode<State> node : getPopulation().getNodes()) {
+            nodesStringBuilder.append(node).append(",");
+        }
+        nodesStringBuilder.append("]");
+        LOGGER.debug(nodesStringBuilder.toString());
+
+        final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
+        for (final PopulationLink<State> edge : getPopulation().getEdges()) {
+            if (edge.getState().equals("1")) {
+                edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
+            }
+        }
+        LOGGER.debug(edgesStringBuilder.toString());
+
+        return result;
+    }
+
+    protected boolean checkStar() {
+        reportStatus(String.format("[%d] check-star", index));
+
+        Boolean result = false;
+        long edgeCount;
+        long degreeOneNodes = 0;
+        long degreeStarCenter = 0;
+        long totalDegree = 0;
+
+        final Collection<PopulationNode<State>> nodes = getPopulation().getNodes();
+        for (final PopulationNode<State> node : nodes) {
+            final long nodeDegree = getPopulation().getDegree(node);
+            if (nodeDegree == 1) {
+                degreeOneNodes++;
+            } else if (nodeDegree == getPopulation().getNodes().size() - 1) {
+                degreeStarCenter++;
+            }
+            totalDegree += nodeDegree;
+        }
+        edgeCount = totalDegree / 2;
+        reportStatus(String.format("[%d] network-status {degree1:%d, degree*:%d, total:%d, edges:%d}", index, degreeOneNodes, degreeStarCenter, totalDegree, edgeCount));
+
+        //TODO: check for more terminating conditions
+        if (edgeCount == getPopulationSize() - 1
+                && degreeOneNodes == getPopulationSize() - 1
+                && degreeStarCenter == 1) {
+            reportStatus(String.format("[%d] terminating-condition star", index));
+            return true;
+        }
+
+        final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
+        for (final PopulationNode<State> node : getPopulation().getNodes()) {
+            nodesStringBuilder.append(node).append(",");
+        }
+        nodesStringBuilder.append("]");
+        LOGGER.debug(nodesStringBuilder.toString());
+
+        final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
+        for (final PopulationLink<State> edge : getPopulation().getEdges()) {
+            if (edge.getState().equals("1")) {
+                edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
+            }
+        }
+        LOGGER.debug(edgesStringBuilder.toString());
+
+        return result;
+    }
+
+    protected boolean checkCircle() {
+        reportStatus(String.format("[%d] check-circle", index));
+
+        Boolean result = false;
+
+        long degreeTwoNodes = 0;
+
+        final Collection<PopulationNode<State>> nodes = getPopulation().getNodes();
+        for (final PopulationNode<State> node : nodes) {
+            if (getPopulation().getDegree(node) == 2) {
+                degreeTwoNodes++;
+            } else {
+                return false;
+            }
+        }
+
+        final PopulationNode<State> startingNode = getPopulation().getNodes().iterator().next();
+        final Set<String> allNodes = new HashSet<>();
+        final Set<PopulationNode<State>> pendingNodes = new HashSet<>();
+        allNodes.add(startingNode.getNodeName());
+        pendingNodes.add(startingNode);
+        PopulationNode<State> currentNode;
+        while (!pendingNodes.isEmpty()) {
+            currentNode = pendingNodes.iterator().next();
+            for (PopulationNode<State> otherNode : getPopulation().getNodes()) {
+                final PopulationLink<State> edge = getPopulation().getEdge(currentNode, otherNode);
+                if (edge != null && edge.getState().equals("1")) {
+                    if (!allNodes.contains(otherNode.getNodeName())) {
+                        pendingNodes.add(otherNode);
+                        allNodes.add(otherNode.getNodeName());
+                    }
+                }
+                final PopulationLink<State> edgeInv = getPopulation().getEdge(otherNode, currentNode);
+                if (edgeInv != null && edgeInv.getState().equals("1")) {
+                    if (!allNodes.contains(otherNode.getNodeName())) {
+                        pendingNodes.add(otherNode);
+                        allNodes.add(otherNode.getNodeName());
+                    }
+                }
+            }
+            pendingNodes.remove(currentNode);
+        }
+
+        reportStatus(String.format("[%d] network-status {degree2:%d, connectedNodes:%d}", index, degreeTwoNodes, allNodes.size()));
+
+        //TODO: check for more terminating conditions
+        if (degreeTwoNodes == getPopulationSize() && allNodes.size() == getPopulationSize()) {
+            reportStatus(String.format("[%d] terminating-condition circle", index));
+            return true;
+        }
+
+        final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
+        for (final PopulationNode<State> node : getPopulation().getNodes()) {
+            nodesStringBuilder.append(node).append(",");
+        }
+        nodesStringBuilder.append("]");
+        LOGGER.debug(nodesStringBuilder.toString());
+
+        final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
+        for (final PopulationLink<State> edge : getPopulation().getEdges()) {
+            if (edge.getState().equals("1")) {
+                edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
+            }
+        }
+        LOGGER.debug(edgesStringBuilder.toString());
+
+        return result;
+    }
+
+    protected Boolean checkLine() {
+        reportStatus(String.format("[%d] check-line", index));
+
+        Boolean result = false;
+        long edgeCount;
+        long degreeOneNodes = 0;
+        long degreeTwoNodes = 0;
+        long totalDegree = 0;
+
+        final Collection<PopulationNode<State>> nodes = getPopulation().getNodes();
+        for (final PopulationNode<State> node : nodes) {
+            final long nodeDegree = getPopulation().getDegree(node);
+            if (nodeDegree == 1) {
+                degreeOneNodes++;
+            } else if (nodeDegree == 2) {
+                degreeTwoNodes++;
+            }
+            totalDegree += nodeDegree;
+        }
+        edgeCount = totalDegree / 2;
+        reportStatus(String.format("[%d] network-status {degree1:%d, degree2:%d, total:%d, edges:%d}", index, degreeOneNodes, degreeTwoNodes, totalDegree, edgeCount));
+
+        //TODO: check for more terminating conditions
+        if (edgeCount == getPopulationSize() - 1
+                && degreeOneNodes == 2
+                && degreeTwoNodes == getPopulationSize() - 2) {
+            reportStatus(String.format("[%d] terminating-condition line", index));
+            return true;
+        }
+
+        final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
+        for (final PopulationNode<State> node : getPopulation().getNodes()) {
+            nodesStringBuilder.append(node).append(",");
+        }
+        nodesStringBuilder.append("]");
+        LOGGER.debug(nodesStringBuilder.toString());
+
+        final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
+        for (final PopulationLink<State> edge : getPopulation().getEdges()) {
+            if (edge.getState().equals("1")) {
+                edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
+            }
+        }
+        LOGGER.debug(edgesStringBuilder.toString());
+
+        return result;
     }
 }

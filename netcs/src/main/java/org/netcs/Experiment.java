@@ -15,9 +15,6 @@ import org.netcs.scheduler.RandomScheduler;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Main class that executes the experiment.
@@ -147,7 +144,7 @@ public class Experiment implements Runnable {
             final ConfigurableProtocol protocol = new ConfigurableProtocol(configFile);
             final RandomScheduler<String> scheduler = new RandomScheduler<>();
             LOGGER.info("experiment:" + index);
-            experiment = new ConfigurableExperiment(configFile, protocol, scheduler);
+            experiment = new ConfigurableExperiment(configFile, protocol, scheduler,index);
             LOGGER.info("willinit:" + index);
             experiment.initPopulation();
             LOGGER.info("initdone:" + index);
@@ -227,9 +224,10 @@ public class Experiment implements Runnable {
          *
          * @param configFile the configuration file to use.
          * @param scheduler  the scheduler to use.
+         * @param index
          */
-        public ConfigurableExperiment(ConfigFile configFile, final AbstractProtocol<String> protocol, AbstractScheduler<String> scheduler) {
-            super(configFile, protocol, scheduler);
+        public ConfigurableExperiment(ConfigFile configFile, final AbstractProtocol<String> protocol, AbstractScheduler<String> scheduler, long index) {
+            super(configFile, protocol, scheduler,index);
         }
 
         @Override
@@ -253,222 +251,6 @@ public class Experiment implements Runnable {
             }
             finished = false;
             return false;
-        }
-
-        private boolean checkCycleCover() {
-            System.out.println("Check for CycleCover");
-
-            Boolean result = false;
-            long edgeCount;
-            long degreeZeroNodes = 0;
-            long degreeTwoNodes = 0;
-            long totalDegree = 0;
-
-            final Collection<PopulationNode<String>> nodes = getPopulation().getNodes();
-            for (final PopulationNode<String> node : nodes) {
-                final long nodeDegree = getPopulation().getDegree(node);
-                if (nodeDegree == 0) {
-                    degreeZeroNodes++;
-                } else if (nodeDegree == 2) {
-                    degreeTwoNodes++;
-                } else {
-                    return false;
-                }
-                totalDegree += nodeDegree;
-            }
-            edgeCount = totalDegree / 2;
-            LOGGER.info("degrees: '2'=" + degreeTwoNodes + ", total=" + totalDegree + ", edges=" + edgeCount);
-
-            //TODO: check for more terminating conditions
-            if (degreeTwoNodes + degreeZeroNodes == getPopulationSize()) {
-                LOGGER.info("Detected Terminating Condition: CycleCover");
-                return true;
-            }
-
-            final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
-            for (final PopulationNode<String> node : getPopulation().getNodes()) {
-                nodesStringBuilder.append(node).append(",");
-            }
-            nodesStringBuilder.append("]");
-            LOGGER.debug(nodesStringBuilder.toString());
-
-            final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
-            for (final PopulationLink<String> edge : getPopulation().getEdges()) {
-                if (edge.getState().equals("1")) {
-                    edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
-                }
-            }
-            LOGGER.debug(edgesStringBuilder.toString());
-
-            return result;
-        }
-
-        private boolean checkStar() {
-            LOGGER.info("Check for Star");
-
-            Boolean result = false;
-            long edgeCount;
-            long degreeOneNodes = 0;
-            long degreeStarCenter = 0;
-            long totalDegree = 0;
-
-            final Collection<PopulationNode<String>> nodes = getPopulation().getNodes();
-            for (final PopulationNode<String> node : nodes) {
-                final long nodeDegree = getPopulation().getDegree(node);
-                if (nodeDegree == 1) {
-                    degreeOneNodes++;
-                } else if (nodeDegree == getPopulation().getNodes().size() - 1) {
-                    degreeStarCenter++;
-                }
-                totalDegree += nodeDegree;
-            }
-            edgeCount = totalDegree / 2;
-            LOGGER.info("degrees: '1'=" + degreeOneNodes + ", '*'=" + degreeStarCenter + ", total=" + totalDegree + ", edges=" + edgeCount);
-
-            //TODO: check for more terminating conditions
-            if (edgeCount == getPopulationSize() - 1
-                    && degreeOneNodes == getPopulationSize() - 1
-                    && degreeStarCenter == 1) {
-                LOGGER.info("Detected Terminating Condition: Star");
-                return true;
-            }
-
-            final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
-            for (final PopulationNode<String> node : getPopulation().getNodes()) {
-                nodesStringBuilder.append(node).append(",");
-            }
-            nodesStringBuilder.append("]");
-            LOGGER.debug(nodesStringBuilder.toString());
-
-            final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
-            for (final PopulationLink<String> edge : getPopulation().getEdges()) {
-                if (edge.getState().equals("1")) {
-                    edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
-                }
-            }
-            LOGGER.debug(edgesStringBuilder.toString());
-
-            return result;
-        }
-
-        private boolean checkCircle() {
-            LOGGER.info("Check for Circle");
-
-            Boolean result = false;
-
-            long degreeTwoNodes = 0;
-
-            final Collection<PopulationNode<String>> nodes = getPopulation().getNodes();
-            for (final PopulationNode<String> node : nodes) {
-                if (getPopulation().getDegree(node) == 2) {
-                    degreeTwoNodes++;
-                } else {
-                    return false;
-                }
-            }
-            LOGGER.error("degrees: '2'=" + degreeTwoNodes);
-            System.out.println("degrees: '2'=" + degreeTwoNodes);
-
-            final PopulationNode<String> startingNode = getPopulation().getNodes().iterator().next();
-            final Set<String> allNodes = new HashSet<>();
-            final Set<PopulationNode<String>> pendingNodes = new HashSet<>();
-            allNodes.add(startingNode.getNodeName());
-            pendingNodes.add(startingNode);
-            PopulationNode<String> currentNode;
-            while (!pendingNodes.isEmpty()) {
-                currentNode = pendingNodes.iterator().next();
-                for (PopulationNode<String> otherNode : getPopulation().getNodes()) {
-                    final PopulationLink<String> edge = getPopulation().getEdge(currentNode, otherNode);
-                    if (edge != null && edge.getState().equals("1")) {
-                        if (!allNodes.contains(otherNode.getNodeName())) {
-                            pendingNodes.add(otherNode);
-                            allNodes.add(otherNode.getNodeName());
-                        }
-                    }
-                    final PopulationLink<String> edgeInv = getPopulation().getEdge(otherNode, currentNode);
-                    if (edgeInv != null && edgeInv.getState().equals("1")) {
-                        if (!allNodes.contains(otherNode.getNodeName())) {
-                            pendingNodes.add(otherNode);
-                            allNodes.add(otherNode.getNodeName());
-                        }
-                    }
-                }
-                pendingNodes.remove(currentNode);
-            }
-
-            LOGGER.error("degrees: '2'=" + degreeTwoNodes + " connectedNodes=" + allNodes.size());
-            System.out.println("degrees: '2'=" + degreeTwoNodes + " connectedNodes=" + allNodes.size());
-
-            //TODO: check for more terminating conditions
-            if (degreeTwoNodes == getPopulationSize() && allNodes.size() == getPopulationSize()) {
-                LOGGER.info("Detected Terminating Condition: Circle");
-                return true;
-            }
-
-            final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
-            for (final PopulationNode<String> node : getPopulation().getNodes()) {
-                nodesStringBuilder.append(node).append(",");
-            }
-            nodesStringBuilder.append("]");
-            LOGGER.debug(nodesStringBuilder.toString());
-
-            final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
-            for (final PopulationLink<String> edge : getPopulation().getEdges()) {
-                if (edge.getState().equals("1")) {
-                    edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
-                }
-            }
-            LOGGER.debug(edgesStringBuilder.toString());
-
-            return result;
-        }
-
-        private Boolean checkLine() {
-            LOGGER.info("Check for Line");
-
-            Boolean result = false;
-            long edgeCount;
-            long degreeOneNodes = 0;
-            long degreeTwoNodes = 0;
-            long totalDegree = 0;
-
-            final Collection<PopulationNode<String>> nodes = getPopulation().getNodes();
-            for (final PopulationNode<String> node : nodes) {
-                final long nodeDegree = getPopulation().getDegree(node);
-                if (nodeDegree == 1) {
-                    degreeOneNodes++;
-                } else if (nodeDegree == 2) {
-                    degreeTwoNodes++;
-                }
-                totalDegree += nodeDegree;
-            }
-            edgeCount = totalDegree / 2;
-            LOGGER.info("degrees: '1'=" + degreeOneNodes + ", '2'=" + degreeTwoNodes + ", total=" + totalDegree + ", edges=" + edgeCount);
-
-            //TODO: check for more terminating conditions
-            if (edgeCount == getPopulationSize() - 1
-                    && degreeOneNodes == 2
-                    && degreeTwoNodes == getPopulationSize() - 2) {
-                LOGGER.info("Detected Terminating Condition: Line");
-                return true;
-            }
-
-            final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
-            for (final PopulationNode<String> node : getPopulation().getNodes()) {
-                nodesStringBuilder.append(node).append(",");
-            }
-            nodesStringBuilder.append("]");
-            LOGGER.debug(nodesStringBuilder.toString());
-
-            final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
-            for (final PopulationLink<String> edge : getPopulation().getEdges()) {
-                if (edge.getState().equals("1")) {
-                    edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
-                }
-            }
-            LOGGER.debug(edgesStringBuilder.toString());
-
-            return result;
         }
 
         @Override

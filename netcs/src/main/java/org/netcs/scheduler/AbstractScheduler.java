@@ -51,8 +51,9 @@ public abstract class AbstractScheduler<State> implements Scheduler<State> {
     /**
      * Performs an interaction between an initiator agent and a responder agent.
      * The scheduler uniformly randomly selects the initiator and responder agents from the population.
+     * @param index
      */
-    public abstract boolean interact();
+    public abstract boolean interact(long index);
 
     /**
      * The size of the population.
