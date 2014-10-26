@@ -50,7 +50,6 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
                 population.fixCacheDegree(responderPopulationNode);
             }
 
-            population.get
             LOGGER.info(String.format("[%d] interaction [ %s:%s -- %s:%s ]", index, initiatorPopulationNode.getNodeName(), initiatorPopulationNodeState, responderPopulationNode.getNodeName(), responderPopulationNodeState));
             LOGGER.debug("[randomScheduler:interact] " + (System.currentTimeMillis() - start) + " ms");
         }
