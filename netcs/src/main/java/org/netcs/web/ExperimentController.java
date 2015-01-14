@@ -1,7 +1,7 @@
 package org.netcs.web;
 
 import org.apache.log4j.Logger;
-import org.netcs.Experiment;
+import org.netcs.RunnableExperiment;
 import org.netcs.ExperimentExecutor;
 import org.netcs.model.population.PopulationLink;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,9 +48,9 @@ public class ExperimentController {
     @RequestMapping(value = "/experiment", method = RequestMethod.GET)
     public String listExperiments(final Map<String, Object> model) {
         model.put("title", "Experiments");
-        SortedSet<Experiment> experimentSet = new TreeSet<Experiment>(new Comparator<Experiment>() {
+        SortedSet<RunnableExperiment> experimentSet = new TreeSet<RunnableExperiment>(new Comparator<RunnableExperiment>() {
             @Override
-            public int compare(Experiment o1, Experiment o2) {
+            public int compare(RunnableExperiment o1, RunnableExperiment o2) {
                 return (int) (o1.getIndex() - o2.getIndex());
             }
         });
@@ -74,7 +74,7 @@ public class ExperimentController {
     public String viewExperiment(final Map<String, Object> model, @PathVariable("experimentId") int experimentId) {
         model.put("title", experimentId);
 
-        Experiment experiment = experimentExecutor.getExperiment(experimentId);
+        RunnableExperiment experiment = experimentExecutor.getExperiment(experimentId);
 
         System.out.println("experiment:" + experiment.getExperiment().getPopulation().getNodes().size() + "nodes");
         model.put("population", experiment.getExperiment().getPopulation());

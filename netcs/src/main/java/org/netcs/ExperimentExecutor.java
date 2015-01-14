@@ -1,12 +1,17 @@
 package org.netcs;
 
 import org.apache.log4j.Logger;
-import org.netcs.model.mongo.*;
+import org.netcs.model.mongo.Algorithm;
+import org.netcs.model.mongo.AlgorithmStatistics;
+import org.netcs.model.mongo.AlgorithmStatisticsRepository;
+import org.netcs.model.mongo.ExecutionStatistics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,8 +28,6 @@ public class ExperimentExecutor {
 
     private final ExecutorService executor;
     @Autowired
-    AlgorithmRepository algorithmRepository;
-    @Autowired
     AlgorithmStatisticsRepository algorithmStatisticsRepository;
 
     /**
@@ -32,18 +35,23 @@ public class ExperimentExecutor {
      */
     private static final Logger LOGGER = Logger.getLogger(ExperimentExecutor.class);
 
-    private List<Experiment> experiments;
+    private List<RunnableExperiment> experiments;
+    private List<AdvancedRunnableExperiment> advancedExperiments;
     private List<Thread> experimentThreads;
+    private List<Thread> advancedExperimentThreads;
 
 
     public ExperimentExecutor() {
         this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         this.experiments = new ArrayList<>();
+        this.advancedExperiments = new ArrayList<>();
         this.experimentThreads = new ArrayList<>();
+        this.advancedExperimentThreads = new ArrayList<>();
     }
 
-    void runExperiment(final String configFileName, final String outputFile, Long nodeCount, final long iterations, final long nodeLimit) throws FileNotFoundException {
-        for (Thread thread : experimentThreads) {
+    void runExperiment(final Algorithm algorithm, Long nodeCount, final long iterations, final long nodeLimit) throws FileNotFoundException {
+        final String configFileName = algorithm.getName();
+        for (final Thread thread : experimentThreads) {
             thread.stop();
         }
         experimentThreads.clear();
@@ -52,17 +60,24 @@ public class ExperimentExecutor {
         int totalCount = 0;
         do {
             for (int i = 0; i < iterations; i++) {
-                Experiment experiment = new Experiment(configFileName, outputFile, nodeCount, totalCount++);
+                RunnableExperiment experiment = new RunnableExperiment(algorithm.getName(), algorithm.getConfigFile(), nodeCount, totalCount++);
+                //write statistics to file
+                try {
+                    final FileWriter fw = new FileWriter("outfile." + i);
+                    experiment.setFileWriter(fw);
+                } catch (IOException e) {
+                    LOGGER.error(e, e);
+                }
 
                 experiments.add(experiment);
                 if (configFileName.toLowerCase().contains("line")) {
-                    experiment.setLookingForLine(true);
+                    experiment.getExperiment().setLookingForLine(true);
                 } else if (configFileName.toLowerCase().contains("ring")) {
-                    experiment.setLookingForCircle(true);
+                    experiment.getExperiment().setLookingForCircle(true);
                 } else if (configFileName.toLowerCase().contains("star")) {
-                    experiment.setLookingForStar(true);
+                    experiment.getExperiment().setLookingForStar(true);
                 } else if (configFileName.toLowerCase().contains("cycle-cover")) {
-                    experiment.setLookingForCycleCover(true);
+                    experiment.getExperiment().setLookingForCycleCover(true);
                 }
                 Thread thread = new Thread(experiment);
                 executor.submit(thread);
@@ -72,40 +87,68 @@ public class ExperimentExecutor {
         } while (nodeCount < nodeLimit);
     }
 
-    public void start(String[] args) throws Exception {
-        final String inputFile = args[0];
-        final String outputFile = args[1];
-        Long nodeCount = null;
-        if (args.length > 2) {
-            nodeCount = Long.valueOf(args[2]);
-
+    void runExperiment2(final Algorithm algorithm, Long nodeCount, final long iterations, final long nodeLimit) throws FileNotFoundException {
+        final String configFileName = algorithm.getName();
+        for (final Thread thread : advancedExperimentThreads) {
+            thread.stop();
         }
-        Long iterations = Long.valueOf(args[3]);
-        Long nodeLimit = Long.valueOf(args[4]);
-        runExperiment(inputFile, outputFile, nodeCount, iterations, nodeLimit);
+        advancedExperimentThreads.clear();
+        advancedExperiments.clear();
+
+        int totalCount = 0;
+        do {
+            for (int i = 0; i < iterations; i++) {
+                AdvancedRunnableExperiment experiment = new AdvancedRunnableExperiment(algorithm.getName(), algorithm.getConfigFile(), nodeCount, totalCount++);
+                //write statistics to file
+                try {
+                    final FileWriter fw = new FileWriter("outfile." + i);
+                    experiment.setFileWriter(fw);
+                } catch (IOException e) {
+                    LOGGER.error(e, e);
+                }
+
+                advancedExperiments.add(experiment);
+
+                Thread thread = new Thread(experiment);
+                advancedExperimentThreads.add(thread);
+                experiment.getExperiment().setLookingForSize(true);
+                LOGGER.info("setting Looking for size " + experiment.getExperiment().isLookingForSize());
+                executor.submit(thread);
+            }
+            nodeCount += 10;
+        } while (nodeCount < nodeLimit);
     }
 
-    public Experiment getExperiment(int i) {
-        for (Experiment experiment : experiments) {
+    public void start(final Algorithm algorithm, final Long nodeCount, final Long iterations, final Long nodeLimit) throws Exception {
+        runExperiment(algorithm, nodeCount, iterations, nodeLimit);
+    }
+
+    public void start2(final Algorithm algorithm, final Long nodeCount, final Long iterations, final Long nodeLimit) throws Exception {
+        runExperiment2(algorithm, nodeCount, iterations, nodeLimit);
+    }
+
+
+    public RunnableExperiment getExperiment(int i) {
+        for (RunnableExperiment experiment : experiments) {
             LOGGER.info("experiment:" + experiment);
         }
         return experiments.get(i);
     }
 
-    public List<Experiment> getExperiments() {
+    public List<RunnableExperiment> getExperiments() {
         return experiments;
     }
 
     @Scheduled(fixedRate = 1000L)
     public void checker() {
-        for (Experiment experiment : experiments) {
+        for (RunnableExperiment experiment : experiments) {
             if (experiment.isFinished()) {
                 if (experiment.isStored()) continue;
-                final Algorithm algo = algorithmRepository.findByName(experiment.getAlgorithmName());
-                AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithm(algo);
+                AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(experiment.getAlgorithmName());
                 if (stats == null) {
                     stats = new AlgorithmStatistics();
-                    stats.setAlgorithm(algo);
+                    stats.setAlgorithm(new Algorithm());
+                    stats.getAlgorithm().setName(experiment.getAlgorithmName());
                     stats.setStatistics(new ArrayList<ExecutionStatistics>());
                     algorithmStatisticsRepository.save(stats);
                 }
@@ -123,7 +166,36 @@ public class ExperimentExecutor {
         }
     }
 
-    private void sendWs(Experiment experiment) {
+    @Scheduled(fixedRate = 1000L)
+    public void checker2() {
+        for (AdvancedRunnableExperiment experiment : advancedExperiments) {
+            if (experiment.isFinished()) {
+                if (experiment.isStored()) continue;
+                AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(experiment.getAlgorithmName());
+                if (stats == null) {
+                    stats = new AlgorithmStatistics();
+                    stats.setAlgorithm(new Algorithm());
+                    stats.getAlgorithm().setName(experiment.getAlgorithmName());
+                    stats.setStatistics(new ArrayList<ExecutionStatistics>());
+                    algorithmStatisticsRepository.save(stats);
+                }
+                final ExecutionStatistics statistics = new ExecutionStatistics();
+                statistics.setEffectiveInteractions(experiment.getExperiment().getEffectiveInteractions());
+                statistics.setInteractions(experiment.getExperiment().getInteractions());
+                statistics.setTime(new Date().getTime());
+                statistics.setPopulationSize((long) experiment.getExperiment().getPopulationSize());
+                statistics.setSuccess(experiment.getExperiment().getSuccess());
+                statistics.setTerminationMessage(experiment.getExperiment().getTerminationMessage());
+                stats.getStatistics().add(statistics);
+                algorithmStatisticsRepository.save(stats);
+
+                experiment.setStored(true);
+                sendWs(experiment);
+            }
+        }
+    }
+
+    private void sendWs(final RunnableExperiment experiment) {
         final ExperimentResult res = new ExperimentResult();
 
         res.setId(String.valueOf(experiment.getIndex()));

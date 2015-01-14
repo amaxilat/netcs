@@ -12,6 +12,8 @@ public class ExecutionStatistics {
     private Long interactions;
     private Long effectiveInteractions;
     private Long populationSize;
+    private Boolean success;
+    private String terminationMessage;
 
     public String getId() {
         return id;
@@ -51,5 +53,21 @@ public class ExecutionStatistics {
 
     public void setPopulationSize(Long populationSize) {
         this.populationSize = populationSize;
+    }
+
+    public void setSuccess(Boolean success) {
+        this.success = success;
+    }
+
+    public Boolean isSuccess() {
+        return (success == null || success);
+    }
+
+    public void setTerminationMessage(String terminationMessage) {
+        this.terminationMessage = terminationMessage;
+    }
+
+    public String getTerminationMessage() {
+        return terminationMessage;
     }
 }

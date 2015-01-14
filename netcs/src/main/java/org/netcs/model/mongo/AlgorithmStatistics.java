@@ -12,6 +12,7 @@ public class AlgorithmStatistics {
 
     private Algorithm algorithm;
     private List<ExecutionStatistics> statistics;
+    private int version;
 
     public String getId() {
         return id;
@@ -35,5 +36,22 @@ public class AlgorithmStatistics {
 
     public void setStatistics(List<ExecutionStatistics> statistics) {
         this.statistics = statistics;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    @Override
+    public String toString() {
+        return "AlgorithmStatistics{" +
+                "algorithm=" + algorithm +
+                ", id='" + id + '\'' +
+                ", version=" + version +
+                '}';
     }
 }

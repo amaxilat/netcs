@@ -2,9 +2,14 @@ package org.netcs.model.mongo;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.List;
+
 public interface AlgorithmStatisticsRepository extends MongoRepository<AlgorithmStatistics, String> {
-    public AlgorithmStatistics findById(String id);
+    List<AlgorithmStatistics> findAll();
 
-    public AlgorithmStatistics findByAlgorithm(Algorithm algorithm);
+    AlgorithmStatistics findById(String id);
 
+    AlgorithmStatistics findByAlgorithm(Algorithm algorithm);
+
+    AlgorithmStatistics findByAlgorithmName(String algorithm);
 }

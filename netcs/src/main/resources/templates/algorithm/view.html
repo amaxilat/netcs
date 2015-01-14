@@ -74,24 +74,27 @@
 
             <div class="col-md-6">
 
-                <form method="post">
+                <form th:action="'/algorithm2/'+${stats.algorithm.name}" method="post">
 
                     <div class="col-md-12">
-                        initialNodeState: <span th:text="${configFile.initialNodeState}"></span>
+                        version: <span th:text="${stats.version}"></span>
                     </div>
                     <div class="col-md-12">
-                        initialLinkState: <span th:text="${configFile.initialLinkState}"></span>
+                        initialNodeState: <span th:text="${stats.algorithm.configFile.initialNodeState}"></span>
                     </div>
                     <div class="col-md-12">
-                        scheduler: <span th:text="${configFile.scheduler}"></span>
+                        initialLinkState: <span th:text="${stats.algorithm.configFile.initialLinkState}"></span>
+                    </div>
+                    <div class="col-md-12">
+                        scheduler: <span th:text="${stats.algorithm.configFile.scheduler}"></span>
                     </div>
                     <div class="col-md-12">
                         populationSize: <input type="text" name="populationSize"
-                                               th:value="${configFile.populationSize}"/>
+                                               th:value="${stats.algorithm.configFile.populationSize}"/>
                     </div>
                     <div class="col-md-12">
                         populationSizeEnd: <input type="text" name="populationSizeEnd"
-                                                  th:value="${configFile.populationSize}"/>
+                                                  th:value="${stats.algorithm.configFile.populationSize}"/>
                     </div>
                     <div class="col-md-12">
                         iterations: <input type="text" name="iterations" value="1"/>
@@ -102,7 +105,8 @@
                             <small>(node1, node2, link, node1New, node2New, linkNew)</small>
                         </h4>
 
-                        <div th:each="transition : ${configFile.transitions}" th:text="${transition}"></div>
+                        <div th:each="transition : ${stats.algorithm.configFile.transitions}"
+                             th:text="${transition}"></div>
                     </div>
 
                     <input class="form-control" type="submit" value="Start and view"/>
@@ -117,15 +121,21 @@
                     <th>Time</th>
                     <th>Interactions</th>
                     <th>Eff. Interactions</th>
+                    <th>Success</th>
                     </thead>
                     <tbody>
                     <th:block th:if="${stats}">
-                        <tr th:each="stat :${stats.statistics}">
-
-                            <td th:text="${stat.time}"></td>
-                            <td th:text="${stat.interactions}"></td>
-                            <td th:text="${stat.effectiveInteractions}"></td>
-                        </tr>
+                        <th:block th:each="stat :${stats.statistics}">
+                            <tr>
+                                <td th:text="${stat.time}"></td>
+                                <td th:text="${stat.interactions}"></td>
+                                <td th:text="${stat.effectiveInteractions}"></td>
+                                <td th:text="${stat.success}"></td>
+                            </tr>
+                            <tr th:class="text-center">
+                                <td th:colspan="4" th:text="${stat.terminationMessage}"></td>
+                            </tr>
+                        </th:block>
                     </th:block>
                     </tbody>
                 </table>
@@ -216,7 +226,7 @@
                 },
                 xAxis: {
                     categories: sizes
-                    , minTickInterval:10
+                    , minTickInterval: 10
                 },
                 yAxis: {
                     title: {

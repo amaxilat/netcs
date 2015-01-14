@@ -61,6 +61,11 @@ public abstract class AbstractProtocol<State> {
      */
     public boolean interact(final PopulationNode<State> initiator, final PopulationNode<State> responder, final PopulationLink<State> link) {
         final StateTriple<State> startingState = new StateTriple<>(initiator.getState(), responder.getState(), link.getState());
+        if (initiator.getState().equals("l") && responder.getState().equals("q0")) {
+            initiator.incCount1();
+        } else if (initiator.getState().equals("l") && responder.getState().equals("q1")) {
+            initiator.incCount2();
+        }
         final StateTriple<State> newState = transitions.get(startingState);
         //System.out.println(startingState);
         // undefined interaction

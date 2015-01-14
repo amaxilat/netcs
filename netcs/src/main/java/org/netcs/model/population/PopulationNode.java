@@ -9,6 +9,8 @@ public class PopulationNode<State> {
      */
     private final String nodeName;
     private State state;
+    private int count1;
+    private int count2;
 
     /**
      * Name Constructor.
@@ -17,6 +19,8 @@ public class PopulationNode<State> {
      */
     public PopulationNode(final String nodeName) {
         this.nodeName = nodeName;
+        this.count1 = 0;
+        this.count2 = 0;
     }
 
     public State getState() {
@@ -50,5 +54,21 @@ public class PopulationNode<State> {
 
     public String getNodeName() {
         return nodeName;
+    }
+
+    public void incCount1() {
+        count1++;
+    }
+
+    public void incCount2() {
+        count2++;
+    }
+
+    public int getCount1() {
+        return count1;
+    }
+
+    public int getCount2() {
+        return count2;
     }
 }

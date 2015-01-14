@@ -28,6 +28,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     protected static final Logger LOGGER = Logger.getLogger(AbstractExperiment.class);
     private final long index;
 
+    private static final long B_ADVANTAGE = 1;
+
     /**
      * Current interactions of experiment.
      */
@@ -51,6 +53,15 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     private final ConfigFile configFile;
     protected String resultString;
 
+    protected boolean lookingForStar;
+    protected boolean lookingForCircle;
+    protected boolean lookingForCycleCover;
+    protected boolean lookingForLine;
+    protected boolean lookingForSize;
+    protected boolean finished;
+    private boolean success;
+    private String terminationMessage;
+
 
     /**
      * Default constructor.
@@ -72,6 +83,13 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         // Connect scheduler
         this.scheduler = scheduler;
         //this.scheduler.connect(this.population, this.protocol);
+
+        this.lookingForStar = false;
+        this.lookingForCircle = false;
+        this.lookingForCycleCover = false;
+        this.lookingForLine = false;
+        this.finished = false;
+
 
         //reportStatus("initialized");
     }
@@ -153,7 +171,33 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      *
      * @return true if the protocol has reached a stable state.
      */
-    protected abstract boolean checkStability();
+    protected boolean checkStability() {
+        LOGGER.info("lookingForSize:" + lookingForSize + " " + lookingForStar);
+
+        if (checkSizes(B_ADVANTAGE)) {
+            finished = true;
+            return true;
+        }
+
+        if (lookingForStar && checkStar()) {
+            finished = true;
+            return true;
+        }
+        if (lookingForCircle && checkCircle()) {
+            finished = true;
+            return true;
+        }
+        if (lookingForCycleCover && checkCycleCover()) {
+            finished = true;
+            return true;
+        }
+        if (lookingForLine && checkLine()) {
+            finished = true;
+            return true;
+        }
+        finished = false;
+        return false;
+    }
 
 
     /**
@@ -392,6 +436,30 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         return result;
     }
 
+    protected boolean checkSizes(final long b) {
+        reportStatus(String.format("[%d] check-sizes", index));
+
+        final Collection<PopulationNode<State>> nodes = getPopulation().getNodes();
+        for (final PopulationNode<State> node : nodes) {
+            if (node.getState().equals("l")) {
+                LOGGER.info(node.getCount1() + ">" + b + " && " + node.getCount1() + "==" + node.getCount2());
+                if (node.getCount1() > b && node.getCount1() == node.getCount2()) {
+                    if (node.getCount1() > getPopulationSize() / 2) {
+                        success = true;
+                    } else {
+                        success = false;
+                    }
+                    terminationMessage = "b=" + B_ADVANTAGE + ",count1=" + node.getCount1() + ",count2=" + node.getCount2();
+
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+
     protected Boolean checkLine() {
         reportStatus(String.format("[%d] check-line", index));
 
@@ -438,5 +506,58 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         LOGGER.debug(edgesStringBuilder.toString());
 
         return result;
+    }
+
+    public boolean isLookingForStar() {
+        return lookingForStar;
+    }
+
+    public void setLookingForStar(boolean lookingForStar) {
+        this.lookingForStar = lookingForStar;
+    }
+
+    public boolean isLookingForCircle() {
+        return lookingForCircle;
+    }
+
+    public void setLookingForCircle(boolean lookingForCircle) {
+        this.lookingForCircle = lookingForCircle;
+    }
+
+    public boolean isLookingForCycleCover() {
+        return lookingForCycleCover;
+    }
+
+    public void setLookingForCycleCover(boolean lookingForCycleCover) {
+        this.lookingForCycleCover = lookingForCycleCover;
+    }
+
+    public boolean isLookingForLine() {
+        return lookingForLine;
+    }
+
+    public void setLookingForLine(boolean lookingForLine) {
+        this.lookingForLine = lookingForLine;
+    }
+
+    public boolean isLookingForSize() {
+        return lookingForSize;
+    }
+
+    public void setLookingForSize(boolean lookingForSize) {
+        LOGGER.info("LookingForSize:" + lookingForSize);
+        this.lookingForSize = lookingForSize;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public boolean getSuccess() {
+        return success;
+    }
+
+    public String getTerminationMessage() {
+        return terminationMessage;
     }
 }

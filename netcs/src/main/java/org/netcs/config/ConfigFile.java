@@ -21,7 +21,7 @@ public class ConfigFile {
     /**
      * The transitions defined in the ConfigFile.
      */
-    private final List<Transition> transitions;
+    private List<Transition> transitions;
     /**
      * The initial State for each node of the network.
      */
@@ -50,6 +50,9 @@ public class ConfigFile {
      * Debug Level on the outputFile.
      */
     private int debugLevel;
+
+    public ConfigFile() {
+    }
 
     /**
      * Creates a ConfigFile object based on the file provided.
@@ -86,6 +89,10 @@ public class ConfigFile {
 
     public List<Transition> getTransitions() {
         return transitions;
+    }
+
+    public void setTransitions(List<Transition> transitions) {
+        this.transitions = transitions;
     }
 
     public String getInitialNodeState() {
@@ -224,5 +231,25 @@ public class ConfigFile {
 
     public int getDebugLevel() {
         return debugLevel;
+    }
+
+    public void setInitialNodeState(String initialNodeState) {
+        this.initialNodeState = initialNodeState;
+    }
+
+    public void setInitialLinkState(String initialLinkState) {
+        this.initialLinkState = initialLinkState;
+    }
+
+    public void setScheduler(String scheduler) {
+        this.scheduler = scheduler;
+    }
+
+    public void setPopulationSize(long populationSize) {
+        this.populationSize = populationSize;
+    }
+
+    public void setIterations(long iterations) {
+        this.iterations = iterations;
     }
 }
