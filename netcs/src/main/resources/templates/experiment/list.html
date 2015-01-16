@@ -139,6 +139,9 @@
                                                     Experiment <span
                                                         th:text="${experiment.index}"></span>
                                                     <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
+                                                    <br/>
+                                                    <br/>
+                                                    <span th:text="${experiment.nodeCount}"></span> Nodes
                                                 </div>
 
                                             </div>
@@ -160,6 +163,63 @@
                                                     Experiment <span
                                                         th:text="${experiment.index}"></span>
                                                     <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
+                                                    <br/>
+                                                    <br/>
+                                                    <span th:text="${experiment.nodeCount}"></span> Nodes
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </th:block>
+                </th:block>
+            </div>
+
+            <div class="col-md-12">
+                <th:block th:each="experiment : ${advancedExperiments}">
+
+                    <th:block th:if="${experiment.finished}">
+                        <div class="col-md-2">
+                            <a th:href="'/experiment/'+${experiment.index}" shape="rect">
+                                <div class="panel panel-success" th:id="'exp-'+${experiment.index}">
+                                    <div class="panel-heading">
+                                        <div class="row">
+                                            <div>
+                                                <div class="col-md-11"
+                                                     style="margin-bottom:15px; text-overflow: ellipsis; overflow:hidden; white-space: nowrap;">
+                                                    Experiment <span
+                                                        th:text="${experiment.index}"></span>
+                                                    <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
+                                                    <br/>
+                                                    <br/>
+                                                    <span th:text="${experiment.nodeCount}"></span> Nodes
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </th:block>
+                    <th:block th:unless="${experiment.finished}">
+                        <div class="col-md-2">
+                            <a th:href="'/experiment/'+${experiment.index}" shape="rect">
+                                <div class="panel panel-info" th:id="'exp-'+${experiment.index}">
+                                    <div class="panel-heading">
+                                        <div class="row">
+                                            <div>
+                                                <div class="col-md-11"
+                                                     style="margin-bottom:15px; text-overflow: ellipsis; overflow:hidden; white-space: nowrap;">
+                                                    Experiment <span
+                                                        th:text="${experiment.index}"></span>
+                                                    <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
+                                                    <br/>
+                                                    <br/>
+                                                    <span th:text="${experiment.nodeCount}"></span> Nodes
                                                 </div>
 
                                             </div>

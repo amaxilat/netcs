@@ -6,6 +6,7 @@ import org.netcs.config.ConfigFile;
 import org.netcs.model.ConfigurableExperiment;
 import org.netcs.model.population.PopulationNode;
 import org.netcs.scheduler.RandomScheduler;
+import org.springframework.messaging.core.MessageSendingOperations;
 
 /**
  * Main class that executes the experiment.
@@ -17,8 +18,8 @@ public class AdvancedRunnableExperiment extends RunnableExperiment {
      */
     private static final Logger LOGGER = Logger.getLogger(AdvancedRunnableExperiment.class);
 
-    public AdvancedRunnableExperiment(final String algorithmName, final ConfigFile configFile, final Long nodeCount, final long index) {
-        super(algorithmName, configFile, nodeCount, index);
+    public AdvancedRunnableExperiment(final String algorithmName, final ConfigFile configFile, final Long nodeCount, final long index, final MessageSendingOperations<String> messagingTemplate) {
+        super(algorithmName, configFile, nodeCount, index,messagingTemplate);
     }
 
     @Override

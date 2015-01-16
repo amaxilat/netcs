@@ -9,6 +9,7 @@ import org.netcs.model.AbstractProtocol;
 import org.netcs.model.ConfigurableExperiment;
 import org.netcs.model.StateTriple;
 import org.netcs.scheduler.RandomScheduler;
+import org.springframework.messaging.core.MessageSendingOperations;
 
 import java.io.FileWriter;
 
@@ -25,6 +26,7 @@ public class RunnableExperiment implements Runnable {
     protected final Long nodeCount;
     protected final ConfigFile configFile;
     private final String algorithmName;
+    private final MessageSendingOperations<String> messagingTemplate;
     protected StringBuilder detailedStatistics;
     protected AbstractExperiment experiment;
     protected boolean stored;
@@ -34,7 +36,8 @@ public class RunnableExperiment implements Runnable {
         return experiment;
     }
 
-    public RunnableExperiment(final String algorithmName, final ConfigFile configFile, final Long nodeCount, final long index) {
+    public RunnableExperiment(final String algorithmName, final ConfigFile configFile, final Long nodeCount, final long index, final MessageSendingOperations<String> messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
         this.algorithmName = algorithmName;
         this.configFile = configFile;
         this.nodeCount = nodeCount;

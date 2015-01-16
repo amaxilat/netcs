@@ -1,8 +1,9 @@
 package org.netcs.web;
 
 import org.apache.log4j.Logger;
-import org.netcs.RunnableExperiment;
+import org.netcs.AdvancedRunnableExperiment;
 import org.netcs.ExperimentExecutor;
+import org.netcs.RunnableExperiment;
 import org.netcs.model.population.PopulationLink;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -13,7 +14,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Created by amaxilatis on 9/20/14.
@@ -48,14 +54,23 @@ public class ExperimentController {
     @RequestMapping(value = "/experiment", method = RequestMethod.GET)
     public String listExperiments(final Map<String, Object> model) {
         model.put("title", "Experiments");
-        SortedSet<RunnableExperiment> experimentSet = new TreeSet<RunnableExperiment>(new Comparator<RunnableExperiment>() {
+        SortedSet<RunnableExperiment> experimentSet = new TreeSet<>(new Comparator<RunnableExperiment>() {
             @Override
             public int compare(RunnableExperiment o1, RunnableExperiment o2) {
                 return (int) (o1.getIndex() - o2.getIndex());
             }
         });
         experimentSet.addAll(experimentExecutor.getExperiments());
+
+        SortedSet<AdvancedRunnableExperiment> advancedExperimentSet = new TreeSet<>(new Comparator<AdvancedRunnableExperiment>() {
+            @Override
+            public int compare(AdvancedRunnableExperiment o1, AdvancedRunnableExperiment o2) {
+                return (int) (o1.getIndex() - o2.getIndex());
+            }
+        });
+        advancedExperimentSet.addAll(experimentExecutor.getAdvancedExperiments());
         model.put("experiments", experimentSet);
+        model.put("advancedExperiments", advancedExperimentSet);
         return "experiment/list";
     }
 

@@ -42,7 +42,7 @@ public class ExperimentExecutor {
 
 
     public ExperimentExecutor() {
-        this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        this.executor = Executors.newFixedThreadPool(3);
         this.experiments = new ArrayList<>();
         this.advancedExperiments = new ArrayList<>();
         this.experimentThreads = new ArrayList<>();
@@ -60,7 +60,7 @@ public class ExperimentExecutor {
         int totalCount = 0;
         do {
             for (int i = 0; i < iterations; i++) {
-                RunnableExperiment experiment = new RunnableExperiment(algorithm.getName(), algorithm.getConfigFile(), nodeCount, totalCount++);
+                RunnableExperiment experiment = new RunnableExperiment(algorithm.getName(), algorithm.getConfigFile(), nodeCount, totalCount++, messagingTemplate);
                 //write statistics to file
                 try {
                     final FileWriter fw = new FileWriter("outfile." + i);
@@ -83,11 +83,11 @@ public class ExperimentExecutor {
                 executor.submit(thread);
                 experimentThreads.add(thread);
             }
-            nodeCount += 5;
+            nodeCount += 50;
         } while (nodeCount < nodeLimit);
     }
 
-    void runExperiment2(final Algorithm algorithm, Long nodeCount, final long iterations, final long nodeLimit) throws FileNotFoundException {
+    void runExperiment2(final Algorithm algorithm, Long startNodeCount, final long iterations, final long nodeLimit) throws FileNotFoundException {
         final String configFileName = algorithm.getName();
         for (final Thread thread : advancedExperimentThreads) {
             thread.stop();
@@ -96,9 +96,9 @@ public class ExperimentExecutor {
         advancedExperiments.clear();
 
         int totalCount = 0;
-        do {
-            for (int i = 0; i < iterations; i++) {
-                AdvancedRunnableExperiment experiment = new AdvancedRunnableExperiment(algorithm.getName(), algorithm.getConfigFile(), nodeCount, totalCount++);
+        for (int i = 0; i < iterations; i++) {
+            for (Long nodeCount = startNodeCount; nodeCount < nodeLimit; nodeCount += 50) {
+                AdvancedRunnableExperiment experiment = new AdvancedRunnableExperiment(algorithm.getName(), algorithm.getConfigFile(), nodeCount, totalCount++, messagingTemplate);
                 //write statistics to file
                 try {
                     final FileWriter fw = new FileWriter("outfile." + i);
@@ -115,8 +115,7 @@ public class ExperimentExecutor {
                 LOGGER.info("setting Looking for size " + experiment.getExperiment().isLookingForSize());
                 executor.submit(thread);
             }
-            nodeCount += 10;
-        } while (nodeCount < nodeLimit);
+        }
     }
 
     public void start(final Algorithm algorithm, final Long nodeCount, final Long iterations, final Long nodeLimit) throws Exception {
@@ -137,6 +136,10 @@ public class ExperimentExecutor {
 
     public List<RunnableExperiment> getExperiments() {
         return experiments;
+    }
+
+    public List<AdvancedRunnableExperiment> getAdvancedExperiments() {
+        return advancedExperiments;
     }
 
     @Scheduled(fixedRate = 1000L)
@@ -191,6 +194,8 @@ public class ExperimentExecutor {
 
                 experiment.setStored(true);
                 sendWs(experiment);
+                advancedExperiments.remove(experiment);
+                return;
             }
         }
     }

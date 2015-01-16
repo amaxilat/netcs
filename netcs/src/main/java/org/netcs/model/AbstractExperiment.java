@@ -7,6 +7,7 @@ import org.netcs.model.population.Population;
 import org.netcs.model.population.PopulationLink;
 import org.netcs.model.population.PopulationNode;
 import org.netcs.scheduler.AbstractScheduler;
+import org.springframework.messaging.core.MessageSendingOperations;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -61,6 +62,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     protected boolean finished;
     private boolean success;
     private String terminationMessage;
+    private PopulationNode<State> leaderNode;
+    private MessageSendingOperations<String> messagingTemplate;
 
 
     /**
@@ -68,7 +71,6 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      *
      * @param protocol  the population protocol.
      * @param scheduler the scheduler.
-     * @param index
      */
     public AbstractExperiment(final ConfigFile configFile, final AbstractProtocol<State> protocol, final AbstractScheduler<State> scheduler, long index) {
         // Construct population
