@@ -44,7 +44,7 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
         // Conduct interaction for given pair of agents
         final boolean result = interact(initiatorPopulationNode, responderPopulationNode, link);
         if (initiatorPopulationNode.getState().equals("l")) {
-            LOGGER.info(String.format("[%d] interaction [ %s:%s -- %s:%s ] c1:%d c2:%d", index, initiatorPopulationNode.getNodeName(), initiatorPopulationNodeState, responderPopulationNode.getNodeName(), responderPopulationNodeState, initiatorPopulationNode.getCount1(), initiatorPopulationNode.getCount2()));
+            LOGGER.debug(String.format("[%d] interaction [ %s:%s -- %s:%s ] c1:%d c2:%d", index, initiatorPopulationNode.getNodeName(), initiatorPopulationNodeState, responderPopulationNode.getNodeName(), responderPopulationNodeState, initiatorPopulationNode.getCount1(), initiatorPopulationNode.getCount2()));
         }
         if (result) {
             final State newState = link.getState();
@@ -53,7 +53,7 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
                 population.fixCacheDegree(responderPopulationNode);
             }
 
-            LOGGER.info(String.format("[%d] interaction [ %s:%s -- %s:%s ]", index, initiatorPopulationNode.getNodeName(), initiatorPopulationNodeState, responderPopulationNode.getNodeName(), responderPopulationNodeState));
+            LOGGER.debug(String.format("[%d] interaction [ %s:%s -- %s:%s ]", index, initiatorPopulationNode.getNodeName(), initiatorPopulationNodeState, responderPopulationNode.getNodeName(), responderPopulationNodeState));
             LOGGER.debug("[randomScheduler:interact] " + (System.currentTimeMillis() - start) + " ms");
         }
         return result;

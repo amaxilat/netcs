@@ -154,8 +154,6 @@ public class AlgorithmController {
         }
         for (Long aLong : totalExperiments.keySet()) {
             final Double totalSuccessfulExperiments = successfulExperiments.get(aLong);
-            System.out.println("totalSuccessfulExperiments:" + totalSuccessfulExperiments + " " + aLong + " " + totalExperiments.get(aLong));
-            System.out.println("successfulExperiments:" + successfulExperiments + " " + totalExperiments);
             successfulExperiments.put(aLong, totalSuccessfulExperiments / totalExperiments.get(aLong));
         }
         response.append("size;experiments;failureRate\n");

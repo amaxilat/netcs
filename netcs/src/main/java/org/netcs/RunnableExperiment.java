@@ -31,12 +31,15 @@ public class RunnableExperiment implements Runnable {
     protected AbstractExperiment experiment;
     protected boolean stored;
     protected FileWriter fileWriter;
+    protected final LookupService lookupService;
 
     public AbstractExperiment getExperiment() {
         return experiment;
     }
 
-    public RunnableExperiment(final String algorithmName, final ConfigFile configFile, final Long nodeCount, final long index, final MessageSendingOperations<String> messagingTemplate) {
+    public RunnableExperiment(final String algorithmName, final ConfigFile configFile, final Long nodeCount, final long index, final MessageSendingOperations<String> messagingTemplate
+            , final LookupService lookupService) {
+        this.lookupService = lookupService;
         this.messagingTemplate = messagingTemplate;
         this.algorithmName = algorithmName;
         this.configFile = configFile;
@@ -48,7 +51,7 @@ public class RunnableExperiment implements Runnable {
         final ConfigurableProtocol protocol = new ConfigurableProtocol(configFile);
         final RandomScheduler<String> scheduler = new RandomScheduler<>();
         LOGGER.info("experiment:" + index);
-        experiment = new ConfigurableExperiment(configFile, protocol, scheduler, index);
+        experiment = new ConfigurableExperiment(configFile, protocol, scheduler, index,lookupService);
 
     }
 

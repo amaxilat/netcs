@@ -2,7 +2,9 @@ package org.netcs.model;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.netcs.LookupService;
 import org.netcs.config.ConfigFile;
+import org.netcs.model.population.MemoryPopulation;
 import org.netcs.model.population.Population;
 import org.netcs.model.population.PopulationLink;
 import org.netcs.model.population.PopulationNode;
@@ -72,10 +74,10 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      * @param protocol  the population protocol.
      * @param scheduler the scheduler.
      */
-    public AbstractExperiment(final ConfigFile configFile, final AbstractProtocol<State> protocol, final AbstractScheduler<State> scheduler, long index) {
+    public AbstractExperiment(final ConfigFile configFile, final AbstractProtocol<State> protocol, final AbstractScheduler<State> scheduler, long index, final LookupService lookupService) {
         // Construct population
         this.protocol = protocol;
-        this.population = new Population<>(configFile.getPopulationSize());
+        this.population = new MemoryPopulation<State>(configFile.getPopulationSize());
         this.configFile = configFile;
         this.index = index;
         // Initialize Population
@@ -113,7 +115,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
             LOGGER.debug(edge);
         }
 
-        population.initCache();
+        population.initCache(index);
     }
 
     /**
@@ -139,12 +141,12 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
                     }
                     final long startCheckStability = System.currentTimeMillis();
                     final boolean stability = checkStability();
-                    reportStatus(String.format("[%d] %d:%s:%s", index, interactions, interactionStatus, stability));
+                    //reportStatus(String.format("[%d] %d:%s:%s", index, interactions, interactionStatus, stability));
                     // Check if we have reached a stable state
                     if (stability) {
                         break;
                     }
-                    reportStatus(String.format("[%d] checkStability %dms", index, System.currentTimeMillis() - startCheckStability));
+                    //reportStatus(String.format("[%d] checkStability %dms", index, System.currentTimeMillis() - startCheckStability));
                 }
 
 
@@ -174,7 +176,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      * @return true if the protocol has reached a stable state.
      */
     protected boolean checkStability() {
-        LOGGER.info("lookingForSize:" + lookingForSize + " " + lookingForStar);
+        LOGGER.debug("lookingForSize:" + lookingForSize + " " + lookingForStar);
 
         if (checkSizes(B_ADVANTAGE)) {
             finished = true;
@@ -439,12 +441,12 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     }
 
     protected boolean checkSizes(final long b) {
-        reportStatus(String.format("[%d] check-sizes", index));
+        //reportStatus(String.format("[%d] check-sizes", index));
 
         final Collection<PopulationNode<State>> nodes = getPopulation().getNodes();
         for (final PopulationNode<State> node : nodes) {
             if (node.getState().equals("l")) {
-                LOGGER.info(node.getCount1() + ">" + b + " && " + node.getCount1() + "==" + node.getCount2());
+                //reportStatus(String.format("[%d] %d>%d && %d==%d", index, node.getCount1(), b, node.getCount1(), node.getCount2()));
                 if (node.getCount1() > b && node.getCount1() == node.getCount2()) {
                     if (node.getCount1() > getPopulationSize() / 2) {
                         success = true;
@@ -547,7 +549,6 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     }
 
     public void setLookingForSize(boolean lookingForSize) {
-        LOGGER.info("LookingForSize:" + lookingForSize);
         this.lookingForSize = lookingForSize;
     }
 

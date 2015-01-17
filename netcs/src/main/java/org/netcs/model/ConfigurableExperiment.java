@@ -1,6 +1,7 @@
 package org.netcs.model;
 
 
+import org.netcs.LookupService;
 import org.netcs.config.ConfigFile;
 import org.netcs.model.population.PopulationLink;
 import org.netcs.model.population.PopulationNode;
@@ -15,8 +16,8 @@ public class ConfigurableExperiment extends AbstractExperiment<String, AbstractP
      * @param scheduler  the scheduler to use.
      * @param index
      */
-    public ConfigurableExperiment(ConfigFile configFile, final AbstractProtocol<String> protocol, AbstractScheduler<String> scheduler, long index) {
-        super(configFile, protocol, scheduler, index);
+    public ConfigurableExperiment(ConfigFile configFile, final AbstractProtocol<String> protocol, AbstractScheduler<String> scheduler, long index,final LookupService lookupService) {
+        super(configFile, protocol, scheduler, index,lookupService);
     }
 
     @Override

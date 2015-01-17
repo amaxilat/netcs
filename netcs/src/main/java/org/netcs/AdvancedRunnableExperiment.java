@@ -18,8 +18,9 @@ public class AdvancedRunnableExperiment extends RunnableExperiment {
      */
     private static final Logger LOGGER = Logger.getLogger(AdvancedRunnableExperiment.class);
 
-    public AdvancedRunnableExperiment(final String algorithmName, final ConfigFile configFile, final Long nodeCount, final long index, final MessageSendingOperations<String> messagingTemplate) {
-        super(algorithmName, configFile, nodeCount, index,messagingTemplate);
+    public AdvancedRunnableExperiment(final String algorithmName, final ConfigFile configFile, final Long nodeCount, final long index, final MessageSendingOperations<String> messagingTemplate
+            , final LookupService lookupService) {
+        super(algorithmName, configFile, nodeCount, index, messagingTemplate, lookupService);
     }
 
     @Override
@@ -45,15 +46,10 @@ public class AdvancedRunnableExperiment extends RunnableExperiment {
             //prepare experiment
             final ConfigurableProtocol protocol = new ConfigurableProtocol(configFile);
             final RandomScheduler<String> scheduler = new RandomScheduler<>();
-            LOGGER.info("experiment:" + index);
-            experiment = new ConfigurableExperiment(configFile, protocol, scheduler, index);
-            LOGGER.info("willinit:" + index);
+            experiment = new ConfigurableExperiment(configFile, protocol, scheduler, index, lookupService);
             experiment.initPopulation();
-            PopulationNode node = (PopulationNode) experiment.getPopulation().getNodes().iterator().next();
-            LOGGER.info("Set Leader: " + node);
+            final PopulationNode node = (PopulationNode) experiment.getPopulation().getNodes().iterator().next();
             node.setState("l");
-
-            LOGGER.info("initdone:" + index);
             //run experiment
             experiment.run();
 

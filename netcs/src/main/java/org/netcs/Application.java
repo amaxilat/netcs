@@ -31,6 +31,11 @@ public class Application
      */
     private static final Logger LOGGER = Logger.getLogger(Application.class);
 
+    @Bean
+    LookupService lookupService() {
+        return new LookupService();
+    }
+
     public static void main(String[] args) throws Exception {
         LOGGER.debug("staring netcs...");
         //PropertyConfigurator.configure(Thread.currentThread().getContextClassLoader().getResourceAsStream("log4j.properties"));
