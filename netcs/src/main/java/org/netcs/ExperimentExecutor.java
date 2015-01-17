@@ -47,10 +47,11 @@ public class ExperimentExecutor {
 
 
     public ExperimentExecutor() {
-        this.executors = Runtime.getRuntime().availableProcessors() > 2 ? Runtime.getRuntime().availableProcessors() - 2 : 1;
+//        this.executors = Runtime.getRuntime().availableProcessors() > 2 ? Runtime.getRuntime().availableProcessors() - 2 : 1;
+        this.executors = 3  ;
 
         this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(executors);
-        this.count = 10;
+        this.count = 110;
         this.experiments = new ArrayList<>();
         this.advancedExperiments = new ArrayList<>();
         this.experimentThreads = new ArrayList<>();
@@ -99,14 +100,21 @@ public class ExperimentExecutor {
     @Scheduled(fixedRate = 500L)
     void runExperimentsInBackground() {
         if (executor.getActiveCount() < executors) {
-            LOGGER.info("Starting experiment for count" + count);
-            final Algorithm algo = algorithmStatisticsRepository.findByAlgorithmName("counter").getAlgorithm();
-            addExperiment(algo, (long) count);
-            count += 10;
-            count = count % 100;
-            if (count == 0) {
-                count = 10;
+            LOGGER.info("Starting experiment for " + count + " nodes.");
+            AlgorithmStatistics algoStatistics = algorithmStatisticsRepository.findByAlgorithmName("counter");
+            final Algorithm algo = algoStatistics.getAlgorithm();
+            int results = 0;
+            for (ExecutionStatistics executionStatistics : algoStatistics.getStatistics()) {
+                if (executionStatistics.getPopulationSize() == count && executionStatistics.getTerminationMessage().contains("b=1,")) {
+                    results++;
+                }
             }
+
+            if (results < count) {
+                addExperiment(algo, (long) count);
+                return;
+            }
+            count += 10;
         }
     }
 
