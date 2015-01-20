@@ -22,6 +22,7 @@ public class LookupService {
     private static final String NODES_FORMAT = "%s%d-nodes";
     private static final String EXPERIMENT_EDGES_FORMAT = "%s%d-edges";
     private static final String EXPERIMENT_EDGE_FORMAT = "%s%d-edge-%s-%s";
+    private static final String COUNT_FORMAT = "%scount-%s";
     /**
      * Connection to REDIS server.
      */
@@ -36,5 +37,13 @@ public class LookupService {
 
     public Long getDegree(final long experimentId, final String nodeName) {
         return (Long) redisTemplate.opsForValue().get(String.format(NODE_DEGREE_FORMAT, CACHE_NAME, experimentId, nodeName));
+    }
+
+    public Long getCount(final String algorithm) {
+        return (Long) redisTemplate.opsForValue().get(String.format(COUNT_FORMAT, CACHE_NAME, algorithm));
+    }
+
+    public void setCount(final String algorithm, final Long count) {
+        redisTemplate.opsForValue().set(String.format(COUNT_FORMAT, CACHE_NAME, algorithm), count);
     }
 }

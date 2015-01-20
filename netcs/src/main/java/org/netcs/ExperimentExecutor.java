@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import javax.annotation.PostConstruct;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -42,21 +43,29 @@ public class ExperimentExecutor {
     private List<Thread> experimentThreads;
     private List<Thread> advancedExperimentThreads;
     private final int executors;
-    private int count;
+    private Long count;
     private int totalCount;
 
 
     public ExperimentExecutor() {
 //        this.executors = Runtime.getRuntime().availableProcessors() > 2 ? Runtime.getRuntime().availableProcessors() - 2 : 1;
-        this.executors = 3  ;
+        this.executors = Runtime.getRuntime().availableProcessors() - 2;
 
         this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(executors);
-        this.count = 110;
         this.experiments = new ArrayList<>();
         this.advancedExperiments = new ArrayList<>();
         this.experimentThreads = new ArrayList<>();
         this.advancedExperimentThreads = new ArrayList<>();
         this.totalCount = 0;
+    }
+
+    @PostConstruct
+    public void init() {
+        this.count = lookupService.getCount("counter");
+        if (count == null) {
+            lookupService.setCount("counter", 110L);
+            this.count = lookupService.getCount("counter");
+        }
     }
 
     void runExperiment(final Algorithm algorithm, Long nodeCount, final long iterations, final long nodeLimit) throws FileNotFoundException {
@@ -99,22 +108,26 @@ public class ExperimentExecutor {
 
     @Scheduled(fixedRate = 500L)
     void runExperimentsInBackground() {
-        if (executor.getActiveCount() < executors) {
-            LOGGER.info("Starting experiment for " + count + " nodes.");
-            AlgorithmStatistics algoStatistics = algorithmStatisticsRepository.findByAlgorithmName("counter");
+        if (executor.getActiveCount() < executors && (executor.getTaskCount() - executor.getCompletedTaskCount()) < 2 * executors) {
+            LOGGER.info("Checking experiments for " + count + " nodes...");
+            final AlgorithmStatistics algoStatistics = algorithmStatisticsRepository.findByAlgorithmName("counter");
             final Algorithm algo = algoStatistics.getAlgorithm();
             int results = 0;
-            for (ExecutionStatistics executionStatistics : algoStatistics.getStatistics()) {
-                if (executionStatistics.getPopulationSize() == count && executionStatistics.getTerminationMessage().contains("b=1,")) {
+            for (final ExecutionStatistics executionStatistics : algoStatistics.getStatistics()) {
+                if (count.equals(executionStatistics.getPopulationSize()) && executionStatistics.getTerminationMessage().contains("b=1,")) {
                     results++;
                 }
             }
 
+            LOGGER.info("Found " + results + " experiments for " + algo.getName() + ".");
             if (results < count) {
-                addExperiment(algo, (long) count);
-                return;
+                LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
+                addExperiment(algo, count);
+            } else {
+                LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + (count + 10) + " nodes.");
+                count += 10;
+                lookupService.setCount(algo.getName(), count);
             }
-            count += 10;
         }
     }
 
@@ -221,7 +234,7 @@ public class ExperimentExecutor {
         }
     }
 
-    @Scheduled(fixedRate = 1000L)
+    @Scheduled(fixedRate = 100L)
     public void checker2() {
         for (AdvancedRunnableExperiment experiment : advancedExperiments) {
             if (experiment.isFinished()) {
