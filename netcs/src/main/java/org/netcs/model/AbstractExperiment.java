@@ -1,5 +1,6 @@
 package org.netcs.model;
 
+import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.netcs.LookupService;
@@ -12,8 +13,10 @@ import org.netcs.scheduler.AbstractScheduler;
 import org.springframework.messaging.core.MessageSendingOperations;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -64,9 +67,12 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     protected boolean finished;
     private boolean success;
     private String terminationMessage;
+    private Map<String, String> terminationStats;
     private PopulationNode<State> leaderNode;
     private MessageSendingOperations<String> messagingTemplate;
-
+    private long cardinalityStart;
+    private boolean hadCardinality;
+    final SummaryStatistics cardinalityFactorStatistics;
 
     /**
      * Default constructor.
@@ -93,8 +99,9 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         this.lookingForCycleCover = false;
         this.lookingForLine = false;
         this.finished = false;
-
-
+        this.terminationStats = new HashMap<>();
+        this.hadCardinality = false;
+        cardinalityFactorStatistics = new SummaryStatistics();
         //reportStatus("initialized");
     }
 
@@ -131,6 +138,9 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
                 // Invoke scheduler to conduct next interaction
                 boolean interactionStatus = scheduler.interact(index);
 
+                checkCardinalities();
+
+
                 if (interactionStatus) {
 
                     //printExperimentStatus();
@@ -152,6 +162,17 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 
                 // increase interactions counter
                 interactions++;
+
+                //exit after too many interactions
+                if (interactions > getPopulationSize() * 10000 * 10) {
+                    finished = true;
+                    success = false;
+                }
+                //exit after a lot of interactions and cardinality
+                if (interactions > getPopulationSize() * 10000 && terminationStats.containsKey("cardinalityExistsFactor")) {
+                    finished = true;
+                    break;
+                }
             } catch (Exception ex) {
                 LOGGER.error("Exception occurred", ex);
             }
@@ -177,11 +198,11 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      */
     protected boolean checkStability() {
         LOGGER.debug("lookingForSize:" + lookingForSize + " " + lookingForStar);
-
-        if (checkSizes(B_ADVANTAGE)) {
-            finished = true;
-            return true;
-        }
+//
+//        if (checkSizes(B_ADVANTAGE)) {
+//            finished = true;
+//            return true;
+//        }
 
         if (lookingForStar && checkStar()) {
             finished = true;
@@ -512,6 +533,53 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         return result;
     }
 
+    protected void checkCardinalities() {
+
+        final Collection<PopulationNode<State>> nodes = getPopulation().getNodes();
+        final Map<State, SummaryStatistics> stateCounts = new HashMap<>();
+        for (PopulationNode<State> node : nodes) {
+            if (!stateCounts.containsKey(node.getState())) {
+                stateCounts.put(node.getState(), new SummaryStatistics());
+            }
+            stateCounts.get(node.getState()).addValue(1);
+        }
+        final double acceptedLevel = getPopulation().getNodes().size() / (double) stateCounts.keySet().size() / ((1.5) * getPopulation().getNodes().size());
+        StringBuilder statesBuilder = new StringBuilder("StateCounts(" + acceptedLevel + "):[ ");
+        boolean highCardinalities = true;
+        for (State state : stateCounts.keySet()) {
+            final double cardinality = stateCounts.get(state).getSum() / getPopulation().getNodes().size();
+            statesBuilder.append(state).append("=").append(cardinality).append(" ");
+            if (cardinality < acceptedLevel) {
+                highCardinalities = false;
+            }
+        }
+        statesBuilder.append("]");
+        if (highCardinalities) {
+
+            final long currentInteraction = this.getInteractions();
+            if (hadCardinality) {
+                final long cardinalityLength = currentInteraction - cardinalityStart;
+                if (cardinalityLength > getPopulation().getNodes().size()) {
+
+                    final double factor = ((double) cardinalityLength / (double) getPopulationSize());
+                    final double prevMax = cardinalityFactorStatistics.getMax();
+                    cardinalityFactorStatistics.addValue(factor);
+                    if (prevMax < cardinalityFactorStatistics.getMax()) {
+                        LOGGER.info(statesBuilder.toString());
+                        LOGGER.info("Interactions: " + interactions + " Factor:" + factor + " max:" + cardinalityFactorStatistics.getMax());
+                        terminationStats.put("cardinalityExistsFactor", String.valueOf(cardinalityFactorStatistics.getMax()));
+                    }
+                }
+            } else {
+                hadCardinality = true;
+                cardinalityStart = currentInteraction;
+            }
+        } else {
+            hadCardinality = false;
+//            LOGGER.info(statesBuilder.toString());
+        }
+    }
+
     public boolean isLookingForStar() {
         return lookingForStar;
     }
@@ -562,5 +630,9 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 
     public String getTerminationMessage() {
         return terminationMessage;
+    }
+
+    public Map<String, String> getTerminationStats() {
+        return terminationStats;
     }
 }

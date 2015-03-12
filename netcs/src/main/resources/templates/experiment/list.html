@@ -136,8 +136,8 @@
                                             <div>
                                                 <div class="col-md-11"
                                                      style="margin-bottom:15px; text-overflow: ellipsis; overflow:hidden; white-space: nowrap;">
-                                                    Experiment <span
-                                                        th:text="${experiment.index}"></span>
+                                                    Experiment
+                                                    <span th:text="${experiment.index}"></span>
                                                     <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
                                                     <br/>
                                                     <br/>
@@ -160,12 +160,22 @@
                                             <div>
                                                 <div class="col-md-11"
                                                      style="margin-bottom:15px; text-overflow: ellipsis; overflow:hidden; white-space: nowrap;">
-                                                    Experiment <span
-                                                        th:text="${experiment.index}"></span>
+                                                    Experiment
+                                                    <span th:text="${experiment.index}"></span>
+
                                                     <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
                                                     <br/>
                                                     <br/>
                                                     <span th:text="${experiment.nodeCount}"></span> Nodes
+                                                    <br/>
+                                                    <span th:if="${experiment.experiment.interactions!=0}">Running...
+                                                        <span class="text-muted">
+                                                            <span th:text="${experiment.experiment.interactions}">
+                                                            </span>
+                                                             interactions
+                                                        </span>
+                                                    </span>
+                                                    <span th:unless="${experiment.experiment.interactions!=0}">Waiting</span>
                                                 </div>
 
                                             </div>

@@ -74,7 +74,7 @@
 
             <div class="col-md-6">
 
-                <form th:action="'/algorithm2/'+${stats.algorithm.name}" method="post">
+                <form th:action="'/algorithm/'+${stats.algorithm.name}" method="post">
 
                     <div class="col-md-12">
                         version: <span th:text="${stats.version}"></span>
@@ -122,15 +122,26 @@
                     <th>Interactions</th>
                     <th>Eff. Interactions</th>
                     <th>Success</th>
+                    <th>Stats</th>
                     </thead>
                     <tbody>
                     <th:block th:if="${stats}">
                         <th:block th:each="stat :${stats.statistics}">
                             <tr>
-                                <td th:text="${stat.time}"></td>
+                                <td th:text="${#dates.format(stat.time)}"></td>
                                 <td th:text="${stat.interactions}"></td>
                                 <td th:text="${stat.effectiveInteractions}"></td>
                                 <td th:text="${stat.success}"></td>
+                                <td>
+                                    <th:block th:each="tstats : ${stat.terminationStats}">
+                                        <a th:href="'?graph='+${tstats.key}">
+                                            <span th:text="${tstats.key}"></span>
+                                        </a>
+                                        :
+                                        <span th:text="${tstats.value}"></span>
+                                        <br/>
+                                    </th:block>
+                                </td>
                             </tr>
                             <tr th:class="text-center">
                                 <td th:colspan="4" th:text="${stat.terminationMessage}"></td>
@@ -154,102 +165,101 @@
 <script th:src="@{/js/bootstrap.min.js}" type="text/javascript"></script>
 <!-- AdminLTE App -->
 <script th:src="@{/js/AdminLTE/app.js}" type="text/javascript"></script>
-<script type="text/javascript" src="http://mbostock.github.com/d3/d3.js?2.6.0"></script>
-<script type="text/javascript" src="http://mbostock.github.com/d3/d3.layout.js?2.6.0"></script>
-<script type="text/javascript" src="http://mbostock.github.com/d3/d3.geom.js?2.6.0"></script>
 <script src="http://code.highcharts.com/highcharts.js"></script>
 <script src="http://code.highcharts.com/modules/exporting.js"></script>
 
 <script th:inline="javascript" type="text/javascript">
     /*<![CDATA[*/
     stats = /*[[${stats.statistics}]]*/ null;
+    targetStat = /*[[${param.graph}]]*/ null;
     /*]]>*/
-    if (stats != null) {
-        mystats = [];
-        sizes = [];
-        means = [];
-        for (var i = 0; i != stats.length; i++) {
-            console.log(stats[i].populationSize);
-            if (sizes.indexOf(stats[i].populationSize) == -1) {
-                sizes.push(stats[i].populationSize);
-            }
-            mystats[stats[i].populationSize] = [];
-            means[stats[i].populationSize] = 0;
-        }
-        sizes = sizes.sort(function (a, b) {
-            return a - b
-        });
-
-        theoreticalInteractionsN5 = [];
-        theoreticalInteractionsN4 = [];
-        theoreticalInteractionsN3 = [];
-        theoreticalInteractionsN2 = [];
-        theoreticalInteractionsStar = [];
-        sizes.forEach(function (size) {
-            total = 0;
-            total1 = 0;
-            count = 0;
+    if (targetStat != null) {
+        if (stats != null) {
+            mystats = [];
+            sizes = [];
+            means = [];
             for (var i = 0; i != stats.length; i++) {
-                if (stats[i].populationSize == size) {
-                    total = total + stats[i].effectiveInteractions;
-                    total1 = total1 + stats[i].interactions;
-                    count = count + 1;
+                console.log(stats[i].populationSize);
+                if (sizes.indexOf(stats[i].populationSize) == -1) {
+                    sizes.push(stats[i].populationSize);
                 }
+                mystats[stats[i].populationSize] = [];
+                means[stats[i].populationSize] = 0;
             }
-            console.log({'size': size, 'avg': total / count, 'avg1': total1 / count});
-            means.push({'size': size, 'avg': total / count, 'avg1': total1 / count});
+            sizes = sizes.sort(function (a, b) {
+                return a - b
+            });
 
-        });
+            theoreticalInteractionsN5 = [];
+            theoreticalInteractionsN4 = [];
+            theoreticalInteractionsN3 = [];
+            theoreticalInteractionsN2 = [];
+            theoreticalInteractionsStar = [];
+            sizes.forEach(function (size) {
+                total = 0;
+                count = 0;
+                for (var i = 0; i != stats.length; i++) {
+                    if (stats[i].populationSize == size) {
+                        if (stats[i]['terminationStats'][targetStat]) {
+                            total = total + parseFloat(stats[i]['terminationStats'][targetStat]);
+                            count = count + 1;
+                        }
+                    }
+                }
+                elem = {'size': size, 'stat': total / count};
+                console.log(elem);
+                means.push(elem);
 
-        interactions = [];
-        effectiveInteractions = [];
-        means.forEach(function (elem) {
-            theoreticalInteractionsN5.push(Math.pow(elem.size, 5));
-            theoreticalInteractionsN4.push(Math.pow(elem.size, 4));
-            theoreticalInteractionsN3.push(Math.pow(elem.size, 3));
-            theoreticalInteractionsN2.push(Math.pow(elem.size, 2));
-            theoreticalInteractionsStar.push(Math.pow(elem.size, 2) * Math.log(elem.size));
-            interactions.push(elem.avg1);
-            effectiveInteractions.push(elem.avg);
-        });
+            });
 
-        $(function () {
-            $('#chartdiv').highcharts({
-                chart: {
-                    type: 'spline'
-                },
-                title: {
-                    text: 'Execution Time'
-                },
-                subtitle: {
-                    text: 'in Effective Interactions'
-                },
-                xAxis: {
-                    categories: sizes
-                    , minTickInterval: 10
-                },
-                yAxis: {
-                    title: {
-                        text: 'Interactions'
+            values = [];
+            effectiveInteractions = [];
+            means.forEach(function (elem) {
+                theoreticalInteractionsN5.push(Math.pow(elem.size, 5));
+                theoreticalInteractionsN4.push(Math.pow(elem.size, 4));
+                theoreticalInteractionsN3.push(Math.pow(elem.size, 3));
+                theoreticalInteractionsN2.push(Math.pow(elem.size, 2));
+                theoreticalInteractionsStar.push(Math.pow(elem.size, 2) * Math.log(elem.size));
+                values.push(elem.stat);
+            });
+
+            $(function () {
+                $('#chartdiv').highcharts({
+                    chart: {
+                        type: 'spline'
                     },
-                    min: 0
-                },
-                plotOptions: {
-                    line: {
-                        dataLabels: {
-                            enabled: false
+                    title: {
+                        text: targetStat
+                    },
+                    subtitle: {
+                        text: targetStat
+                    },
+                    xAxis: {
+                        categories: sizes
+                        , minTickInterval: 10
+                    },
+                    yAxis: {
+                        title: {
+                            text: targetStat
                         },
-                        marker: {
-                            enabled: false
-                        },
-                        enableMouseTracking: false
-                    }
-                },
-                series: [
-                    {
-                        name: 'interactions',
-                        data: interactions.slice(interactions.length / 2)
-                    }
+                        min: 0
+                    },
+                    plotOptions: {
+                        line: {
+                            dataLabels: {
+                                enabled: false
+                            },
+                            marker: {
+                                enabled: false
+                            },
+                            enableMouseTracking: false
+                        }
+                    },
+                    series: [
+                        {
+                            name: targetStat,
+                            data: values.slice(values.length / 2)
+                        }
 //                    ,{
 //                        name: 'effective interactions',
 //                        data: effectiveInteractions.slice(effectiveInteractions.length / 2)
@@ -275,16 +285,17 @@
 //                            enabled: false
 //                        }
 //                    }
-                    , {
-                        name: 'n^2long(n)',
-                        data: theoreticalInteractionsStar.slice(theoreticalInteractionsStar.length / 2),
-                        marker: {
-                            enabled: false
-                        }
-                    }
-                ]
+//                        , {
+//                            name: 'n^2long(n)',
+//                            data: theoreticalInteractionsStar.slice(theoreticalInteractionsStar.length / 2),
+//                            marker: {
+//                                enabled: false
+//                            }
+//                        }
+                    ]
+                });
             });
-        });
+        }
     }
 </script>
 </body>

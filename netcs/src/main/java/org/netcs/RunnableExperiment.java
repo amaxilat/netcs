@@ -43,6 +43,8 @@ public class RunnableExperiment implements Runnable {
         this.messagingTemplate = messagingTemplate;
         this.algorithmName = algorithmName;
         this.configFile = configFile;
+        LOGGER.info("NodeCount:" + nodeCount);
+        configFile.setPopulationSize(nodeCount);
         this.nodeCount = nodeCount;
         this.index = index;
         this.stored = false;
@@ -51,7 +53,7 @@ public class RunnableExperiment implements Runnable {
         final ConfigurableProtocol protocol = new ConfigurableProtocol(configFile);
         final RandomScheduler<String> scheduler = new RandomScheduler<>();
         LOGGER.info("experiment:" + index);
-        experiment = new ConfigurableExperiment(configFile, protocol, scheduler, index,lookupService);
+        experiment = new ConfigurableExperiment(configFile, protocol, scheduler, index, lookupService);
 
     }
 

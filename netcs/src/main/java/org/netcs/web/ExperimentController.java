@@ -25,7 +25,7 @@ import java.util.TreeSet;
  * Created by amaxilatis on 9/20/14.
  */
 @Controller
-public class ExperimentController {
+public class ExperimentController extends BaseController {
     /**
      * a log4j logger to print messages.
      */
@@ -35,7 +35,7 @@ public class ExperimentController {
     ExperimentExecutor experimentExecutor;
 
     @PostConstruct
-    public void init() throws Exception {
+    public void init() {
 
 //        new Thread(new Runnable() {
 //            @Override
@@ -54,6 +54,7 @@ public class ExperimentController {
     @RequestMapping(value = "/experiment", method = RequestMethod.GET)
     public String listExperiments(final Map<String, Object> model) {
         model.put("title", "Experiments");
+        populateAlgorithms(model);
         SortedSet<RunnableExperiment> experimentSet = new TreeSet<>(new Comparator<RunnableExperiment>() {
             @Override
             public int compare(RunnableExperiment o1, RunnableExperiment o2) {
@@ -74,8 +75,10 @@ public class ExperimentController {
         return "experiment/list";
     }
 
+
     @RequestMapping(value = "/experiment/add", method = RequestMethod.GET)
     public String addNewExperiment(final Map<String, Object> model) {
+        populateAlgorithms(model);
         model.put("title", "Add Experiment");
         return "experiment/add";
     }
@@ -87,6 +90,7 @@ public class ExperimentController {
 
     @RequestMapping(value = "/experiment/{experimentId}", method = RequestMethod.GET)
     public String viewExperiment(final Map<String, Object> model, @PathVariable("experimentId") int experimentId) {
+        populateAlgorithms(model);
         model.put("title", experimentId);
 
         RunnableExperiment experiment = experimentExecutor.getExperiment(experimentId);

@@ -102,11 +102,11 @@ public class ExperimentExecutor {
                 executor.submit(thread);
                 experimentThreads.add(thread);
             }
-            nodeCount += 50;
+            nodeCount += 10;
         } while (nodeCount < nodeLimit);
     }
 
-    @Scheduled(fixedRate = 500L)
+    //    @Scheduled(fixedRate = 500L)
     void runExperimentsInBackground() {
         if (executor.getActiveCount() < executors && (executor.getTaskCount() - executor.getCompletedTaskCount()) < 2 * executors) {
             LOGGER.info("Checking experiments for " + count + " nodes...");
@@ -162,7 +162,7 @@ public class ExperimentExecutor {
         advancedExperiments.clear();
 
         for (int i = 0; i < iterations; i++) {
-            for (Long nodeCount = startNodeCount; nodeCount < nodeLimit; nodeCount += 50) {
+            for (Long nodeCount = startNodeCount; nodeCount < nodeLimit; nodeCount += 10) {
                 AdvancedRunnableExperiment experiment = new AdvancedRunnableExperiment(algorithm.getName(), algorithm.getConfigFile(), nodeCount, totalCount++, messagingTemplate, lookupService);
                 //write statistics to file
                 try {
@@ -211,7 +211,11 @@ public class ExperimentExecutor {
     public void checker() {
         for (RunnableExperiment experiment : experiments) {
             if (experiment.isFinished()) {
-                if (experiment.isStored()) continue;
+                LOGGER.info("Experiment:" + experiment.getIndex() + " Finished:" + experiment.isFinished() + " Stored:" + experiment.isStored());
+                if (experiment.isStored()) {
+                    experiments.remove(experiment);
+                    return;
+                }
                 AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(experiment.getAlgorithmName());
                 if (stats == null) {
                     stats = new AlgorithmStatistics();
@@ -225,8 +229,14 @@ public class ExperimentExecutor {
                 statistics.setInteractions(experiment.getExperiment().getInteractions());
                 statistics.setTime(new Date().getTime());
                 statistics.setPopulationSize((long) experiment.getExperiment().getPopulationSize());
+
+                statistics.setTerminationStats(experiment.getExperiment().getTerminationStats());
+                statistics.getTerminationStats().put("interactions", String.valueOf(statistics.getInteractions()));
+                statistics.getTerminationStats().put("effectiveInteractions", String.valueOf(statistics.getEffectiveInteractions()));
+                statistics.getTerminationStats().put("populationSize", String.valueOf(statistics.getPopulationSize()));
                 stats.getStatistics().add(statistics);
                 algorithmStatisticsRepository.save(stats);
+                LOGGER.info("Experiment:" + experiment.getIndex() + " SAVED");
 
                 experiment.setStored(true);
                 sendWs(experiment);

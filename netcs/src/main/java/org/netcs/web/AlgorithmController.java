@@ -8,7 +8,11 @@ import org.netcs.model.mongo.AlgorithmStatisticsRepository;
 import org.netcs.model.mongo.ExecutionStatistics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
@@ -19,7 +23,7 @@ import java.util.TreeSet;
  * Created by amaxilatis on 9/20/14.
  */
 @Controller
-public class AlgorithmController {
+public class AlgorithmController extends BaseController {
     /**
      * a log4j logger to print messages.
      */
@@ -31,7 +35,7 @@ public class AlgorithmController {
     AlgorithmStatisticsRepository algorithmStatisticsRepository;
 
     @PostConstruct
-    public void init() throws Exception {
+    public void init() {
 
         for (final AlgorithmStatistics algo : algorithmStatisticsRepository.findAll()) {
             LOGGER.info(algo.toString());
@@ -45,8 +49,10 @@ public class AlgorithmController {
         }
     }
 
+
     @RequestMapping(value = "/algorithm/{algorithm}", method = RequestMethod.GET)
     public String viewAlgorithm(final Map<String, Object> model, @PathVariable("algorithm") final String algorithm) {
+        populateAlgorithms(model);
         model.put("title", "View " + algorithm);
 
         AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
@@ -172,23 +178,45 @@ public class AlgorithmController {
                                   @RequestParam("populationSizeEnd") final String populationSizeEnd,
                                   @RequestParam("iterations") final String iterations
     ) {
-        final AlgorithmStatistics algorithmObject = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    experimentExecutor.start(algorithmObject.getAlgorithm(), Long.parseLong(populationSize),
-                            Long.parseLong(iterations), Long.parseLong(populationSizeEnd));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+        populateAlgorithms(model);
 
-        try {
-            Thread.sleep(1000L);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        final AlgorithmStatistics algorithmObject = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+        if (algorithmObject.getVersion() == 1) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        experimentExecutor.start(algorithmObject.getAlgorithm(), Long.parseLong(populationSize),
+                                Long.parseLong(iterations), Long.parseLong(populationSizeEnd));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
+            try {
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } else if (algorithmObject.getVersion() == 3) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        experimentExecutor.start(algorithmObject.getAlgorithm(), Long.parseLong(populationSize),
+                                Long.parseLong(iterations), Long.parseLong(populationSizeEnd));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
+            try {
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         return "redirect:/experiment";
     }

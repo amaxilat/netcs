@@ -2,6 +2,8 @@ package org.netcs.model.mongo;
 
 import org.springframework.data.annotation.Id;
 
+import java.util.Map;
+
 /**
  * Created by amaxilatis on 1/10/2014.
  */
@@ -14,6 +16,7 @@ public class ExecutionStatistics {
     private Long populationSize;
     private Boolean success;
     private String terminationMessage;
+    private Map<String, String> terminationStats;
 
     public String getId() {
         return id;
@@ -69,5 +72,13 @@ public class ExecutionStatistics {
 
     public String getTerminationMessage() {
         return terminationMessage;
+    }
+
+    public Map<String, String> getTerminationStats() {
+        return terminationStats;
+    }
+
+    public void setTerminationStats(final Map<String, String> terminationStats) {
+        this.terminationStats = terminationStats;
     }
 }

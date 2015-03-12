@@ -4,23 +4,11 @@
         <li>
             <a href="/experiment"><i class="fa fa-angle-double-right"></i> List Experiments</a>
         </li>
-        <li>
-            <a href="/algorithm/global-line1"><i class="fa fa-angle-double-right"></i> Global Line1</a>
-        </li>
-        <li>
-            <a href="/algorithm/global-line2"><i class="fa fa-angle-double-right"></i> Global Line2</a>
-        </li>
-        <li>
-            <a href="/algorithm/global-line3"><i class="fa fa-angle-double-right"></i> Global Line3</a>
-        </li>
-        <li>
-            <a href="/algorithm/global-star"><i class="fa fa-angle-double-right"></i> Global Star</a>
-        </li>
-        <li>
-            <a href="/algorithm/global-ring"><i class="fa fa-angle-double-right"></i> Global Ring</a>
-        </li>
-        <li>
-            <a href="/algorithm/cycle-cover"><i class="fa fa-angle-double-right"></i> Cycle Cover</a>
+        <li th:each="algorithm : ${algorithmNames}">
+            <a th:href="'/algorithm/'+${algorithm}">
+                <i class="fa fa-angle-double-right"></i>
+                <span th:text="${algorithm}"></span>
+            </a>
         </li>
         <li>
             <a href="/experiment/add"><i class="fa fa-angle-double-right"></i> Add </a>
