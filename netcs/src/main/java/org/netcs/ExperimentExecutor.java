@@ -45,6 +45,7 @@ public class ExperimentExecutor {
     private final int executors;
     private Long count;
     private int totalCount;
+    private int randomIndex;
 
 
     public ExperimentExecutor() {
@@ -57,15 +58,17 @@ public class ExperimentExecutor {
         this.experimentThreads = new ArrayList<>();
         this.advancedExperimentThreads = new ArrayList<>();
         this.totalCount = 0;
+        this.randomIndex = 0;
     }
 
     @PostConstruct
     public void init() {
-        this.count = lookupService.getCount("counter");
-        if (count == null) {
-            lookupService.setCount("counter", 110L);
-            this.count = lookupService.getCount("counter");
-        }
+//        this.count = lookupService.getCount("counter");
+//        if (count == null) {
+//            lookupService.setCount("counter", 110L);
+//            this.count = lookupService.getCount("counter");
+//        }
+        count = 100L;
     }
 
     void runExperiment(final Algorithm algorithm, Long nodeCount, final long iterations, final long nodeLimit) throws FileNotFoundException {
@@ -122,7 +125,7 @@ public class ExperimentExecutor {
             LOGGER.info("Found " + results + " experiments for " + algo.getName() + ".");
             if (results < count) {
                 LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
-                addExperiment(algo, count);
+                addAdvancedRunnableExperiment(algo, count);
             } else {
                 LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + (count + 10) + " nodes.");
                 count += 10;
@@ -131,7 +134,52 @@ public class ExperimentExecutor {
         }
     }
 
-    void addExperiment(final Algorithm algorithm, Long count) {
+    @Scheduled(fixedRate = 10000L)
+    void runRandomExperimentsInBackground() {
+        LOGGER.info("Checking experiments for " + count + " nodes...");
+        randomIndex = randomIndex % 4;
+        final AlgorithmStatistics algoStatistics = algorithmStatisticsRepository.findByAlgorithmName("random" + randomIndex);
+        final Algorithm algo = algoStatistics.getAlgorithm();
+        int results = 0;
+        for (final ExecutionStatistics executionStatistics : algoStatistics.getStatistics()) {
+            if (executionStatistics.getPopulationSize().equals(count)) {
+                results++;
+            }
+        }
+
+        LOGGER.info("Found " + results + " experiments for " + algo.getName() + ".");
+        if (results < (2*count)/10) {
+            LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
+            addRunnableExperiment(algo, count);
+        } else {
+            LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + (count + 10) + " nodes.");
+            count += 10;
+        }
+        randomIndex++;
+    }
+
+    void addRunnableExperiment(final Algorithm algorithm, Long count) {
+
+        final String configFileName = algorithm.getName();
+
+        RunnableExperiment experiment = new RunnableExperiment(algorithm.getName(), algorithm.getConfigFile(), count, totalCount++, messagingTemplate, lookupService);
+        //write statistics to file
+        try {
+            final FileWriter fw = new FileWriter("outfile." + totalCount);
+            experiment.setFileWriter(fw);
+        } catch (IOException e) {
+            LOGGER.error(e, e);
+        }
+
+        experiments.add(experiment);
+
+        Thread thread = new Thread(experiment);
+        experimentThreads.add(thread);
+        LOGGER.info("setting Looking for size " + experiment.getExperiment().isLookingForSize());
+        executor.submit(thread);
+    }
+
+    void addAdvancedRunnableExperiment(final Algorithm algorithm, Long count) {
 
         final String configFileName = algorithm.getName();
 
@@ -148,7 +196,6 @@ public class ExperimentExecutor {
 
         Thread thread = new Thread(experiment);
         advancedExperimentThreads.add(thread);
-        experiment.getExperiment().setLookingForSize(true);
         LOGGER.info("setting Looking for size " + experiment.getExperiment().isLookingForSize());
         executor.submit(thread);
     }

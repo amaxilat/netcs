@@ -200,9 +200,11 @@
                 count = 0;
                 for (var i = 0; i != stats.length; i++) {
                     if (stats[i].populationSize == size) {
+                        if (stats[i]['terminationStats']) {
                         if (stats[i]['terminationStats'][targetStat]) {
                             total = total + parseFloat(stats[i]['terminationStats'][targetStat]);
                             count = count + 1;
+                        }
                         }
                     }
                 }

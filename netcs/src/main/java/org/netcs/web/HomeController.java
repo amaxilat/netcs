@@ -13,19 +13,20 @@ import java.util.Map;
  * Created by amaxilatis on 9/20/14.
  */
 @Controller
-public class HomeController {
+public class HomeController extends BaseController {
 
     @Autowired
     ExperimentExecutor experimentExecutor;
 
     @PostConstruct
-    public void init() throws Exception {
+    public void init() {
         //
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String home(final Map<String, Object> model) {
-        model.put("title","Home");
+        populateAlgorithms(model);
+        model.put("title", "Home");
         return "home";
     }
 }

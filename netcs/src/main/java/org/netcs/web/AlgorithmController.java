@@ -2,17 +2,12 @@ package org.netcs.web;
 
 import org.apache.log4j.Logger;
 import org.netcs.ExperimentExecutor;
-import org.netcs.config.Transition;
 import org.netcs.model.mongo.AlgorithmStatistics;
 import org.netcs.model.mongo.AlgorithmStatisticsRepository;
 import org.netcs.model.mongo.ExecutionStatistics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
@@ -36,17 +31,6 @@ public class AlgorithmController extends BaseController {
 
     @PostConstruct
     public void init() {
-
-        for (final AlgorithmStatistics algo : algorithmStatisticsRepository.findAll()) {
-            LOGGER.info(algo.toString());
-            if (algo.getAlgorithm().getConfigFile() != null) {
-                if (algo.getAlgorithm().getConfigFile().getTransitions() != null) {
-                    for (Transition transition : algo.getAlgorithm().getConfigFile().getTransitions()) {
-                        LOGGER.info(transition);
-                    }
-                }
-            }
-        }
     }
 
 
