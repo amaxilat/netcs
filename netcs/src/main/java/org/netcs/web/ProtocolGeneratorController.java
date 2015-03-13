@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -41,9 +42,21 @@ public class ProtocolGeneratorController extends BaseController {
     }
 
     @RequestMapping(value = "/generate/{size}", method = RequestMethod.GET)
-    public String generate(@PathVariable("size") final int size) {
-        int theCount = 0;
+    public String generateRandomGet(@PathVariable("size") final int size) {
+        final int randomId = doGenerateRandom(size);
+        updateMenu();
+        return "redirect:/algorithm/random" + randomId;
+    }
 
+    @RequestMapping(value = "/generate/random", method = RequestMethod.POST)
+    public String generateRandomPost(@RequestParam("size") final int size) {
+        final int randomId = doGenerateRandom(size);
+        updateMenu();
+        return "redirect:/algorithm/random" + randomId;
+    }
+
+    public int doGenerateRandom(final int size) {
+        int theCount = 0;
         String name = "random" + theCount;
         while (algorithmStatisticsRepository.findByAlgorithmName(name) != null) {
             theCount++;
@@ -59,8 +72,9 @@ public class ProtocolGeneratorController extends BaseController {
         algorithmStatisticsRepository.save(stats);
 
         updateMenu();
-        return "redirect:/";
+        return theCount;
     }
+
 
     private Algorithm generateProtocol(final int stateCount) {
         final Random random = new Random();

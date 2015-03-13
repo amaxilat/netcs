@@ -34,6 +34,14 @@ public class AlgorithmController extends BaseController {
     }
 
 
+    @RequestMapping(value = "/algorithm/add", method = RequestMethod.GET)
+    public String addAlgorithm(final Map<String, Object> model) {
+        populateAlgorithms(model);
+        model.put("title", "Add algorithm");
+
+        return "algorithm/add";
+    }
+
     @RequestMapping(value = "/algorithm/{algorithm}", method = RequestMethod.GET)
     public String viewAlgorithm(final Map<String, Object> model, @PathVariable("algorithm") final String algorithm) {
         populateAlgorithms(model);
