@@ -284,7 +284,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     }
 
     private void reportStatus(final String status) {
-        LOGGER.info(status);
+        LOGGER.debug(status);
     }
 
     public String getResultString() {

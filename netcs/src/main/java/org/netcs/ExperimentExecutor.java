@@ -73,11 +73,11 @@ public class ExperimentExecutor {
 
     void runExperiment(final Algorithm algorithm, Long nodeCount, final long iterations, final long nodeLimit) throws FileNotFoundException {
         final String configFileName = algorithm.getName();
-        for (final Thread thread : experimentThreads) {
-            thread.stop();
-        }
-        experimentThreads.clear();
-        experiments.clear();
+//        for (final Thread thread : experimentThreads) {
+//            thread.stop();
+//        }
+//        experimentThreads.clear();
+//        experiments.clear();
 
 
         do {
@@ -109,36 +109,42 @@ public class ExperimentExecutor {
         } while (nodeCount < nodeLimit);
     }
 
-    //    @Scheduled(fixedRate = 500L)
     void runExperimentsInBackground() {
         if (executor.getActiveCount() < executors && (executor.getTaskCount() - executor.getCompletedTaskCount()) < 2 * executors) {
             LOGGER.info("Checking experiments for " + count + " nodes...");
-            final AlgorithmStatistics algoStatistics = algorithmStatisticsRepository.findByAlgorithmName("counter");
+            final AlgorithmStatistics algoStatistics = algorithmStatisticsRepository.findByAlgorithmName("fast-global-line-30");
+
             final Algorithm algo = algoStatistics.getAlgorithm();
             int results = 0;
             for (final ExecutionStatistics executionStatistics : algoStatistics.getStatistics()) {
-                if (count.equals(executionStatistics.getPopulationSize()) && executionStatistics.getTerminationMessage().contains("b=1,")) {
+                if (count.equals(Long.parseLong(executionStatistics.getTerminationStats().get("populationSize")))
+//                        && executionStatistics.getTerminationMessage().contains("b=1,")
+                        ) {
                     results++;
                 }
             }
 
             LOGGER.info("Found " + results + " experiments for " + algo.getName() + ".");
             if (results < count) {
-                LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
-                addAdvancedRunnableExperiment(algo, count);
+                try {
+                    LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
+                    runExperiment(algo, count, executors, count);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+//                addRunnableExperiment(algo, count);
             } else {
                 LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + (count + 10) + " nodes.");
-                count += 10;
+                count += 50;
                 lookupService.setCount(algo.getName(), count);
             }
         }
     }
 
-    @Scheduled(fixedRate = 10000L)
+    //    @Scheduled(fixedRate = 500L)
     void runRandomExperimentsInBackground() {
         LOGGER.info("Checking experiments for " + count + " nodes...");
-        randomIndex = randomIndex % 4;
-        final AlgorithmStatistics algoStatistics = algorithmStatisticsRepository.findByAlgorithmName("random" + randomIndex);
+        final AlgorithmStatistics algoStatistics = algorithmStatisticsRepository.findByAlgorithmName("fast-global-line-30");
         final Algorithm algo = algoStatistics.getAlgorithm();
         int results = 0;
         for (final ExecutionStatistics executionStatistics : algoStatistics.getStatistics()) {
@@ -148,14 +154,13 @@ public class ExperimentExecutor {
         }
 
         LOGGER.info("Found " + results + " experiments for " + algo.getName() + ".");
-        if (results < (2*count)/10) {
+        if (results < count / 4) {
             LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
             addRunnableExperiment(algo, count);
         } else {
             LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + (count + 10) + " nodes.");
             count += 10;
         }
-        randomIndex++;
     }
 
     void addRunnableExperiment(final Algorithm algorithm, Long count) {
@@ -175,7 +180,6 @@ public class ExperimentExecutor {
 
         Thread thread = new Thread(experiment);
         experimentThreads.add(thread);
-        LOGGER.info("setting Looking for size " + experiment.getExperiment().isLookingForSize());
         executor.submit(thread);
     }
 
@@ -289,6 +293,7 @@ public class ExperimentExecutor {
                 sendWs(experiment);
             }
         }
+        runExperimentsInBackground();
     }
 
     @Scheduled(fixedRate = 100L)
