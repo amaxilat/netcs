@@ -5,6 +5,8 @@ import org.netcs.ExperimentExecutor;
 import org.netcs.model.mongo.AlgorithmStatistics;
 import org.netcs.model.mongo.AlgorithmStatisticsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
@@ -29,9 +31,11 @@ public class BaseController {
     AlgorithmStatisticsRepository algorithmStatisticsRepository;
     private static TreeSet<String> names;
 
+    @Autowired
+    MongoTemplate mongoTemplate;
+
     @PostConstruct
     public void init() {
-
 
     }
 
@@ -44,10 +48,14 @@ public class BaseController {
                 }
             });
         }
+
+        Query query = new Query();
+        query.fields().exclude("statistics");
+        List<AlgorithmStatistics> algorithms = mongoTemplate.find(query, AlgorithmStatistics.class, "algorithmStatistics");
+
         if (names.isEmpty()) {
-            final List<AlgorithmStatistics> stats = algorithmStatisticsRepository.findAll();
-            for (final AlgorithmStatistics stat : stats) {
-                names.add(stat.getAlgorithm().getName());
+            for (final AlgorithmStatistics algorithm : algorithms) {
+                names.add(algorithm.getAlgorithm().getName());
             }
         }
         model.put("algorithmNames", names);
