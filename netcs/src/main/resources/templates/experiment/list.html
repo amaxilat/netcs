@@ -65,6 +65,9 @@
             $.notify("Experiment " + message.id + " ended after " + numberWithCommas(message.interactions) + " interactions.", "success");
             $('#exp-' + message.id).removeClass("panel-info");
             $('#exp-' + message.id).addClass("panel-success");
+            setTimeout(function () {
+                $('#exp-' + message.id).remove();
+            }, 1000);
 //            var response = document.getElementById('response');
 //            var p = document.createElement('p');
 //            p.style.wordWrap = 'break-word';
@@ -293,9 +296,9 @@
     setTimeout(function () {
         connect()
     }, 1000);
-//    setTimeout(function () {
-//        location.reload()
-//    }, 60000);
+    //    setTimeout(function () {
+    //        location.reload()
+    //    }, 60000);
 
 </script>
 

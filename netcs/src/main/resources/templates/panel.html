@@ -5,7 +5,7 @@
             <a href="/experiment"><i class="fa fa-angle-double-right"></i> List Experiments</a>
         </li>
         <li th:each="algorithm : ${algorithmNames}">
-            <a th:href="'/algorithm/'+${algorithm}">
+            <a th:href="'/algorithm/'+${algorithm}+'?graph=interactions'">
                 <i class="fa fa-angle-double-right"></i>
                 <span th:text="${algorithm}"></span>
             </a>
