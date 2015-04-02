@@ -12,12 +12,7 @@ import org.netcs.model.population.PopulationNode;
 import org.netcs.scheduler.AbstractScheduler;
 import org.springframework.messaging.core.MessageSendingOperations;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -130,7 +125,6 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      */
     public void run() {
         //reportStatus("started");
-
         final long start = System.currentTimeMillis();
 
         while (true) {
@@ -178,6 +172,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
             }
         }
 
+        terminationStats.put("time", Long.toString(System.currentTimeMillis() - start));
         // Finalize experiment
         completeExperiment();
 

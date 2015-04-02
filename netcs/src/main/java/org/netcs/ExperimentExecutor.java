@@ -43,7 +43,7 @@ public class ExperimentExecutor {
 
     @Value("${mine.simple:false}")
     String mineSimple;
-    @Value("${mine.simple.name}")
+    @Value("${mine.simple.name:}")
     String mineSimpleName;
     @Value("${mine.count:false}")
     String mineCount;
@@ -135,7 +135,7 @@ public class ExperimentExecutor {
             }
 
             LOGGER.info("Found " + results + " experiments for " + algo.getName() + ".");
-            if (results < count) {
+            if (results < count / 2 ) {
                 try {
                     LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
                     runExperiments(algo, count, executors, count);

@@ -72,7 +72,7 @@
         <!-- Main content -->
         <section class="content">
 
-            <div class="col-md-6">
+            <div class="col-md-4">
 
                 <form th:action="'/algorithm/'+${stats.algorithm.name}" method="post">
 
@@ -112,7 +112,7 @@
                     <input class="form-control" type="submit" value="Start and view"/>
                 </form>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-8">
                 <div class="col-md-12" style="min-height: 300px" id="chartdiv">
 
                 </div>
@@ -170,12 +170,14 @@
 <script th:src="@{/js/AdminLTE/app.js}" type="text/javascript"></script>
 <script src="http://code.highcharts.com/highcharts.js"></script>
 <script src="http://code.highcharts.com/modules/exporting.js"></script>
+<script th:src="@{/js/my.js}"></script>
 
 <script th:inline="javascript" type="text/javascript">
     /*<![CDATA[*/
     stats = /*[[${stats.statistics}]]*/ null;
     targetStat = /*[[${param.graph}]]*/ null;
     /*]]>*/
+
     if (targetStat != null) {
         if (stats != null) {
             mystats = [];
@@ -197,6 +199,7 @@
             theoreticalInteractionsN4 = [];
             theoreticalInteractionsN3 = [];
             theoreticalInteractionsN2 = [];
+            theoreticalInteractionsN = [];
             theoreticalInteractionsStar = [];
             sizes.forEach(function (size) {
                 total = 0;
@@ -204,10 +207,10 @@
                 for (var i = 0; i != stats.length; i++) {
                     if (stats[i].populationSize == size) {
                         if (stats[i]['terminationStats']) {
-                        if (stats[i]['terminationStats'][targetStat]) {
-                            total = total + parseFloat(stats[i]['terminationStats'][targetStat]);
-                            count = count + 1;
-                        }
+                            if (stats[i]['terminationStats'][targetStat]) {
+                                total = total + parseFloat(stats[i]['terminationStats'][targetStat]);
+                                count = count + 1;
+                            }
                         }
                     }
                 }
@@ -224,9 +227,154 @@
                 theoreticalInteractionsN4.push(Math.pow(elem.size, 4));
                 theoreticalInteractionsN3.push(Math.pow(elem.size, 3));
                 theoreticalInteractionsN2.push(Math.pow(elem.size, 2));
+                theoreticalInteractionsN.push(Math.pow(elem.size, 1));
                 theoreticalInteractionsStar.push(Math.pow(elem.size, 2) * Math.log(elem.size));
                 values.push(elem.stat);
             });
+
+            theDataSeries = [];
+            theYAxis = []
+            theDataSeries.push(
+                    {
+                        name: targetStat,
+                        data: values.slice(values.length / 2)
+                    });
+            theYAxis.push(
+                    {
+                        title: {
+                            text: targetStat
+                        },
+                        min: 0
+                    });
+            axisCount = 1;
+            if (getUrlVars().indexOf("n5") > 0) {
+                theDataSeries.push({
+                    yAxis: axisCount,
+                    name: 'n^5',
+                    data: theoreticalInteractionsN5.slice(theoreticalInteractionsN5.length / 2),
+                    marker: {
+                        enabled: false
+                    }
+                });
+                theYAxis.push({
+                    labels: {
+                        enabled: false
+                    },
+                    title: {
+                        text: null
+                    },
+                    opposite: true,
+                    min: 0
+                });
+                axisCount++;
+            }
+            if (getUrlVars().indexOf("n4") > 0) {
+                theDataSeries.push({
+                    yAxis: axisCount,
+                    name: 'n^4',
+                    data: theoreticalInteractionsN4.slice(theoreticalInteractionsN4.length / 2),
+                    marker: {
+                        enabled: false
+                    }
+                });
+                theYAxis.push({
+                    labels: {
+                        enabled: false
+                    },
+                    title: {
+                        text: null
+                    },
+                    opposite: true,
+                    min: 0
+                });
+                axisCount++;
+            }
+            if (getUrlVars().indexOf("n3") > 0) {
+                theDataSeries.push({
+                    name: 'n^3',
+                    yAxis: axisCount,
+                    data: theoreticalInteractionsN3.slice(theoreticalInteractionsN3.length / 2),
+                    marker: {
+                        enabled: false
+                    }
+                });
+                theYAxis.push({
+                    labels: {
+                        enabled: false
+                    },
+                    title: {
+                        text: null
+                    },
+                    opposite: true,
+                    min: 0
+                });
+                axisCount++;
+            }
+            if (getUrlVars().indexOf("n2") > 0) {
+                theDataSeries.push({
+                    name: 'n^2',
+                    yAxis: axisCount,
+                    data: theoreticalInteractionsN2.slice(theoreticalInteractionsN2.length / 2),
+                    marker: {
+                        enabled: false
+                    }
+                });
+                theYAxis.push({
+                    labels: {
+                        enabled: false
+                    },
+                    title: {
+                        text: null
+                    },
+                    opposite: true,
+                    min: 0
+                });
+                axisCount++;
+            }
+
+            if (getUrlVars().indexOf("n") > 0) {
+                theDataSeries.push({
+                    yAxis: axisCount,
+                    name: 'n',
+                    data: theoreticalInteractionsN.slice(theoreticalInteractionsN.length / 2),
+                    marker: {
+                        enabled: false
+                    }
+                });
+                theYAxis.push({
+                    labels: {
+                        enabled: false
+                    },
+                    title: {
+                        text: null
+                    },
+                    opposite: true,
+                    min: 0
+                });
+                axisCount++;
+            }
+
+            if (getUrlVars().indexOf("n2logn") > 0) {
+                theDataSeries.push({
+                    yAxis: axisCount,
+                    name: 'n^2log(n)',
+                    data: theoreticalInteractionsStar.slice(theoreticalInteractionsStar.length / 2),
+                    marker: {
+                        enabled: false
+                    }
+                })
+                theYAxis.push({
+                    labels: {
+                        enabled: false
+                    },
+                    title: {
+                        text: null
+                    },
+                    opposite: true,
+                    min: 0
+                });
+                axisCount++;
+            }
 
             $(function () {
                 $('#chartdiv').highcharts({
@@ -243,12 +391,7 @@
                         categories: sizes
                         , minTickInterval: 10
                     },
-                    yAxis: {
-                        title: {
-                            text: targetStat
-                        },
-                        min: 0
-                    },
+                    yAxis: theYAxis,
                     plotOptions: {
                         line: {
                             dataLabels: {
@@ -260,48 +403,12 @@
                             enableMouseTracking: false
                         }
                     },
-                    series: [
-                        {
-                            name: targetStat,
-                            data: values.slice(values.length / 2)
-                        }
-//                    ,{
-//                        name: 'effective interactions',
-//                        data: effectiveInteractions.slice(effectiveInteractions.length / 2)
-//                    }
-//                    , {
-//                        name: 'n^5',
-//                        data: theoreticalInteractionsN5.slice(theoreticalInteractionsN5.length / 2),
-//                        marker: {
-//                            enabled: false
-//                        }
-//                    }
-//                    , {
-//                        name: 'n^3',
-//                        data: theoreticalInteractionsN3.slice(theoreticalInteractionsN3.length / 2),
-//                        marker: {
-//                            enabled: false
-//                        }
-//                    }
-//                    , {
-//                        name: 'n^2',
-//                        data: theoreticalInteractionsN2.slice(theoreticalInteractionsN2.length / 2),
-//                        marker: {
-//                            enabled: false
-//                        }
-//                    }
-//                        , {
-//                            name: 'n^2long(n)',
-//                            data: theoreticalInteractionsStar.slice(theoreticalInteractionsStar.length / 2),
-//                            marker: {
-//                                enabled: false
-//                            }
-//                        }
-                    ]
+                    series: theDataSeries
                 });
             });
         }
     }
+
 </script>
 </body>
 </html>
