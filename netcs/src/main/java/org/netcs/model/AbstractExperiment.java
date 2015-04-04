@@ -12,7 +12,12 @@ import org.netcs.model.population.PopulationNode;
 import org.netcs.scheduler.AbstractScheduler;
 import org.springframework.messaging.core.MessageSendingOperations;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -134,7 +139,6 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 
                 checkCardinalities();
 
-
                 if (interactionStatus) {
 
                     //printExperimentStatus();
@@ -150,9 +154,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
                     if (stability) {
                         break;
                     }
-                    //reportStatus(String.format("[%d] checkStability %dms", index, System.currentTimeMillis() - startCheckStability));
+                    reportStatus(String.format("[%d] checkStability %dms", index, System.currentTimeMillis() - startCheckStability));
                 }
-
 
                 // increase interactions counter
                 interactions++;
@@ -279,7 +282,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     }
 
     private void reportStatus(final String status) {
-        LOGGER.debug(status);
+        LOGGER.info(status);
     }
 
     public String getResultString() {

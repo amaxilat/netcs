@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -61,7 +60,7 @@ public class ExperimentExecutor {
 
     public ExperimentExecutor() {
 //        this.executors = Runtime.getRuntime().availableProcessors() > 2 ? Runtime.getRuntime().availableProcessors() - 2 : 1;
-        this.executors = Runtime.getRuntime().availableProcessors() - 2;
+        this.executors = Runtime.getRuntime().availableProcessors();
 
         this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(executors);
         this.experiments = new ArrayList<>();
@@ -74,6 +73,28 @@ public class ExperimentExecutor {
 
     @PostConstruct
     public void init() {
+
+//        final AlgorithmStatistics algo = algorithmStatisticsRepository.findByAlgorithmName("global-line3");
+//
+//
+//        LOGGER.info(algo);
+//        for (ExecutionStatistics executionStatistics : algo.getStatistics()) {
+//            if (executionStatistics.getTerminationStats() == null) {
+//                executionStatistics.setTerminationStats(new HashMap<String, String>());
+//            }
+//            if (executionStatistics.getInteractions() != null) {
+//                executionStatistics.getTerminationStats().put("interactions", String.valueOf(executionStatistics.getInteractions()));
+//            }
+//            if (executionStatistics.getEffectiveInteractions() != null) {
+//                executionStatistics.getTerminationStats().put("effectiveInteractions ", String.valueOf(executionStatistics.getEffectiveInteractions()));
+//            }
+//            if (executionStatistics.getPopulationSize() != null) {
+//                executionStatistics.getTerminationStats().put("populationSize", String.valueOf(executionStatistics.getPopulationSize()));
+//            }
+//        }
+//        algorithmStatisticsRepository.save(algo);
+
+
 //        this.count = lookupService.getCount("counter");
 //        if (count == null) {
 //            lookupService.setCount("counter", 110L);
@@ -113,7 +134,7 @@ public class ExperimentExecutor {
     void runExperiments(final Algorithm algorithm, Long nodeCount, final long iterations, final long nodeLimit) throws FileNotFoundException {
         do {
             for (int i = 0; i < iterations; i++) {
-                runExperiment(algorithm, nodeCount, Math.abs(new Random().nextLong()));
+                runExperiment(algorithm, nodeCount, i);
             }
             nodeCount += 10;
         } while (nodeCount < nodeLimit);
@@ -135,7 +156,7 @@ public class ExperimentExecutor {
             }
 
             LOGGER.info("Found " + results + " experiments for " + algo.getName() + ".");
-            if (results < count / 2 ) {
+            if (results < 100) {
                 try {
                     LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
                     runExperiments(algo, count, executors, count);
@@ -145,7 +166,7 @@ public class ExperimentExecutor {
 //                addRunnableExperiment(algo, count);
             } else {
                 LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + (count + 10) + " nodes.");
-                count += 50;
+                count += 20;
                 lookupService.setCount(algo.getName(), count);
             }
         }
@@ -164,7 +185,7 @@ public class ExperimentExecutor {
         }
 
         LOGGER.info("Found " + results + " experiments for " + algo.getName() + ".");
-        if (results < count / 4) {
+        if (results < 100) {
             LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
             addRunnableExperiment(algo, count);
         } else {

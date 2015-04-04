@@ -67,7 +67,6 @@ public abstract class AbstractProtocol<State> {
             initiator.incCount2();
         }
         final StateTriple<State> newState = transitions.get(startingState);
-        //System.out.println(startingState);
         // undefined interaction
         if (newState != null) {
             // Change the states of the agents.

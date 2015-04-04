@@ -72,71 +72,19 @@
         <!-- Main content -->
         <section class="content">
 
-            <div class="col-md-6">
-                <form method="post" action="/algorithm/create" class="form col-md-4">
-
-                    <div class="form-group">
-                        <label class="col-md-6">Name:</label>
-                        <input type="text" id="name" name="name"/>
-
-                    </div>
-                    <div class="form-group">
-                        <label class="col-md-6">Transitions:</label>
-                    <textarea id="transitionsText" name="transitionsText" oninput="parseStates()"
-                              style="width: 400px" rows="10"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-md-6">Initial Node State:</label>
-                        <input type="text" id="initialNodeState" name="initialNodeState"/>
-
-                    </div>
-                    <div class="form-group">
-                        <label class="col-md-6">Initial Link State:</label>
-                        <input type="text" id="initialLinkState" name="initialLinkState"/>
-
-                    </div>
-                    <div class="form-group">
-                        <label class="col-md-6">Scheduler:</label>
-                        <input type="text" id="scheduler" name="scheduler" value="RandomScheduler"/>
-
-                    </div>
-                    <div class="form-group">
-                        <label class="col-md-6">Version:</label>
-                        <label class="col-md-6">1</label>
-                        <input type="hidden" id="version" name="version" value="1"/>
-
-                    </div>
-                    <div class="form-group">
-                        <button class="form-control">Submit</button>
-                    </div>
-                </form>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="col-md-12">Parsed Transitions:</label>
-                    <label class="col-md-12">
-                        <ul id="transitions"></ul>
-                    </label>
+            <form method="post" action="/generate/random" class="form col-md-4">
+                <div class="form-group text-center">
+                    <label class="col-md-12">Random Algorithm</label>
                 </div>
-
                 <div class="form-group">
-                    <div class="col-md-6">
-                        <label class="col-md-12">NodeStates:</label>
-                        <label class="col-md-12">
-                            <ul id="nodeStates"></ul>
-                        </label>
-                    </div>
+                    <label class="col-md-6">Number of States (|Q|)</label>
+                    <input class="col-md-6" type="text" name="size"/>
                 </div>
-
                 <div class="form-group">
-                    <div class="col-md-6">
-                        <label class="col-md-12">LinkStates:</label>
-                        <label class="col-md-6">
-                            <ul id="linkStates"></ul>
-                        </label>
-                    </div>
+                    <button class="form-control">Submit</button>
                 </div>
-            </div>
+            </form>
+
         </section>
         <!-- /.content -->
     </aside>
@@ -144,27 +92,6 @@
 </div>
 <!-- ./wrapper -->
 
-<script type="text/javascript">
-    function parseStates() {
-        $.post("/transitions/parse", {transitionsText: $("#transitionsText").val()}).success(function (data) {
-            console.log(data);
-            $("#nodeStates").text("");
-            $("#linkStates").text("");
-            $("#transitions").text("");
-            data.nodeStates.forEach(function (item) {
-                $("#nodeStates").append("<li>" + item + "</li>");
-            })
-            data.linkStates.forEach(function (item) {
-                $("#linkStates").append("<li>" + item + "</li>");
-            })
-            data.transitions.forEach(function (item) {
-                $("#transitions").append("<li>" + item.node1 + "-[" + item.link + "]-" + item.node2
-                + " -> "
-                + item.node1New + "-[" + item.linkNew + "]-" + item.node2New + "</li>");
-            })
-        });
-    }
-</script>
 
 <!-- jQuery 2.0.2 -->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>

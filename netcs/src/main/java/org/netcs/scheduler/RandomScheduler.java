@@ -18,10 +18,8 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
     private static final Logger LOGGER = Logger.getLogger(RandomScheduler.class);
 
     /**
-     * Performs an interaction between an initiator agent and a responder agent.
-     * The scheduler uniformly randomly selects the initiator and responder agents from the population.
-     *
-     * @param index
+     * Performs an interaction between an initiator agent and a responder agent. The scheduler uniformly randomly
+     * selects the initiator and responder agents from the population.
      */
     public boolean interact(long index) {
         final long start = System.currentTimeMillis();
