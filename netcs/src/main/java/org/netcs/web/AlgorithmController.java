@@ -42,6 +42,25 @@ public class AlgorithmController extends BaseController {
 
     @PostConstruct
     public void init() {
+//        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName("global-line2");
+//        final List<ExecutionStatistics> tStats = new ArrayList<>();
+//        tStats.addAll(stats.getStatistics());
+//        for (ExecutionStatistics stat : tStats) {
+////            stat.setTerminationStats(new HashMap<String, String>());
+////            stat.getTerminationStats().put("populationSize", String.valueOf(stat.getPopulationSize()));
+////            stat.getTerminationStats().put("interactions", String.valueOf(stat.getInteractions()));
+////            stat.getTerminationStats().put("effectiveInteractions", String.valueOf(stat.getEffectiveInteractions()));
+////            if (stat.getTerminationMessage() != null) {
+////                final String[] parts = stat.getTerminationMessage().split(",");
+////                for (String part : parts) {
+////                    stat.getTerminationStats().put(part.split("=")[0], part.split("=")[1]);
+////                }
+////            }
+//            if (stat.getPopulationSize() < 100) {
+//                stats.getStatistics().remove(stat);
+//            }
+//        }
+//        algorithmStatisticsRepository.save(stats);
     }
 
 
@@ -70,6 +89,17 @@ public class AlgorithmController extends BaseController {
         model.put("stats", stats);
 
         return "algorithm/view";
+    }
+
+    @RequestMapping(value = "/algorithm/{algorithm}/details", method = RequestMethod.GET)
+    public String viewAlgorithmDetails(final Map<String, Object> model, @PathVariable("algorithm") final String algorithm) {
+        populateAlgorithms(model);
+        model.put("title", "View " + algorithm);
+
+        AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+        model.put("stats", stats);
+
+        return "algorithm/details";
     }
 
     @ResponseBody

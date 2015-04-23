@@ -282,7 +282,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     }
 
     private void reportStatus(final String status) {
-        LOGGER.info(status);
+        LOGGER.debug(status);
     }
 
     public String getResultString() {
@@ -563,8 +563,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
                     final double prevMax = cardinalityFactorStatistics.getMax();
                     cardinalityFactorStatistics.addValue(factor);
                     if (prevMax < cardinalityFactorStatistics.getMax()) {
-                        LOGGER.info(statesBuilder.toString());
-                        LOGGER.info("Interactions: " + interactions + " Factor:" + factor + " max:" + cardinalityFactorStatistics.getMax());
+                        LOGGER.debug(statesBuilder.toString());
+                        LOGGER.debug("Interactions: " + interactions + " Factor:" + factor + " max:" + cardinalityFactorStatistics.getMax());
                         terminationStats.put("cardinalityExistsFactor", String.valueOf(cardinalityFactorStatistics.getMax()));
                     }
                 }

@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -60,7 +62,8 @@ public class ExperimentExecutor {
 
     public ExperimentExecutor() {
 //        this.executors = Runtime.getRuntime().availableProcessors() > 2 ? Runtime.getRuntime().availableProcessors() - 2 : 1;
-        this.executors = Runtime.getRuntime().availableProcessors();
+        this.executors = Runtime.getRuntime().availableProcessors()*2;
+//        this.executors = 1;
 
         this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(executors);
         this.experiments = new ArrayList<>();
@@ -100,6 +103,13 @@ public class ExperimentExecutor {
 //            lookupService.setCount("counter", 110L);
 //            this.count = lookupService.getCount("counter");
 //        }
+//        Timer t = new Timer();
+//        t.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                System.exit(1);
+//            }
+//        }, 30 * 60 * 1000);
         count = 100L;
     }
 
@@ -136,7 +146,7 @@ public class ExperimentExecutor {
             for (int i = 0; i < iterations; i++) {
                 runExperiment(algorithm, nodeCount, i);
             }
-            nodeCount += 10;
+            nodeCount += 50;
         } while (nodeCount < nodeLimit);
     }
 
@@ -166,7 +176,7 @@ public class ExperimentExecutor {
 //                addRunnableExperiment(algo, count);
             } else {
                 LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + (count + 10) + " nodes.");
-                count += 20;
+                count += 50;
                 lookupService.setCount(algo.getName(), count);
             }
         }

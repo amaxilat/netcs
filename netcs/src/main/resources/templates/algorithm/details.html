@@ -122,6 +122,36 @@
                 <div class="col-md-12">
                     <span th:text="${#lists.size(stats.statistics)}"></span> Experiments run until now
                 </div>
+                <table class="table table-striped table-condensed">
+                    <thead>
+                    <th>Time</th>
+                    <th>Success</th>
+                    <th>Stats</th>
+                    </thead>
+                    <tbody>
+                    <th:block th:if="${stats}">
+                        <th:block th:each="stat :${stats.statistics}">
+                            <tr>
+                                <td th:text="${#dates.format(stat.time)}"></td>
+                                <td th:text="${stat.success}"></td>
+                                <td>
+                                    <th:block th:each="tstats : ${stat.terminationStats}">
+                                        <a th:href="'?graph='+${tstats.key}">
+                                            <span th:text="${tstats.key}"></span>
+                                        </a>
+                                        :
+                                        <span th:text="${tstats.value}"></span>
+                                        <br/>
+                                    </th:block>
+                                </td>
+                            </tr>
+                            <tr th:class="text-center">
+                                <td th:colspan="4" th:text="${stat.terminationMessage}"></td>
+                            </tr>
+                        </th:block>
+                    </th:block>
+                    </tbody>
+                </table>
             </div>
         </section>
         <!-- /.content -->
