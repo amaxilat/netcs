@@ -99,9 +99,9 @@ public class ExperimentController extends BaseController {
         model.put("population", experiment.getExperiment().getPopulation());
         model.put("nodes", experiment.getExperiment().getPopulation().getNodes());
         ArrayList<String> edges = new ArrayList<>();
-        Iterator<PopulationLink<String>> edgesIterator = experiment.getExperiment().getPopulation().getEdges().iterator();
+        Iterator<PopulationLink> edgesIterator = experiment.getExperiment().getPopulation().getEdges().iterator();
         while (edgesIterator.hasNext()) {
-            PopulationLink<String> currentEdge = edgesIterator.next();
+            PopulationLink currentEdge = edgesIterator.next();
             if (currentEdge.getState().equals("1")) {
                 edges.add(currentEdge.getDefaultEdge().toString());
             }

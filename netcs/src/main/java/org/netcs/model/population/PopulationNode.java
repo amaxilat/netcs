@@ -3,12 +3,12 @@ package org.netcs.model.population;
 /**
  * Describes a population node.
  */
-public class PopulationNode<State> {
+public class PopulationNode {
     /**
      * The name of the node.
      */
     private final String nodeName;
-    private State state;
+    private String state;
     private int count1;
     private int count2;
 
@@ -23,11 +23,11 @@ public class PopulationNode<State> {
         this.count2 = 0;
     }
 
-    public State getState() {
+    public String getState() {
         return state;
     }
 
-    public void setState(State state) {
+    public void setState(final String state) {
         this.state = state;
     }
 

@@ -5,19 +5,19 @@ import org.jgrapht.graph.DefaultEdge;
 /**
  * Describes a population link.
  */
-public class PopulationLink<State> extends DefaultEdge {
+public class PopulationLink extends DefaultEdge {
     private final DefaultEdge defaultEdge;
-    private State state;
+    private String state;
 
     public PopulationLink(final DefaultEdge defaultEdge) {
         this.defaultEdge = defaultEdge;
     }
 
-    public State getState() {
+    public String getState() {
         return state;
     }
 
-    public void setState(State state) {
+    public void setState(String state) {
         this.state = state;
     }
 

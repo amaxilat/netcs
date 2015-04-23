@@ -3,9 +3,8 @@ package org.netcs.model;
 /**
  * Describes a population scheduler.
  *
- * @param <State> the variable type for the state of the agent.
  */
-public interface Scheduler<State> {
+public interface Scheduler {
 
     /**
      * Performs an interaction between an initiator agent and a responder agent.

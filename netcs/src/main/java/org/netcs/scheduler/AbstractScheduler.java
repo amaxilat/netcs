@@ -13,7 +13,7 @@ import java.util.Random;
  *
  * @param <State> the variable type for the state of the agent.
  */
-public abstract class AbstractScheduler<State> implements Scheduler<State> {
+public abstract class AbstractScheduler implements Scheduler {
 
     /**
      * Random number generator.
@@ -23,12 +23,12 @@ public abstract class AbstractScheduler<State> implements Scheduler<State> {
     /**
      * Population holder.
      */
-    protected Population<State> population;
+    protected Population population;
 
     /**
      * Actual protocol.
      */
-    private AbstractProtocol<State> protocol;
+    private AbstractProtocol protocol;
 
     /**
      * Default constructor.
@@ -43,7 +43,7 @@ public abstract class AbstractScheduler<State> implements Scheduler<State> {
      * @param population the population object.
      * @param protocol   the protocol object.
      */
-    public void connect(final Population<State> population, final AbstractProtocol<State> protocol) {
+    public void connect(final Population population, final AbstractProtocol protocol) {
         this.population = population;
         this.protocol = protocol;
     }
@@ -80,7 +80,7 @@ public abstract class AbstractScheduler<State> implements Scheduler<State> {
      * @param index the position of the agent in the population list.
      * @return the agent instance.
      */
-    protected final PopulationNode<State> getNode(final int index) {
+    protected final PopulationNode getNode(final int index) {
         return population.getAgent(index);
     }
 
@@ -91,7 +91,7 @@ public abstract class AbstractScheduler<State> implements Scheduler<State> {
      * @param initiator the initiator of the interaction.
      * @param responder the responder of the interaction.
      */
-    protected boolean interact(final PopulationNode<State> initiator, final PopulationNode<State> responder, final PopulationLink<State> link) {
+    protected boolean interact(final PopulationNode initiator, final PopulationNode responder, final PopulationLink link) {
         if (protocol.interact(initiator, responder, link)) {
             return true;
         } else {

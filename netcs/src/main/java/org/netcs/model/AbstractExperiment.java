@@ -23,10 +23,10 @@ import java.util.Set;
 /**
  * Executes a simple experiment.
  *
- * @param <State>    the variable type for the state of the agent.
+ * @param     the variable type for the state of the agent.
  * @param <Protocol> the protocol executed in the experiment.
  */
-public abstract class AbstractExperiment<State, Protocol extends AbstractProtocol<State>> extends Thread {
+public abstract class AbstractExperiment<State, Protocol extends AbstractProtocol> extends Thread {
 
     /**
      * Apache Log4J logger.
@@ -45,17 +45,17 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     /**
      * Population holder.
      */
-    private final Population<State> population;
+    private final Population population;
 
     /**
      * Actual protocol.
      */
-    private final AbstractProtocol<State> protocol;
+    private final AbstractProtocol protocol;
 
     /**
      * Scheduler.
      */
-    private final Scheduler<State> scheduler;
+    private final Scheduler scheduler;
     private final ConfigFile configFile;
     protected String resultString;
 
@@ -68,7 +68,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     private boolean success;
     private String terminationMessage;
     private Map<String, String> terminationStats;
-    private PopulationNode<State> leaderNode;
+    private PopulationNode leaderNode;
     private MessageSendingOperations<String> messagingTemplate;
     private long cardinalityStart;
     private boolean hadCardinality;
@@ -80,10 +80,10 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      * @param protocol  the population protocol.
      * @param scheduler the scheduler.
      */
-    public AbstractExperiment(final ConfigFile configFile, final AbstractProtocol<State> protocol, final AbstractScheduler<State> scheduler, long index, final LookupService lookupService) {
+    public AbstractExperiment(final ConfigFile configFile, final AbstractProtocol protocol, final AbstractScheduler scheduler, long index, final LookupService lookupService) {
         // Construct population
         this.protocol = protocol;
-        this.population = new MemoryPopulation<State>(configFile.getPopulationSize());
+        this.population = new MemoryPopulation(configFile.getPopulationSize());
         this.configFile = configFile;
         this.index = index;
         // Initialize Population
@@ -109,13 +109,13 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      * Initialize the population.
      */
     public void initPopulation() {
-        Iterator<PopulationNode<State>> nodeIterator = getPopulation().getNodes().iterator();
+        Iterator<PopulationNode> nodeIterator = getPopulation().getNodes().iterator();
         while (nodeIterator.hasNext()) {
             PopulationNode node = nodeIterator.next();
             node.setState(configFile.getInitialNodeState());
             LOGGER.debug(node);
         }
-        Iterator<PopulationLink<State>> edgeIterator = getPopulation().getEdges().iterator();
+        Iterator<PopulationLink> edgeIterator = getPopulation().getEdges().iterator();
         while (edgeIterator.hasNext()) {
             PopulationLink edge = edgeIterator.next();
             edge.setState(configFile.getInitialLinkState());
@@ -184,7 +184,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     }
 
     protected void printExperimentStatus() {
-        for (PopulationLink<State> statePopulationLink : getPopulation().getEdges()) {
+        for (PopulationLink statePopulationLink : getPopulation().getEdges()) {
             LOGGER.info(statePopulationLink);
         }
     }
@@ -268,7 +268,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      *
      * @return the population holder.
      */
-    public Population<State> getPopulation() {
+    public Population getPopulation() {
         return population;
     }
 
@@ -303,8 +303,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         long degreeTwoNodes = 0;
         long totalDegree = 0;
 
-        final Collection<PopulationNode<State>> nodes = getPopulation().getNodes();
-        for (final PopulationNode<State> node : nodes) {
+        final Collection<PopulationNode> nodes = getPopulation().getNodes();
+        for (final PopulationNode node : nodes) {
             final long nodeDegree = getPopulation().getDegree(node);
             if (nodeDegree == 0) {
                 degreeZeroNodes++;
@@ -325,14 +325,14 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         }
 
         final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
-        for (final PopulationNode<State> node : getPopulation().getNodes()) {
+        for (final PopulationNode node : getPopulation().getNodes()) {
             nodesStringBuilder.append(node).append(",");
         }
         nodesStringBuilder.append("]");
         LOGGER.debug(nodesStringBuilder.toString());
 
         final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
-        for (final PopulationLink<State> edge : getPopulation().getEdges()) {
+        for (final PopulationLink edge : getPopulation().getEdges()) {
             if (edge.getState().equals("1")) {
                 edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
             }
@@ -351,8 +351,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         long degreeStarCenter = 0;
         long totalDegree = 0;
 
-        final Collection<PopulationNode<State>> nodes = getPopulation().getNodes();
-        for (final PopulationNode<State> node : nodes) {
+        final Collection<PopulationNode> nodes = getPopulation().getNodes();
+        for (final PopulationNode node : nodes) {
             final long nodeDegree = getPopulation().getDegree(node);
             if (nodeDegree == 1) {
                 degreeOneNodes++;
@@ -373,14 +373,14 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         }
 
         final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
-        for (final PopulationNode<State> node : getPopulation().getNodes()) {
+        for (final PopulationNode node : getPopulation().getNodes()) {
             nodesStringBuilder.append(node).append(",");
         }
         nodesStringBuilder.append("]");
         LOGGER.debug(nodesStringBuilder.toString());
 
         final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
-        for (final PopulationLink<State> edge : getPopulation().getEdges()) {
+        for (final PopulationLink edge : getPopulation().getEdges()) {
             if (edge.getState().equals("1")) {
                 edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
             }
@@ -397,8 +397,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 
         long degreeTwoNodes = 0;
 
-        final Collection<PopulationNode<State>> nodes = getPopulation().getNodes();
-        for (final PopulationNode<State> node : nodes) {
+        final Collection<PopulationNode> nodes = getPopulation().getNodes();
+        for (final PopulationNode node : nodes) {
             if (getPopulation().getDegree(node) == 2) {
                 degreeTwoNodes++;
             } else {
@@ -406,23 +406,23 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
             }
         }
 
-        final PopulationNode<State> startingNode = getPopulation().getNodes().iterator().next();
+        final PopulationNode startingNode = getPopulation().getNodes().iterator().next();
         final Set<String> allNodes = new HashSet<>();
-        final Set<PopulationNode<State>> pendingNodes = new HashSet<>();
+        final Set<PopulationNode> pendingNodes = new HashSet<>();
         allNodes.add(startingNode.getNodeName());
         pendingNodes.add(startingNode);
-        PopulationNode<State> currentNode;
+        PopulationNode currentNode;
         while (!pendingNodes.isEmpty()) {
             currentNode = pendingNodes.iterator().next();
-            for (PopulationNode<State> otherNode : getPopulation().getNodes()) {
-                final PopulationLink<State> edge = getPopulation().getEdge(currentNode, otherNode);
+            for (PopulationNode otherNode : getPopulation().getNodes()) {
+                final PopulationLink edge = getPopulation().getEdge(currentNode, otherNode);
                 if (edge != null && edge.getState().equals("1")) {
                     if (!allNodes.contains(otherNode.getNodeName())) {
                         pendingNodes.add(otherNode);
                         allNodes.add(otherNode.getNodeName());
                     }
                 }
-                final PopulationLink<State> edgeInv = getPopulation().getEdge(otherNode, currentNode);
+                final PopulationLink edgeInv = getPopulation().getEdge(otherNode, currentNode);
                 if (edgeInv != null && edgeInv.getState().equals("1")) {
                     if (!allNodes.contains(otherNode.getNodeName())) {
                         pendingNodes.add(otherNode);
@@ -442,14 +442,14 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         }
 
         final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
-        for (final PopulationNode<State> node : getPopulation().getNodes()) {
+        for (final PopulationNode node : getPopulation().getNodes()) {
             nodesStringBuilder.append(node).append(",");
         }
         nodesStringBuilder.append("]");
         LOGGER.debug(nodesStringBuilder.toString());
 
         final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
-        for (final PopulationLink<State> edge : getPopulation().getEdges()) {
+        for (final PopulationLink edge : getPopulation().getEdges()) {
             if (edge.getState().equals("1")) {
                 edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
             }
@@ -462,8 +462,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     protected boolean checkSizes(final long b) {
         //reportStatus(String.format("[%d] check-sizes", index));
 
-        final Collection<PopulationNode<State>> nodes = getPopulation().getNodes();
-        for (final PopulationNode<State> node : nodes) {
+        final Collection<PopulationNode> nodes = getPopulation().getNodes();
+        for (final PopulationNode node : nodes) {
             if (node.getState().equals("l")) {
                 //reportStatus(String.format("[%d] %d>%d && %d==%d", index, node.getCount1(), b, node.getCount1(), node.getCount2()));
                 if (node.getCount1() > b && node.getCount1() == node.getCount2()) {
@@ -492,8 +492,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         long degreeTwoNodes = 0;
         long totalDegree = 0;
 
-        final Collection<PopulationNode<State>> nodes = getPopulation().getNodes();
-        for (final PopulationNode<State> node : nodes) {
+        final Collection<PopulationNode> nodes = getPopulation().getNodes();
+        for (final PopulationNode node : nodes) {
             final long nodeDegree = getPopulation().getDegree(node);
             if (nodeDegree == 1) {
                 degreeOneNodes++;
@@ -514,14 +514,14 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         }
 
         final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
-        for (final PopulationNode<State> node : getPopulation().getNodes()) {
+        for (final PopulationNode node : getPopulation().getNodes()) {
             nodesStringBuilder.append(node).append(",");
         }
         nodesStringBuilder.append("]");
         LOGGER.debug(nodesStringBuilder.toString());
 
         final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
-        for (final PopulationLink<State> edge : getPopulation().getEdges()) {
+        for (final PopulationLink edge : getPopulation().getEdges()) {
             if (edge.getState().equals("1")) {
                 edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
             }
@@ -533,9 +533,9 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 
     protected void checkCardinalities() {
 
-        final Collection<PopulationNode<State>> nodes = getPopulation().getNodes();
-        final Map<State, SummaryStatistics> stateCounts = new HashMap<>();
-        for (PopulationNode<State> node : nodes) {
+        final Collection<PopulationNode> nodes = getPopulation().getNodes();
+        final Map<String, SummaryStatistics> stateCounts = new HashMap<>();
+        for (PopulationNode node : nodes) {
             if (!stateCounts.containsKey(node.getState())) {
                 stateCounts.put(node.getState(), new SummaryStatistics());
             }
@@ -544,7 +544,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         final double acceptedLevel = getPopulation().getNodes().size() / (double) stateCounts.keySet().size() / ((1.5) * getPopulation().getNodes().size());
         StringBuilder statesBuilder = new StringBuilder("StateCounts(" + acceptedLevel + "):[ ");
         boolean highCardinalities = true;
-        for (State state : stateCounts.keySet()) {
+        for (String state : stateCounts.keySet()) {
             final double cardinality = stateCounts.get(state).getSum() / getPopulation().getNodes().size();
             statesBuilder.append(state).append("=").append(cardinality).append(" ");
             if (cardinality < acceptedLevel) {

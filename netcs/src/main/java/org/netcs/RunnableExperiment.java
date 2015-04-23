@@ -51,7 +51,7 @@ public class RunnableExperiment implements Runnable {
 
         //prepare experiment
         final ConfigurableProtocol protocol = new ConfigurableProtocol(configFile);
-        final RandomScheduler<String> scheduler = new RandomScheduler<>();
+        final RandomScheduler scheduler = new RandomScheduler();
         LOGGER.info("experiment:" + index);
         experiment = new ConfigurableExperiment(configFile, protocol, scheduler, index, lookupService);
 
@@ -147,7 +147,7 @@ public class RunnableExperiment implements Runnable {
         this.fileWriter = fileWriter;
     }
 
-    public class ConfigurableProtocol extends AbstractProtocol<String> {
+    public class ConfigurableProtocol extends AbstractProtocol {
 
         public ConfigurableProtocol(final ConfigFile configFile) {
             this.configFile = configFile;
@@ -160,8 +160,8 @@ public class RunnableExperiment implements Runnable {
         protected void setupTransitionsMap() {
             for (Transition tr : configFile.getTransitions()) {
                 this.addEntry(
-                        new StateTriple<>(tr.getNode1(), tr.getNode2(), tr.getLink()),
-                        new StateTriple<>(tr.getNode1New(), tr.getNode2New(), tr.getLinkNew()));
+                        new StateTriple(tr.getNode1(), tr.getNode2(), tr.getLink()),
+                        new StateTriple(tr.getNode1New(), tr.getNode2New(), tr.getLinkNew()));
             }
         }
     }

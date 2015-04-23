@@ -7,11 +7,9 @@ import org.netcs.model.population.PopulationNode;
 
 /**
  * Implements simple randomized scheduler.
- *
- * @param <State> the variable type for the state of the agent.
  */
 //TODO: Randomly choose the resulting states
-public class RandomScheduler<State> extends AbstractScheduler<State> {
+public class RandomScheduler extends AbstractScheduler {
     /**
      * a log4j logger to print messages.
      */
@@ -32,12 +30,12 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
         }
 
 
-        final PopulationNode<State> initiatorPopulationNode = getNode(initiator);
-        State initiatorPopulationNodeState = initiatorPopulationNode.getState();
-        final PopulationNode<State> responderPopulationNode = getNode(responder);
-        State responderPopulationNodeState = responderPopulationNode.getState();
-        final PopulationLink<State> link = population.getEdge(initiatorPopulationNode, responderPopulationNode);
-        final State prevState = link.getState();
+        final PopulationNode initiatorPopulationNode = getNode(initiator);
+        String initiatorPopulationNodeState = initiatorPopulationNode.getState();
+        final PopulationNode responderPopulationNode = getNode(responder);
+        String responderPopulationNodeState = responderPopulationNode.getState();
+        final PopulationLink link = population.getEdge(initiatorPopulationNode, responderPopulationNode);
+        final String prevState = link.getState();
         LOGGER.debug(link);
         // Conduct interaction for given pair of agents
         final boolean result = interact(initiatorPopulationNode, responderPopulationNode, link);
@@ -45,7 +43,7 @@ public class RandomScheduler<State> extends AbstractScheduler<State> {
             LOGGER.debug(String.format("[%d] interaction [ %s:%s -- %s:%s ] c1:%d c2:%d", index, initiatorPopulationNode.getNodeName(), initiatorPopulationNodeState, responderPopulationNode.getNodeName(), responderPopulationNodeState, initiatorPopulationNode.getCount1(), initiatorPopulationNode.getCount2()));
         }
         if (result) {
-            final State newState = link.getState();
+            final String newState = link.getState();
             if (!prevState.equals(newState)) {
                 population.fixCacheDegree(initiatorPopulationNode);
                 population.fixCacheDegree(responderPopulationNode);

@@ -45,7 +45,7 @@ public class AdvancedRunnableExperiment extends RunnableExperiment {
 
             //prepare experiment
             final ConfigurableProtocol protocol = new ConfigurableProtocol(configFile);
-            final RandomScheduler<String> scheduler = new RandomScheduler<>();
+            final RandomScheduler scheduler = new RandomScheduler();
             experiment = new ConfigurableExperiment(configFile, protocol, scheduler, index, lookupService);
             experiment.initPopulation();
             final PopulationNode node = (PopulationNode) experiment.getPopulation().getNodes().iterator().next();

@@ -7,7 +7,7 @@ import org.netcs.model.population.PopulationLink;
 import org.netcs.model.population.PopulationNode;
 import org.netcs.scheduler.AbstractScheduler;
 
-public class ConfigurableExperiment extends AbstractExperiment<String, AbstractProtocol<String>> {
+public class ConfigurableExperiment extends AbstractExperiment<String, AbstractProtocol> {
 
     /**
      * Default constructor.
@@ -16,7 +16,7 @@ public class ConfigurableExperiment extends AbstractExperiment<String, AbstractP
      * @param scheduler  the scheduler to use.
      * @param index
      */
-    public ConfigurableExperiment(ConfigFile configFile, final AbstractProtocol<String> protocol, AbstractScheduler<String> scheduler, long index,final LookupService lookupService) {
+    public ConfigurableExperiment(ConfigFile configFile, final AbstractProtocol protocol, AbstractScheduler scheduler, long index,final LookupService lookupService) {
         super(configFile, protocol, scheduler, index,lookupService);
     }
 
@@ -26,11 +26,11 @@ public class ConfigurableExperiment extends AbstractExperiment<String, AbstractP
 
         resultString.append("ExperimentEnded after ").append(getInteractions()).append(" interactions.\n");
         resultString.append("NodeStatuses:").append("\n");
-        for (PopulationNode<String> node : getPopulation().getNodes()) {
+        for (PopulationNode node : getPopulation().getNodes()) {
             resultString.append(node.getNodeName()).append(":").append(node.getState()).append("\n");
         }
         resultString.append("LinkStatuses:").append("\n");
-        for (PopulationLink<String> edge : getPopulation().getEdges()) {
+        for (PopulationLink edge : getPopulation().getEdges()) {
             if (edge.getState().equals("1")) {
                 resultString.append(edge.getDefaultEdge()).append(":").append(edge.getState()).append("\n");
             }

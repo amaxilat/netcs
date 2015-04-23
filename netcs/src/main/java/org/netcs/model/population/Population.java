@@ -4,10 +4,8 @@ import java.util.Collection;
 
 /**
  * Represents the population of agents.
- *
- * @param <State> the variable type for the state of the agent.
  */
-public interface Population<State> {
+public interface Population {
 
 
     /**
@@ -17,19 +15,19 @@ public interface Population<State> {
      */
     public int size();
 
-    public Collection<PopulationLink<State>> getEdges();
+    public Collection<PopulationLink> getEdges();
 
-    public Collection<PopulationNode<State>> getNodes();
+    public Collection<PopulationNode> getNodes();
 
-    public PopulationNode<State> getAgent(int index);
+    public PopulationNode getAgent(int index);
 
-    public PopulationLink<State> getEdge(PopulationNode<State> initiatorPopulationNode, PopulationNode<State> responderPopulationNode);
+    public PopulationLink getEdge(PopulationNode initiatorPopulationNode, PopulationNode responderPopulationNode);
 
-    public long getDegree(PopulationNode<State> node);
+    public long getDegree(PopulationNode node);
 
-    public long getActualDegree(PopulationNode<State> node);
+    public long getActualDegree(PopulationNode node);
 
     public void initCache(final long experimentId);
 
-    public void fixCacheDegree(PopulationNode<State> node);
+    public void fixCacheDegree(PopulationNode node);
 }

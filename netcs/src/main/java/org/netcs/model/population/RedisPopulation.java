@@ -12,17 +12,16 @@ import java.util.Map;
 /**
  * Represents the population of agents.
  *
- * @param <State> the variable type for the state of the agent.
  */
-public class RedisPopulation<State> implements Population<State> {
+public class RedisPopulation implements Population {
 
     /**
      * a log4j logger to print messages.
      */
     private static final Logger LOGGER = Logger.getLogger(RedisPopulation.class);
 
-    private final SimpleGraph<PopulationNode<State>, DefaultEdge> graph;
-    private final Map<DefaultEdge, PopulationLink<State>> edges;
+    private final SimpleGraph<PopulationNode, DefaultEdge> graph;
+    private final Map<DefaultEdge, PopulationLink> edges;
     private LookupService lookupService;
     protected long experimentId;
 
@@ -47,14 +46,14 @@ public class RedisPopulation<State> implements Population<State> {
         for (int i = 0; i < size; i++) {
             final String name = "v" + i;
             LOGGER.trace("Creating Node " + name);
-            graph.addVertex(new PopulationNode<State>(name));
+            graph.addVertex(new PopulationNode(name));
         }
         LOGGER.debug("Created " + size + " GraphNodes in " + (System.currentTimeMillis() - start) + "ms");
 
         start = System.currentTimeMillis();
         LOGGER.debug("Creating GraphEdges...");
-        for (PopulationNode<State> firstVertex : graph.vertexSet()) {
-            for (PopulationNode<State> secondVertex : graph.vertexSet()) {
+        for (PopulationNode firstVertex : graph.vertexSet()) {
+            for (PopulationNode secondVertex : graph.vertexSet()) {
                 if (!secondVertex.equals(firstVertex)) {
                     LOGGER.trace("Creating Edge between " + firstVertex + " and " + secondVertex);
                     graph.addEdge(firstVertex, secondVertex);
@@ -67,7 +66,7 @@ public class RedisPopulation<State> implements Population<State> {
         edges = new HashMap<>();
         LOGGER.debug("Creating Population Edges...");
         for (DefaultEdge defaultEdge : graph.edgeSet()) {
-            edges.put(defaultEdge, new PopulationLink<State>(defaultEdge));
+            edges.put(defaultEdge, new PopulationLink(defaultEdge));
         }
         LOGGER.debug("Created Edges in " + (System.currentTimeMillis() - start) + "ms");
     }
@@ -81,30 +80,30 @@ public class RedisPopulation<State> implements Population<State> {
         return graph.vertexSet().size();
     }
 
-    public Collection<PopulationLink<State>> getEdges() {
+    public Collection<PopulationLink> getEdges() {
         return edges.values();
     }
 
-    public Collection<PopulationNode<State>> getNodes() {
+    public Collection<PopulationNode> getNodes() {
         return graph.vertexSet();
     }
 
-    public PopulationNode<State> getAgent(int index) {
-        return (PopulationNode<State>) graph.vertexSet().toArray()[index];
+    public PopulationNode getAgent(int index) {
+        return (PopulationNode) graph.vertexSet().toArray()[index];
     }
 
-    public PopulationLink<State> getEdge(PopulationNode<State> initiatorPopulationNode, PopulationNode<State> responderPopulationNode) {
+    public PopulationLink getEdge(PopulationNode initiatorPopulationNode, PopulationNode responderPopulationNode) {
         DefaultEdge edge = graph.getEdge(initiatorPopulationNode, responderPopulationNode);
         return edges.get(edge);
     }
 
-    public long getDegree(PopulationNode<State> node) {
+    public long getDegree(PopulationNode node) {
         return lookupService.getDegree(experimentId, node.getNodeName());
     }
 
-    public long getActualDegree(PopulationNode<State> node) {
+    public long getActualDegree(PopulationNode node) {
         long nodeDegree = 0;
-        for (final PopulationNode<State> node1 : getNodes()) {
+        for (final PopulationNode node1 : getNodes()) {
             if (node.equals(node1)) {
                 continue;
             }
@@ -118,13 +117,13 @@ public class RedisPopulation<State> implements Population<State> {
 
     public void initCache(final long experimentId) {
         this.experimentId = experimentId;
-        for (final PopulationNode<State> node : getNodes()) {
+        for (final PopulationNode node : getNodes()) {
             lookupService.updateDegree(experimentId, node.getNodeName(), getActualDegree(node));
         }
     }
 
     @Override
-    public void fixCacheDegree(PopulationNode<State> node) {
+    public void fixCacheDegree(PopulationNode node) {
         lookupService.updateDegree(experimentId, node.getNodeName(), getActualDegree(node));
     }
 }
