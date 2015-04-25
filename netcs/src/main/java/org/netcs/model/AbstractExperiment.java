@@ -23,7 +23,7 @@ import java.util.Set;
 /**
  * Executes a simple experiment.
  *
- * @param     the variable type for the state of the agent.
+ * @param the        variable type for the state of the agent.
  * @param <Protocol> the protocol executed in the experiment.
  */
 public abstract class AbstractExperiment<State, Protocol extends AbstractProtocol> extends Thread {
@@ -109,6 +109,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      * Initialize the population.
      */
     public void initPopulation() {
+        final long start = System.currentTimeMillis();
         Iterator<PopulationNode> nodeIterator = getPopulation().getNodes().iterator();
         while (nodeIterator.hasNext()) {
             PopulationNode node = nodeIterator.next();
@@ -123,6 +124,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         }
 
         population.initCache(index);
+        LOGGER.info("initPopulation:" + (System.currentTimeMillis() - start) + "ms");
     }
 
     /**
@@ -303,9 +305,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         long degreeTwoNodes = 0;
         long totalDegree = 0;
 
-        final Collection<PopulationNode> nodes = getPopulation().getNodes();
-        for (final PopulationNode node : nodes) {
-            final long nodeDegree = getPopulation().getDegree(node);
+        for (int i = 0; i < getPopulationSize(); i++) {
+            final long nodeDegree = getPopulation().getDegree(getPopulation().getAgent(i));
             if (nodeDegree == 0) {
                 degreeZeroNodes++;
             } else if (nodeDegree == 2) {
@@ -324,20 +325,20 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
             return true;
         }
 
-        final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
-        for (final PopulationNode node : getPopulation().getNodes()) {
-            nodesStringBuilder.append(node).append(",");
-        }
-        nodesStringBuilder.append("]");
-        LOGGER.debug(nodesStringBuilder.toString());
-
-        final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
-        for (final PopulationLink edge : getPopulation().getEdges()) {
-            if (edge.getState().equals("1")) {
-                edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
-            }
-        }
-        LOGGER.debug(edgesStringBuilder.toString());
+//        final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
+//        for (final PopulationNode node : getPopulation().getNodes()) {
+//            nodesStringBuilder.append(node).append(",");
+//        }
+//        nodesStringBuilder.append("]");
+//        LOGGER.debug(nodesStringBuilder.toString());
+//
+//        final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
+//        for (final PopulationLink edge : getPopulation().getEdges()) {
+//            if (edge.getState().equals("1")) {
+//                edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
+//            }
+//        }
+//        LOGGER.debug(edgesStringBuilder.toString());
 
         return result;
     }
@@ -356,7 +357,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
             final long nodeDegree = getPopulation().getDegree(node);
             if (nodeDegree == 1) {
                 degreeOneNodes++;
-            } else if (nodeDegree == getPopulation().getNodes().size() - 1) {
+            } else if (nodeDegree == getPopulationSize() - 1) {
                 degreeStarCenter++;
             }
             totalDegree += nodeDegree;
@@ -372,20 +373,20 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
             return true;
         }
 
-        final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
-        for (final PopulationNode node : getPopulation().getNodes()) {
-            nodesStringBuilder.append(node).append(",");
-        }
-        nodesStringBuilder.append("]");
-        LOGGER.debug(nodesStringBuilder.toString());
-
-        final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
-        for (final PopulationLink edge : getPopulation().getEdges()) {
-            if (edge.getState().equals("1")) {
-                edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
-            }
-        }
-        LOGGER.debug(edgesStringBuilder.toString());
+//        final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
+//        for (final PopulationNode node : getPopulation().getNodes()) {
+//            nodesStringBuilder.append(node).append(",");
+//        }
+//        nodesStringBuilder.append("]");
+//        LOGGER.debug(nodesStringBuilder.toString());
+//
+//        final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
+//        for (final PopulationLink edge : getPopulation().getEdges()) {
+//            if (edge.getState().equals("1")) {
+//                edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
+//            }
+//        }
+//        LOGGER.debug(edgesStringBuilder.toString());
 
         return result;
     }
@@ -441,20 +442,20 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
             return true;
         }
 
-        final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
-        for (final PopulationNode node : getPopulation().getNodes()) {
-            nodesStringBuilder.append(node).append(",");
-        }
-        nodesStringBuilder.append("]");
-        LOGGER.debug(nodesStringBuilder.toString());
-
-        final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
-        for (final PopulationLink edge : getPopulation().getEdges()) {
-            if (edge.getState().equals("1")) {
-                edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
-            }
-        }
-        LOGGER.debug(edgesStringBuilder.toString());
+//        final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
+//        for (final PopulationNode node : getPopulation().getNodes()) {
+//            nodesStringBuilder.append(node).append(",");
+//        }
+//        nodesStringBuilder.append("]");
+//        LOGGER.debug(nodesStringBuilder.toString());
+//
+//        final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
+//        for (final PopulationLink edge : getPopulation().getEdges()) {
+//            if (edge.getState().equals("1")) {
+//                edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
+//            }
+//        }
+//        LOGGER.debug(edgesStringBuilder.toString());
 
         return result;
     }
@@ -513,20 +514,20 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
             return true;
         }
 
-        final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
-        for (final PopulationNode node : getPopulation().getNodes()) {
-            nodesStringBuilder.append(node).append(",");
-        }
-        nodesStringBuilder.append("]");
-        LOGGER.debug(nodesStringBuilder.toString());
-
-        final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
-        for (final PopulationLink edge : getPopulation().getEdges()) {
-            if (edge.getState().equals("1")) {
-                edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
-            }
-        }
-        LOGGER.debug(edgesStringBuilder.toString());
+//        final StringBuilder nodesStringBuilder = new StringBuilder("Nodes: ");
+//        for (final PopulationNode node : getPopulation().getNodes()) {
+//            nodesStringBuilder.append(node).append(",");
+//        }
+//        nodesStringBuilder.append("]");
+//        LOGGER.debug(nodesStringBuilder.toString());
+//
+//        final StringBuilder edgesStringBuilder = new StringBuilder("Edges: ");
+//        for (final PopulationLink edge : getPopulation().getEdges()) {
+//            if (edge.getState().equals("1")) {
+//                edgesStringBuilder.append(edge.getDefaultEdge().toString()).append(",");
+//            }
+//        }
+//        LOGGER.debug(edgesStringBuilder.toString());
 
         return result;
     }
@@ -541,11 +542,11 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
             }
             stateCounts.get(node.getState()).addValue(1);
         }
-        final double acceptedLevel = getPopulation().getNodes().size() / (double) stateCounts.keySet().size() / ((1.5) * getPopulation().getNodes().size());
+        final double acceptedLevel = getPopulationSize() / (double) stateCounts.keySet().size() / ((1.5) * getPopulationSize());
         StringBuilder statesBuilder = new StringBuilder("StateCounts(" + acceptedLevel + "):[ ");
         boolean highCardinalities = true;
         for (String state : stateCounts.keySet()) {
-            final double cardinality = stateCounts.get(state).getSum() / getPopulation().getNodes().size();
+            final double cardinality = stateCounts.get(state).getSum() / getPopulationSize();
             statesBuilder.append(state).append("=").append(cardinality).append(" ");
             if (cardinality < acceptedLevel) {
                 highCardinalities = false;
@@ -557,7 +558,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
             final long currentInteraction = this.getInteractions();
             if (hadCardinality) {
                 final long cardinalityLength = currentInteraction - cardinalityStart;
-                if (cardinalityLength > getPopulation().getNodes().size()) {
+                if (cardinalityLength > getPopulationSize()) {
 
                     final double factor = ((double) cardinalityLength / (double) getPopulationSize());
                     final double prevMax = cardinalityFactorStatistics.getMax();
