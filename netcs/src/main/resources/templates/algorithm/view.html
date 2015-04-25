@@ -118,10 +118,38 @@
                 <div class="col-md-12" style="min-height: 300px" id="chartdiv"></div>
                 <div class="col-md-12" style="min-height: 300px" id="sizeChartDiv"></div>
                 <div class="col-md-12" style="min-height: 300px" id="stdevChartDiv"></div>
+                <div class="col-md-12" style="min-height: 300px" id="coef"></div>
 
                 <div class="col-md-12">
                     <span th:text="${#lists.size(stats.statistics)}"></span> Experiments run until now
                 </div>
+
+                <table class="table table-striped table-condensed">
+                    <thead>
+                    <th>Time</th>
+                    <th>Success</th>
+                    <th>Stats</th>
+                    </thead>
+                    <tbody>
+                    <th:block th:if="${stats}" th:with="stat = ${stats.statistics[0]}">
+                        <tr>
+                                <td th:text="${#dates.format(stat.time)}"></td>
+                                <td th:text="${stat.success}"></td>
+                                <td>
+                                    <th:block th:each="tstats : ${stat.terminationStats}">
+                                        <a th:href="'?graph='+${tstats.key}">
+                                            <span th:text="${tstats.key}"></span>
+                                        </a>
+                                        :
+                                        <span th:text="${tstats.value}"></span>
+                                        <br/>
+                                    </th:block>
+                                </td>
+                            </tr>
+                    </th:block>
+                    </tbody>
+                </table>
+
             </div>
         </section>
         <!-- /.content -->
@@ -174,8 +202,10 @@
             theoreticalInteractionsN4 = [];
             theoreticalInteractionsN3 = [];
             theoreticalInteractionsN2 = [];
+            theoreticalInteractionsN2DlogN = [];
             theoreticalInteractionsN = [];
-            theoreticalInteractionsStar = [];
+            theoreticalInteractionsN2Logn = [];
+            theoreticalInteractionsLogn = [];
 
             sizes.forEach(function (size) {
                 bstats = [];
@@ -219,13 +249,15 @@
             axisCount = 1;
             if (getUrlVars().indexOf("n5") > 0) {
                 means.forEach(function (elem) {
-                    theoreticalInteractionsN5.push(Math.pow(elem.size, 5));
+                    if (elem.size) {
+                        theoreticalInteractionsN5.push(Math.pow(elem.size, 5));
+                    }
                 });
 
                 theDataSeries.push({
                     yAxis: axisCount,
                     name: 'n^5',
-                    data: theoreticalInteractionsN5.slice(theoreticalInteractionsN5.length / 2),
+                    data: theoreticalInteractionsN5,
                     marker: {
                         enabled: false
                     }
@@ -244,13 +276,15 @@
             }
             if (getUrlVars().indexOf("n4") > 0) {
                 means.forEach(function (elem) {
-                    theoreticalInteractionsN4.push(Math.pow(elem.size, 4));
+                    if (elem.size) {
+                        theoreticalInteractionsN4.push(Math.pow(elem.size, 4));
+                    }
                 });
 
                 theDataSeries.push({
                     yAxis: axisCount,
                     name: 'n^4',
-                    data: theoreticalInteractionsN4.slice(theoreticalInteractionsN4.length / 2),
+                    data: theoreticalInteractionsN4,
                     marker: {
                         enabled: false
                     }
@@ -269,13 +303,15 @@
             }
             if (getUrlVars().indexOf("n3") > 0) {
                 means.forEach(function (elem) {
-                    theoreticalInteractionsN3.push(Math.pow(elem.size, 3));
+                    if (elem.size) {
+                        theoreticalInteractionsN3.push(Math.pow(elem.size, 3));
+                    }
                 });
 
                 theDataSeries.push({
                     name: 'n^3',
                     yAxis: axisCount,
-                    data: theoreticalInteractionsN3.slice(theoreticalInteractionsN3.length / 2),
+                    data: theoreticalInteractionsN3,
                     marker: {
                         enabled: false
                     }
@@ -293,14 +329,52 @@
                 axisCount++;
             }
             if (getUrlVars().indexOf("n2") > 0) {
+
                 means.forEach(function (elem) {
-                    theoreticalInteractionsN2.push(Math.pow(elem.size, 2));
+                    if (elem.size) {
+                        val = Math.pow(elem.size, 2);
+                        theoreticalInteractionsN2.push(val);
+                        val = Math.pow(elem.size, 2);
+                        $("#coef").append(elem.size + " &amp; " + (elem.stat / val).toFixed(5) + " \\\\<br/>");
+                    }
                 });
 
                 theDataSeries.push({
                     name: 'n^2',
                     yAxis: axisCount,
-                    data: theoreticalInteractionsN2.slice(theoreticalInteractionsN2.length / 2),
+                    data: theoreticalInteractionsN2,
+                    marker: {
+                        enabled: false
+                    }
+                });
+                theYAxis.push({
+                    labels: {
+                        enabled: false
+                    },
+                    title: {
+                        text: null
+                    },
+                    opposite: true,
+                    min: 0
+                });
+                axisCount++;
+            }
+
+            if (getUrlVars().indexOf("n2-logn") > 0) {
+
+                means.forEach(function (elem) {
+                    if (elem.size) {
+                        val = Math.pow(elem.size, 2) / Math.log(elem.size);
+                        theoreticalInteractionsN2DlogN.push(val);
+                        val = Math.pow(elem.size, 2) / Math.log(elem.size);
+                        $("#coef").append(elem.size + " &amp; " + (elem.stat / val).toFixed(5) + " \\\\<br/>");
+                    }
+                });
+
+                theDataSeries.push({
+                    name: 'n^2/logn',
+                    yAxis: axisCount,
+                    data: theoreticalInteractionsN2DlogN,
                     marker: {
                         enabled: false
                     }
@@ -320,13 +394,15 @@
 
             if (getUrlVars().indexOf("n") > 0) {
                 means.forEach(function (elem) {
-                    theoreticalInteractionsN.push(Math.pow(elem.size, 1));
+                    if (elem.size) {
+                        theoreticalInteractionsN.push(Math.pow(elem.size, 1));
+                    }
                 });
 
                 theDataSeries.push({
                     yAxis: axisCount,
                     name: 'n',
-                    data: theoreticalInteractionsN.slice(theoreticalInteractionsN.length / 2),
+                    data: theoreticalInteractionsN,
                     marker: {
                         enabled: false
                     }
@@ -346,13 +422,47 @@
 
             if (getUrlVars().indexOf("n2logn") > 0) {
                 means.forEach(function (elem) {
-                    theoreticalInteractionsStar.push(Math.pow(elem.size, 2) * Math.log(elem.size));
+                    if (elem.size) {
+                        theoreticalInteractionsN2Logn.push(Math.pow(elem.size, 2) * Math.log(elem.size));
+                        val = Math.pow(elem.size, 2) * Math.log(elem.size);
+                        $("#coef").append(elem.size + " &amp; " + (elem.stat / val).toFixed(5) + " \\\\<br/>");
+                    }
                 });
 
                 theDataSeries.push({
                     yAxis: axisCount,
                     name: 'n^2log(n)',
-                    data: theoreticalInteractionsStar.slice(theoreticalInteractionsStar.length / 2),
+                    data: theoreticalInteractionsN2Logn,
+                    marker: {
+                        enabled: false
+                    }
+                })
+                theYAxis.push({
+                    labels: {
+                        enabled: false
+                    },
+                    title: {
+                        text: null
+                    },
+                    opposite: true,
+                    min: 99
+                });
+                axisCount++;
+            }
+            if (getUrlVars().indexOf("logn") > 0) {
+                means.forEach(function (elem) {
+                    if (elem.size) {
+                        theoreticalInteractionsLogn.push(Math.log(elem.size));
+
+                        val = Math.log(elem.size);
+                        $("#coef").append(elem.size + " &amp; " + (elem.stat / val).toFixed(5) + " \\\\<br/>");
+                    }
+                });
+
+                theDataSeries.push({
+                    yAxis: axisCount,
+                    name: 'log(n)',
+                    data: theoreticalInteractionsLogn,
                     marker: {
                         enabled: false
                     }
