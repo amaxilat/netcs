@@ -97,10 +97,9 @@ public class RunnableExperiment implements Runnable {
                 totalExecutionStatistics.append("Execution:Iterations").append("\n");
             }
 
-            LOGGER.info("willinit:" + index);
             experiment.initPopulation();
 
-            LOGGER.info("initdone:" + index);
+
             //run experiment
             experiment.run();
 
@@ -129,7 +128,7 @@ public class RunnableExperiment implements Runnable {
             fileWriter.write(totalExecutionStatistics.toString());
             fileWriter.close();
 
-            LOGGER.info("Experiment ended");
+            LOGGER.info("Experiment ended:"+index);
         } catch (Exception e) {
             LOGGER.error(e, e);
         }
