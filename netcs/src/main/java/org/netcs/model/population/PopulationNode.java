@@ -43,7 +43,7 @@ public class PopulationNode {
 
         PopulationNode that = (PopulationNode) o;
 
-        return nodeName.equals(that.nodeName);
+        return nodeName.equals(that.getNodeName());
 
     }
 
