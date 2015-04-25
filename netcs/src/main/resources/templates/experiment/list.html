@@ -173,7 +173,7 @@
                                                     <br/>
                                                     <span th:if="${experiment.experiment.interactions!=0}">Running...
                                                         <span class="text-muted">
-                                                            <span th:text="${experiment.experiment.interactions}">
+                                                            <span th:text="${#numbers.formatInteger(experiment.experiment.interactions,3,'POINT')}">
                                                             </span>
                                                              interactions
                                                         </span>
