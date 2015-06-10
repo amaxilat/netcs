@@ -10,6 +10,7 @@ import java.util.Map;
 public class ExecutionStatistics {
     @Id
     private String id;
+    private String scheduler;
     private Long time;
     private Long interactions;
     private Long effectiveInteractions;
@@ -80,5 +81,13 @@ public class ExecutionStatistics {
 
     public void setTerminationStats(final Map<String, String> terminationStats) {
         this.terminationStats = terminationStats;
+    }
+
+    public String getScheduler() {
+        return scheduler;
+    }
+
+    public void setScheduler(String scheduler) {
+        this.scheduler = scheduler;
     }
 }
