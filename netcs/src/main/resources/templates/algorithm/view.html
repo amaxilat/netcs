@@ -113,7 +113,7 @@
                 </form>
             </div>
             <div class="col-md-8">
-                <h4 th:text="${param.graph}"></h4>
+                <h4 id="graphParam"></h4>
 
                 <div class="col-md-12" style="min-height: 300px" id="chartdiv"></div>
                 <div class="col-md-12" style="min-height: 300px" id="sizeChartDiv"></div>
@@ -133,19 +133,19 @@
                     <tbody>
                     <th:block th:if="${stats}" th:with="stat = ${stats.statistics[0]}">
                         <tr>
-                                <td th:text="${#dates.format(stat.time)}"></td>
-                                <td th:text="${stat.success}"></td>
-                                <td>
-                                    <th:block th:each="tstats : ${stat.terminationStats}">
-                                        <a th:href="'?graph='+${tstats.key}">
-                                            <span th:text="${tstats.key}"></span>
-                                        </a>
-                                        :
-                                        <span th:text="${tstats.value}"></span>
-                                        <br/>
-                                    </th:block>
-                                </td>
-                            </tr>
+                            <td th:text="${#dates.format(stat.time)}"></td>
+                            <td th:text="${stat.success}"></td>
+                            <td>
+                                <th:block th:each="tstats : ${stat.terminationStats}">
+                                    <a th:href="'?graph='+${tstats.key}">
+                                        <span th:text="${tstats.key}"></span>
+                                    </a>
+                                    :
+                                    <span th:text="${tstats.value}"></span>
+                                    <br/>
+                                </th:block>
+                            </td>
+                        </tr>
                     </th:block>
                     </tbody>
                 </table>
@@ -173,27 +173,47 @@
     /*<![CDATA[*/
     stats = /*[[${stats.statistics}]]*/ null;
     targetStat = /*[[${param.graph}]]*/ null;
+    to = /*[[${param.to}]]*/ 100000;
+    targetScheduler = /*[[${param.targetScheduler}]]*/ "Random";
     /*]]>*/
 
+    if (to== null) {
+        to= 100000;
+    }
+    if (targetScheduler == null) {
+        targetScheduler = "Random";
+    }
+    $("#graphParam").text(targetStat);
+
     if (targetStat != null) {
+        console.log(targetStat);
         if (stats != null) {
+            console.log(stats);
             mystats = [];
             sizes = [];
             means = [];
             for (var i = 0; i != stats.length; i++) {
                 if (stats[i].populationSize % 50 == 0) {
-                    if (sizes.indexOf(stats[i].populationSize) == -1) {
-
-                        sizes.push(stats[i].populationSize);
+                    if (stats[i].scheduler == targetScheduler) {
+                        if (stats[i].populationSize > to) {
+                            console.log("Dropping measurement for size: " + stats[i].populationSize);
+                        } else {
+                            console.log("size:" + stats[i].populationSize);
+                            if (sizes.indexOf(stats[i].populationSize) == -1) {
+                                sizes.push(stats[i].populationSize);
+                            }
+                            mystats[stats[i].populationSize] = [];
+                            means[stats[i].populationSize] = 0;
+                        }
+                    } else {
+                        console.log("Dropping measurement for scheduler: " + stats[i].scheduler);
                     }
-                    mystats[stats[i].populationSize] = [];
-                    means[stats[i].populationSize] = 0;
-
                 }
             }
             sizes = sizes.sort(function (a, b) {
                 return a - b
             });
+            console.log(sizes);
 
             values = [];
             chartSizes = [];
@@ -232,8 +252,9 @@
                 values.push(elem.stat);
             });
 
+            console.log("grahing...");
             theDataSeries = [];
-            theYAxis = []
+            theYAxis = [];
             theDataSeries.push(
                     {
                         name: targetStat,
@@ -305,6 +326,8 @@
                 means.forEach(function (elem) {
                     if (elem.size) {
                         theoreticalInteractionsN3.push(Math.pow(elem.size, 3));
+                        val = Math.pow(elem.size, 3);
+                        $("#coef").append(elem.size + " &amp; " + (elem.stat / val).toFixed(5) + " \\\\<br/>");
                     }
                 });
 
@@ -479,7 +502,9 @@
                 });
                 axisCount++;
             }
-
+            console.log("creating...");
+            console.log($('#chartdiv'));
+            console.log($(theDataSeries));
             $(function () {
                 $('#chartdiv').highcharts({
                     chart: {
