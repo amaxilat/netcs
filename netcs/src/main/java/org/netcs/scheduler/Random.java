@@ -9,11 +9,11 @@ import org.netcs.model.population.PopulationNode;
  * Implements simple randomized scheduler.
  */
 //TODO: Randomly choose the resulting states
-public class RandomScheduler extends AbstractScheduler {
+public class Random extends AbstractScheduler {
     /**
      * a log4j logger to print messages.
      */
-    private static final Logger LOGGER = Logger.getLogger(RandomScheduler.class);
+    private static final Logger LOGGER = Logger.getLogger(Random.class);
 
     /**
      * Performs an interaction between an initiator agent and a responder agent. The scheduler uniformly randomly

@@ -42,25 +42,15 @@ public class AlgorithmController extends BaseController {
 
     @PostConstruct
     public void init() {
-//        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName("global-line2");
-//        final List<ExecutionStatistics> tStats = new ArrayList<>();
-//        tStats.addAll(stats.getStatistics());
-//        for (ExecutionStatistics stat : tStats) {
-////            stat.setTerminationStats(new HashMap<String, String>());
-////            stat.getTerminationStats().put("populationSize", String.valueOf(stat.getPopulationSize()));
-////            stat.getTerminationStats().put("interactions", String.valueOf(stat.getInteractions()));
-////            stat.getTerminationStats().put("effectiveInteractions", String.valueOf(stat.getEffectiveInteractions()));
-////            if (stat.getTerminationMessage() != null) {
-////                final String[] parts = stat.getTerminationMessage().split(",");
-////                for (String part : parts) {
-////                    stat.getTerminationStats().put(part.split("=")[0], part.split("=")[1]);
-////                }
-////            }
-//            if (stat.getPopulationSize() < 100) {
-//                stats.getStatistics().remove(stat);
-//            }
-//        }
-//        algorithmStatisticsRepository.save(stats);
+        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName("counter");
+        final List<ExecutionStatistics> tStats = new ArrayList<>();
+        tStats.addAll(stats.getStatistics());
+        for (ExecutionStatistics stat : tStats) {
+            if (!stat.getTerminationStats().get("b").equals("1")) {
+                stats.getStatistics().remove(stat);
+            }
+        }
+        algorithmStatisticsRepository.save(stats);
     }
 
 

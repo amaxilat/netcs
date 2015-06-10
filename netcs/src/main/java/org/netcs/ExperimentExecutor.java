@@ -299,7 +299,7 @@ public class ExperimentExecutor {
         return advancedExperiments;
     }
 
-    @Scheduled(fixedRate = 1000L)
+    //@Scheduled(fixedRate = 1000L)
     public void checker() {
         for (RunnableExperiment experiment : experiments) {
             if (experiment.isFinished()) {
@@ -338,7 +338,7 @@ public class ExperimentExecutor {
             runSimpleAlgorithmExperimentsInBackground(mineSimpleName);
     }
 
-    @Scheduled(fixedRate = 100L)
+    //@Scheduled(fixedRate = 100L)
     public void checker2() {
         for (AdvancedRunnableExperiment experiment : advancedExperiments) {
             if (experiment.isFinished()) {

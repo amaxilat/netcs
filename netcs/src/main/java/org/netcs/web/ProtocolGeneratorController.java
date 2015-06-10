@@ -95,7 +95,7 @@ public class ProtocolGeneratorController extends BaseController {
         conf.setInitialNodeState("q0");
         conf.setIterations(100);
         conf.setPopulationSize(100);
-        conf.setScheduler("RandomScheduler");
+        conf.setScheduler("Random");
         return algorithm;
     }
 }

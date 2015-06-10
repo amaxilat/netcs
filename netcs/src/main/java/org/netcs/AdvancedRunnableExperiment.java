@@ -5,7 +5,7 @@ import org.apache.log4j.Logger;
 import org.netcs.config.ConfigFile;
 import org.netcs.model.ConfigurableExperiment;
 import org.netcs.model.population.PopulationNode;
-import org.netcs.scheduler.RandomScheduler;
+import org.netcs.scheduler.Random;
 import org.springframework.messaging.core.MessageSendingOperations;
 
 /**
@@ -45,7 +45,7 @@ public class AdvancedRunnableExperiment extends RunnableExperiment {
 
             //prepare experiment
             final ConfigurableProtocol protocol = new ConfigurableProtocol(configFile);
-            final RandomScheduler scheduler = new RandomScheduler();
+            final Random scheduler = new Random();
             experiment = new ConfigurableExperiment(configFile, protocol, scheduler, index, lookupService);
             experiment.initPopulation();
             final PopulationNode node = (PopulationNode) experiment.getPopulation().getNodes().iterator().next();

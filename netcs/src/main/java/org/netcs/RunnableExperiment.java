@@ -8,7 +8,7 @@ import org.netcs.model.AbstractExperiment;
 import org.netcs.model.AbstractProtocol;
 import org.netcs.model.ConfigurableExperiment;
 import org.netcs.model.StateTriple;
-import org.netcs.scheduler.RandomScheduler;
+import org.netcs.scheduler.Random;
 import org.springframework.messaging.core.MessageSendingOperations;
 
 import java.io.FileWriter;
@@ -51,7 +51,7 @@ public class RunnableExperiment implements Runnable {
 
         //prepare experiment
         final ConfigurableProtocol protocol = new ConfigurableProtocol(configFile);
-        final RandomScheduler scheduler = new RandomScheduler();
+        final Random scheduler = new Random();
         LOGGER.info("experiment:" + index);
         experiment = new ConfigurableExperiment(configFile, protocol, scheduler, index, lookupService);
 

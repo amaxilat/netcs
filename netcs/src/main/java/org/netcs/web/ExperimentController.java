@@ -4,6 +4,8 @@ import org.apache.log4j.Logger;
 import org.netcs.AdvancedRunnableExperiment;
 import org.netcs.ExperimentExecutor;
 import org.netcs.RunnableExperiment;
+import org.netcs.model.mongo.AlgorithmStatistics;
+import org.netcs.model.mongo.ExecutionStatistics;
 import org.netcs.model.population.PopulationLink;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -36,7 +38,6 @@ public class ExperimentController extends BaseController {
 
     @PostConstruct
     public void init() {
-
 //        new Thread(new Runnable() {
 //            @Override
 //            public void run() {
@@ -48,8 +49,7 @@ public class ExperimentController extends BaseController {
 //            }
 //        }).start();
 
-
-    }
+   }
 
     @RequestMapping(value = "/experiment", method = RequestMethod.GET)
     public String listExperiments(final Map<String, Object> model) {
