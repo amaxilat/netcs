@@ -14,9 +14,7 @@ import javax.annotation.PostConstruct;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -62,9 +60,9 @@ public class ExperimentExecutor {
 
     public ExperimentExecutor() {
 //        this.executors = Runtime.getRuntime().availableProcessors() > 2 ? Runtime.getRuntime().availableProcessors() - 2 : 1;
-//        this.executors = Runtime.getRuntime().availableProcessors() * 2;
+        this.executors = Runtime.getRuntime().availableProcessors() * 2;
 //        this.executors = Runtime.getRuntime().availableProcessors();
-        this.executors = 1;
+//        this.executors = 1;
 
         this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(executors);
         this.experiments = new ArrayList<>();
@@ -104,13 +102,13 @@ public class ExperimentExecutor {
 //            lookupService.setCount("counter", 110L);
 //            this.count = lookupService.getCount("counter");
 //        }
-//        Timer t = new Timer();
-//        t.schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                System.exit(1);
-//            }
-//        }, 30 * 60 * 1000);
+        Timer t = new Timer();
+        t.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.exit(1);
+            }
+        }, 60 * 60 * 1000);
         count = 100L;
     }
 
@@ -176,7 +174,7 @@ public class ExperimentExecutor {
             }
 
             LOGGER.info("Found " + results + " experiments for " + algo.getName() + " under:" + mineSimpleScheduler + ".");
-            if (results < 20) {
+            if (results < 200) {
                 try {
                     LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
                     runExperiments(algo, count, executors, count, mineSimpleScheduler);
@@ -185,7 +183,12 @@ public class ExperimentExecutor {
                 }
 //                addRunnableExperiment(algo, count);
             } else {
-                final long next = count + 100;
+                long step = 100;
+                if (count >= 1000) {
+                    step = 500;
+                }
+                final long next = count + step;
+
                 LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + next + " nodes.");
                 count = next;
                 lookupService.setCount(algo.getName(), count);
