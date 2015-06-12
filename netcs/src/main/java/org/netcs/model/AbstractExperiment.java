@@ -12,12 +12,7 @@ import org.netcs.model.population.PopulationNode;
 import org.netcs.scheduler.AbstractScheduler;
 import org.springframework.messaging.core.MessageSendingOperations;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -133,9 +128,11 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     public void run() {
         //reportStatus("started");
         final long start = System.currentTimeMillis();
-
+        SummaryStatistics interactionTimes = new SummaryStatistics();
+        SummaryStatistics stabilityCheckTimes = new SummaryStatistics();
         while (true) {
             try {
+                final long startInteraction = System.currentTimeMillis();
                 // Invoke scheduler to conduct next interaction
                 boolean interactionStatus = scheduler.interact(index);
 
@@ -156,7 +153,9 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
                     if (stability) {
                         break;
                     }
-                    reportStatus(String.format("[%d] checkStability %dms", index, System.currentTimeMillis() - startCheckStability));
+                    long stabilityCheckTime = System.currentTimeMillis() - startCheckStability;
+                    stabilityCheckTimes.addValue(stabilityCheckTime);
+                    reportStatus(String.format("[%d] checkStability %dms", index, stabilityCheckTime));
                 }
 
                 // increase interactions counter
@@ -172,12 +171,28 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
                     finished = true;
                     break;
                 }
+                long time = (System.currentTimeMillis() - startInteraction);
+                interactionTimes.addValue(time);
+                if (interactions % 10000 == 0) {
+                    LOGGER.debug(String.format("[%d] stats: %.2f/%.2f/%.2f %.2f/%.2f/%.2f", index,
+                            interactionTimes.getMean(), interactionTimes.getMax(), interactionTimes.getMin(),
+                            stabilityCheckTimes.getMean(), stabilityCheckTimes.getMax(), stabilityCheckTimes.getMin()
+                    ));
+                }
             } catch (Exception ex) {
                 LOGGER.error("Exception occurred", ex);
             }
         }
+        final long totalTime = (System.currentTimeMillis() - start);
+        terminationStats.put("time", Long.toString(totalTime));
 
-        terminationStats.put("time", Long.toString(System.currentTimeMillis() - start));
+        LOGGER.info(String.format("[%d] finalStats: %.0f|%d %.2f/%.2f/%.2f %.2f/%.2f/%.2f", index,
+                interactionTimes.getMean() * interactions, totalTime,
+                interactionTimes.getMean(), interactionTimes.getMax(), interactionTimes.getMin(),
+                stabilityCheckTimes.getMean(), stabilityCheckTimes.getMax(), stabilityCheckTimes.getMin()
+        ));
+
+
         // Finalize experiment
         completeExperiment();
 
@@ -205,18 +220,22 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 //        }
 
         if (lookingForStar && checkStar()) {
+            LOGGER.info("<================ FOUND STAR");
             finished = true;
             return true;
         }
         if (lookingForCircle && checkCircle()) {
+            LOGGER.info("<================ FOUND CIRCLE");
             finished = true;
             return true;
         }
         if (lookingForCycleCover && checkCycleCover()) {
+            LOGGER.info("<================ FOUND CCOVER");
             finished = true;
             return true;
         }
         if (lookingForLine && checkLine()) {
+            LOGGER.info("<================ FOUND LINE");
             finished = true;
             return true;
         }

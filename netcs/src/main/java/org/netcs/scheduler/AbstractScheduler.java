@@ -18,7 +18,7 @@ public abstract class AbstractScheduler implements Scheduler {
     /**
      * Random number generator.
      */
-    private final Random randomGenerator;
+    final Random randomGenerator;
 
     /**
      * Population holder.

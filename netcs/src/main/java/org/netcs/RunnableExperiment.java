@@ -8,7 +8,10 @@ import org.netcs.model.AbstractExperiment;
 import org.netcs.model.AbstractProtocol;
 import org.netcs.model.ConfigurableExperiment;
 import org.netcs.model.StateTriple;
+import org.netcs.scheduler.AbstractScheduler;
+import org.netcs.scheduler.History;
 import org.netcs.scheduler.Random;
+import org.netcs.scheduler.ReverseHistory;
 import org.springframework.messaging.core.MessageSendingOperations;
 
 import java.io.FileWriter;
@@ -27,6 +30,7 @@ public class RunnableExperiment implements Runnable {
     protected final ConfigFile configFile;
     private final String algorithmName;
     private final MessageSendingOperations<String> messagingTemplate;
+    private final AbstractScheduler scheduler;
     protected StringBuilder detailedStatistics;
     protected AbstractExperiment experiment;
     protected boolean stored;
@@ -38,6 +42,11 @@ public class RunnableExperiment implements Runnable {
     }
 
     public RunnableExperiment(final String algorithmName, final ConfigFile configFile, final Long nodeCount, final long index, final MessageSendingOperations<String> messagingTemplate
+            , final LookupService lookupService) {
+        this(algorithmName, "Random", configFile, nodeCount, index, messagingTemplate, lookupService);
+    }
+
+    public RunnableExperiment(final String algorithmName, final String schedulerName, final ConfigFile configFile, final Long nodeCount, final long index, final MessageSendingOperations<String> messagingTemplate
             , final LookupService lookupService) {
         this.lookupService = lookupService;
         this.messagingTemplate = messagingTemplate;
@@ -51,10 +60,23 @@ public class RunnableExperiment implements Runnable {
 
         //prepare experiment
         final ConfigurableProtocol protocol = new ConfigurableProtocol(configFile);
-        final Random scheduler = new Random();
+//        final Random scheduler = new Random();
+        if ("Random".equals(schedulerName)) {
+            scheduler = new Random();
+        } else if ("History".equals(schedulerName)) {
+            scheduler = new History();
+        } else if ("ReverseHistory".equals(schedulerName)) {
+            scheduler = new ReverseHistory();
+        } else {
+            scheduler = new Random();
+        }
         LOGGER.info("experiment:" + index);
         experiment = new ConfigurableExperiment(configFile, protocol, scheduler, index, lookupService);
 
+    }
+
+    public AbstractScheduler getScheduler() {
+        return scheduler;
     }
 
     public long getIndex() {
@@ -128,7 +150,7 @@ public class RunnableExperiment implements Runnable {
             fileWriter.write(totalExecutionStatistics.toString());
             fileWriter.close();
 
-            LOGGER.info("Experiment ended:"+index);
+            LOGGER.info("Experiment ended:" + index);
         } catch (Exception e) {
             LOGGER.error(e, e);
         }

@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -46,6 +44,8 @@ public class ExperimentExecutor {
     String mineSimple;
     @Value("${mine.simple.name:}")
     String mineSimpleName;
+    @Value("${mine.simple.scheduler:}")
+    String mineSimpleScheduler;
     @Value("${mine.count:false}")
     String mineCount;
     @Value("${mine.advanced:false}")
@@ -62,8 +62,9 @@ public class ExperimentExecutor {
 
     public ExperimentExecutor() {
 //        this.executors = Runtime.getRuntime().availableProcessors() > 2 ? Runtime.getRuntime().availableProcessors() - 2 : 1;
-        this.executors = Runtime.getRuntime().availableProcessors()*2;
-//        this.executors = 1;
+//        this.executors = Runtime.getRuntime().availableProcessors() * 2;
+//        this.executors = Runtime.getRuntime().availableProcessors();
+        this.executors = 1;
 
         this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(executors);
         this.experiments = new ArrayList<>();
@@ -114,9 +115,13 @@ public class ExperimentExecutor {
     }
 
     void runExperiment(final Algorithm algorithm, Long nodeCount, long index) throws FileNotFoundException {
+        runExperiment(algorithm, "Random", nodeCount, index);
+    }
+
+    void runExperiment(final Algorithm algorithm, final String scheduler, Long nodeCount, long index) throws FileNotFoundException {
         final String configFileName = algorithm.getName();
 
-        RunnableExperiment experiment = new RunnableExperiment(algorithm.getName(), algorithm.getConfigFile(), nodeCount, index, messagingTemplate, lookupService);
+        RunnableExperiment experiment = new RunnableExperiment(algorithm.getName(), scheduler, algorithm.getConfigFile(), nodeCount, index, messagingTemplate, lookupService);
         //write statistics to file
         try {
             final FileWriter fw = new FileWriter("outfile." + index);
@@ -142,9 +147,13 @@ public class ExperimentExecutor {
     }
 
     void runExperiments(final Algorithm algorithm, Long nodeCount, final long iterations, final long nodeLimit) throws FileNotFoundException {
+        runExperiments(algorithm, nodeCount, iterations, nodeLimit, "Random");
+    }
+
+    void runExperiments(final Algorithm algorithm, Long nodeCount, final long iterations, final long nodeLimit, final String scheduler) throws FileNotFoundException {
         do {
             for (int i = 0; i < iterations; i++) {
-                runExperiment(algorithm, nodeCount, i);
+                runExperiment(algorithm, scheduler, nodeCount, i);
             }
             nodeCount += 50;
         } while (nodeCount < nodeLimit);
@@ -159,24 +168,26 @@ public class ExperimentExecutor {
             int results = 0;
             for (final ExecutionStatistics executionStatistics : algoStatistics.getStatistics()) {
                 if (count.equals(Long.parseLong(executionStatistics.getTerminationStats().get("populationSize")))
+                        && mineSimpleScheduler.equals(executionStatistics.getScheduler())
 //                        && executionStatistics.getTerminationMessage().contains("b=1,")
                         ) {
                     results++;
                 }
             }
 
-            LOGGER.info("Found " + results + " experiments for " + algo.getName() + ".");
-            if (results < 100) {
+            LOGGER.info("Found " + results + " experiments for " + algo.getName() + " under:" + mineSimpleScheduler + ".");
+            if (results < 20) {
                 try {
                     LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
-                    runExperiments(algo, count, executors, count);
+                    runExperiments(algo, count, executors, count, mineSimpleScheduler);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
 //                addRunnableExperiment(algo, count);
             } else {
-                LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + (count + 10) + " nodes.");
-                count += 50;
+                final long next = count + 100;
+                LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + next + " nodes.");
+                count = next;
                 lookupService.setCount(algo.getName(), count);
             }
         }
@@ -199,8 +210,9 @@ public class ExperimentExecutor {
             LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
             addRunnableExperiment(algo, count);
         } else {
-            LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + (count + 10) + " nodes.");
-            count += 10;
+            final long next = count + 10;
+            LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + next + " nodes.");
+            count = next;
         }
     }
 
@@ -299,7 +311,7 @@ public class ExperimentExecutor {
         return advancedExperiments;
     }
 
-    //@Scheduled(fixedRate = 1000L)
+    @Scheduled(fixedRate = 1000L)
     public void checker() {
         for (RunnableExperiment experiment : experiments) {
             if (experiment.isFinished()) {
@@ -316,16 +328,26 @@ public class ExperimentExecutor {
                     stats.setStatistics(new ArrayList<ExecutionStatistics>());
                     algorithmStatisticsRepository.save(stats);
                 }
+                LOGGER.info("Storing under " + experiment.getScheduler().getClass().getSimpleName() + " scheduler...");
+
                 final ExecutionStatistics statistics = new ExecutionStatistics();
+
                 statistics.setEffectiveInteractions(experiment.getExperiment().getEffectiveInteractions());
                 statistics.setInteractions(experiment.getExperiment().getInteractions());
                 statistics.setTime(new Date().getTime());
                 statistics.setPopulationSize((long) experiment.getExperiment().getPopulationSize());
 
+                statistics.setScheduler(experiment.getScheduler().getClass().getSimpleName());
+
+
                 statistics.setTerminationStats(experiment.getExperiment().getTerminationStats());
                 statistics.getTerminationStats().put("interactions", String.valueOf(statistics.getInteractions()));
                 statistics.getTerminationStats().put("effectiveInteractions", String.valueOf(statistics.getEffectiveInteractions()));
                 statistics.getTerminationStats().put("populationSize", String.valueOf(statistics.getPopulationSize()));
+
+                if (experiment.getExperiment().getTerminationStats().containsKey("time")) {
+                    statistics.getTerminationStats().put("time", String.valueOf(experiment.getExperiment().getTerminationStats().get("time")));
+                }
                 stats.getStatistics().add(statistics);
                 algorithmStatisticsRepository.save(stats);
                 LOGGER.info("Experiment:" + experiment.getIndex() + " SAVED");
