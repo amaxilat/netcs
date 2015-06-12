@@ -52,7 +52,7 @@ public class ExperimentExecutor {
     private List<AdvancedRunnableExperiment> advancedExperiments;
     private List<Thread> experimentThreads;
     private List<Thread> advancedExperimentThreads;
-    private final int executors;
+    private int executors;
     private Long count;
     private int totalCount;
     private int randomIndex;
@@ -158,6 +158,15 @@ public class ExperimentExecutor {
     }
 
     void runSimpleAlgorithmExperimentsInBackground(final String algorithmName) {
+
+        if (count < 800) {
+            executors = Runtime.getRuntime().availableProcessors() * 2;
+        } else if (count < 1500) {
+            Runtime.getRuntime().availableProcessors();
+        } else {
+            executors = Runtime.getRuntime().availableProcessors() / 2;
+        }
+
         if (executor.getActiveCount() < executors && (executor.getTaskCount() - executor.getCompletedTaskCount()) < 2 * executors) {
             LOGGER.info("Checking experiments for " + count + " nodes...");
             final AlgorithmStatistics algoStatistics = algorithmStatisticsRepository.findByAlgorithmName(algorithmName);
