@@ -174,15 +174,13 @@
     stats = /*[[${stats.statistics}]]*/ null;
     targetStat = /*[[${param.graph}]]*/ null;
     to = /*[[${param.to}]]*/ 100000;
-    targetScheduler = /*[[${param.targetScheduler}]]*/ "Random";
+    targetScheduler = /*[[${param.scheduler}]]*/ "Random";
     /*]]>*/
 
     if (to == null) {
         to = 100000;
     }
-    if (targetScheduler == null) {
-        targetScheduler = "Random";
-    }
+
     $("#graphParam").text(targetStat);
 
     if (targetStat != null) {
@@ -192,25 +190,33 @@
             mystats = [];
             sizes = [];
             means = [];
+            schedulers = [];
             for (var i = 0; i != stats.length; i++) {
                 if (stats[i].populationSize % 100 == 0) {
-                    if (stats[i].scheduler == targetScheduler) {
-                        if (stats[i].populationSize > to) {
-                            console.log("Dropping measurement for size: " + stats[i].populationSize);
-                        } else {
-                            console.log("size:" + stats[i].populationSize);
-                            if (sizes.indexOf(stats[i].populationSize) == -1) {
-                                sizes.push(stats[i].populationSize);
-                            }
-                            mystats[stats[i].populationSize] = [];
-                            means[stats[i].populationSize] = 0;
-                        }
-                    } else {
-                        console.log("Dropping measurement for scheduler: " + stats[i].scheduler);
+                    scheduler = stats[i].scheduler;
+                    if (schedulers.indexOf(scheduler) == -1) {
+                        schedulers.push(scheduler);
+                        mystats[scheduler] = [];
+                        sizes[scheduler] = [];
+                        means[scheduler] = [];
                     }
+                    //if (stats[i].scheduler == targetScheduler) {
+                    if (stats[i].populationSize > to) {
+                        console.log("Dropping measurement for size: " + stats[i].populationSize);
+                    } else {
+                        console.log("size:" + stats[i].populationSize);
+                        if (sizes[scheduler].indexOf(stats[i].populationSize) == -1) {
+                            sizes[scheduler].push(stats[i].populationSize);
+                        }
+                        mystats[scheduler][stats[i].populationSize] = [];
+                        means[scheduler][stats[i].populationSize] = 0;
+                    }
+                    //} else {
+                    //    console.log("Dropping measurement for scheduler: " + stats[i].scheduler);
+                    //}
                 }
             }
-            sizes = sizes.sort(function (a, b) {
+            sizes[scheduler] = sizes[scheduler].sort(function (a, b) {
                 return a - b
             });
             console.log(sizes);
@@ -226,42 +232,83 @@
             theoreticalInteractionsN = [];
             theoreticalInteractionsN2Logn = [];
             theoreticalInteractionsLogn = [];
+            sizes.forEach(function (item) {
+                console.log(item);
+            });
 
-            sizes.forEach(function (size) {
-                bstats = [];
-                for (var i = 0; i != stats.length; i++) {
-                    if (stats[i].populationSize % 100 == 0) {
-                        if (stats[i].populationSize == size) {
-                            if (stats[i].scheduler == targetScheduler) {
-                                if (stats[i]['terminationStats']) {
-                                    if (stats[i]['terminationStats'][targetStat]) {
-                                        bstats.push(parseFloat(stats[i]['terminationStats'][targetStat]));
+
+            console.log(sizes);
+            schedulers.forEach(function (e) {
+                chartSizes[e] = [];
+                chartSTDEV[e] = [];
+
+                sizes[e].forEach(function (size) {
+                    console.log(size);
+                    bstats = [];
+                    for (var i = 0; i != stats.length; i++) {
+                        if (stats[i].populationSize % 100 == 0) {
+                            if (stats[i].populationSize == size) {
+                                if (stats[i].scheduler == e) {
+                                    if (stats[i]['terminationStats']) {
+                                        if (stats[i]['terminationStats'][targetStat]) {
+                                            bstats.push(parseFloat(stats[i]['terminationStats'][targetStat]));
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-                elem = {'size': size, 'stat': average(bstats)};
-                means.push(elem);
-                chartSizes.push([size, bstats.length]);
-                chartSTDEV.push([size, standardDeviation(bstats) / average(bstats) * 100]);
+                    elem = {'size': size, 'stat': average(bstats)};
+                    means[e].push(elem);
+                    chartSizes[e].push([size, bstats.length]);
+                    chartSTDEV[e].push([size, standardDeviation(bstats) / average(bstats) * 100]);
 
+                });
             });
+
+            console.log("means:");
+            console.log(means);
 
             values = [];
-            means.forEach(function (elem) {
-                values.push(elem.stat);
+            schedulers.forEach(function (e) {
+                values[e] = [];
+                means[e].forEach(function (elem) {
+                    values[e].push(elem.stat);
+                });
             });
 
-            console.log("grahing...");
+            console.log("grahing..." + targetScheduler);
             theDataSeries = [];
+            theSizesSeries = [];
+            theDeviationSeries = [];
             theYAxis = [];
-            theDataSeries.push(
-                    {
-                        name: targetStat,
-                        data: values.slice(values.length / 2)
-                    });
+            schedulers.forEach(function (e) {
+                if (targetScheduler == null || targetScheduler == e) {
+                    theDataSeries.push(
+                            {
+                                name: e,
+                                data: values[e].slice(values[e].length / 2)
+                            });
+                    theSizesSeries.push(
+                            {
+                                name: e,
+                                data: chartSizes[e],
+                                dataLabels: {
+                                    enabled: false
+                                }
+                            }
+                    );
+                    theDeviationSeries.push(
+                            {
+                                name: e,
+                                data: chartSTDEV[e],
+                                dataLabels: {
+                                    enabled: false
+                                }
+                            }
+                    )
+                }
+            });
             theYAxis.push(
                     {
                         title: {
@@ -271,7 +318,7 @@
                     });
             axisCount = 1;
             if (getUrlVars().indexOf("n5") > 0) {
-                means.forEach(function (elem) {
+                means['Random'].forEach(function (elem) {
                     if (elem.size) {
                         theoreticalInteractionsN5.push(Math.pow(elem.size, 5));
                     }
@@ -298,7 +345,7 @@
                 axisCount++;
             }
             if (getUrlVars().indexOf("n4") > 0) {
-                means.forEach(function (elem) {
+                means['Random'].forEach(function (elem) {
                     if (elem.size) {
                         theoreticalInteractionsN4.push(Math.pow(elem.size, 4));
                     }
@@ -325,7 +372,7 @@
                 axisCount++;
             }
             if (getUrlVars().indexOf("n3") > 0) {
-                means.forEach(function (elem) {
+                means['Random'].forEach(function (elem) {
                     if (elem.size) {
                         theoreticalInteractionsN3.push(Math.pow(elem.size, 3));
                         val = Math.pow(elem.size, 3);
@@ -354,8 +401,7 @@
                 axisCount++;
             }
             if (getUrlVars().indexOf("n2") > 0) {
-
-                means.forEach(function (elem) {
+                means['Random'].forEach(function (elem) {
                     if (elem.size) {
                         val = Math.pow(elem.size, 2);
                         theoreticalInteractionsN2.push(val);
@@ -386,8 +432,7 @@
             }
 
             if (getUrlVars().indexOf("n2-logn") > 0) {
-
-                means.forEach(function (elem) {
+                means['Random'].forEach(function (elem) {
                     if (elem.size) {
                         val = Math.pow(elem.size, 2) / Math.log(elem.size);
                         theoreticalInteractionsN2DlogN.push(val);
@@ -418,7 +463,7 @@
             }
 
             if (getUrlVars().indexOf("n") > 0) {
-                means.forEach(function (elem) {
+                means['Random'].forEach(function (elem) {
                     if (elem.size) {
                         theoreticalInteractionsN.push(Math.pow(elem.size, 1));
                     }
@@ -446,7 +491,7 @@
             }
 
             if (getUrlVars().indexOf("n2logn") > 0) {
-                means.forEach(function (elem) {
+                means['Random'].forEach(function (elem) {
                     if (elem.size) {
                         theoreticalInteractionsN2Logn.push(Math.pow(elem.size, 2) * Math.log(elem.size));
                         val = Math.pow(elem.size, 2) * Math.log(elem.size);
@@ -475,7 +520,7 @@
                 axisCount++;
             }
             if (getUrlVars().indexOf("logn") > 0) {
-                means.forEach(function (elem) {
+                means['Random'].forEach(function (elem) {
                     if (elem.size) {
                         theoreticalInteractionsLogn.push(Math.log(elem.size));
 
@@ -517,7 +562,7 @@
                     },
                     subtitle: {},
                     xAxis: {
-                        categories: sizes
+                        categories: sizes[schedulers[0]]
                     },
                     yAxis: theYAxis,
                     plotOptions: {
@@ -564,13 +609,7 @@
                             enableMouseTracking: false
                         }
                     },
-                    series: [{
-                        name: '# of Experiments',
-                        data: chartSizes,
-                        dataLabels: {
-                            enabled: false
-                        }
-                    }]
+                    series: theSizesSeries
                 });
             });
             $(function () {
@@ -603,13 +642,7 @@
                             enableMouseTracking: false
                         }
                     },
-                    series: [{
-                        name: 'deviation (%)',
-                        data: chartSTDEV,
-                        dataLabels: {
-                            enabled: false
-                        }
-                    }]
+                    series: theDeviationSeries
                 });
             });
         }
