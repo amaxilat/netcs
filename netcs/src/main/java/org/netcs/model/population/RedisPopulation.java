@@ -5,13 +5,10 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 import org.netcs.LookupService;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents the population of agents.
- *
  */
 public class RedisPopulation implements Population {
 
@@ -102,17 +99,7 @@ public class RedisPopulation implements Population {
     }
 
     public long getActualDegree(PopulationNode node) {
-        long nodeDegree = 0;
-        for (final PopulationNode node1 : getNodes()) {
-            if (node.equals(node1)) {
-                continue;
-            }
-            if (getEdge(node, node1).getState().equals("1") ||
-                    getEdge(node1, node).getState().equals("1")) {
-                nodeDegree++;
-            }
-        }
-        return nodeDegree;
+        return getActiveNeighbors(node).size();
     }
 
     public void initCache(final long experimentId) {
@@ -125,5 +112,20 @@ public class RedisPopulation implements Population {
     @Override
     public void fixCacheDegree(PopulationNode node) {
         lookupService.updateDegree(experimentId, node.getNodeName(), getActualDegree(node));
+    }
+
+    @Override
+    public Set<PopulationNode> getActiveNeighbors(PopulationNode node) {
+        Set<PopulationNode> activeNeighbors = new HashSet<>();
+        for (final PopulationNode node1 : getNodes()) {
+            if (node.equals(node1)) {
+                continue;
+            }
+            if (getEdge(node, node1).getState().equals("1") ||
+                    getEdge(node1, node).getState().equals("1")) {
+                activeNeighbors.add(node1);
+            }
+        }
+        return activeNeighbors;
     }
 }

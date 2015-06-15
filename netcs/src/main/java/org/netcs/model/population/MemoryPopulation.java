@@ -4,9 +4,7 @@ import org.apache.log4j.Logger;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents the population of agents.
@@ -100,17 +98,21 @@ public class MemoryPopulation implements Population {
     }
 
     public long getActualDegree(PopulationNode node) {
-        long nodeDegree = 0;
+        return getActiveNeighbors(node).size();
+    }
+
+    public Set<PopulationNode> getActiveNeighbors(final PopulationNode node) {
+        Set<PopulationNode> activeNeighbors = new HashSet<>();
         for (final PopulationNode node1 : getNodes()) {
             if (node.equals(node1)) {
                 continue;
             }
             if (getEdge(node, node1).getState().equals("1") ||
                     getEdge(node1, node).getState().equals("1")) {
-                nodeDegree++;
+                activeNeighbors.add(node1);
             }
         }
-        return nodeDegree;
+        return activeNeighbors;
     }
 
     public void initCache(final long experimentId) {
@@ -126,4 +128,5 @@ public class MemoryPopulation implements Population {
     public void fixCacheDegree(PopulationNode node) {
         nodesDegree.put(node.getNodeName(), getActualDegree(node));
     }
+
 }

@@ -8,10 +8,7 @@ import org.netcs.model.AbstractExperiment;
 import org.netcs.model.AbstractProtocol;
 import org.netcs.model.ConfigurableExperiment;
 import org.netcs.model.StateTriple;
-import org.netcs.scheduler.AbstractScheduler;
-import org.netcs.scheduler.History;
-import org.netcs.scheduler.Random;
-import org.netcs.scheduler.ReverseHistory;
+import org.netcs.scheduler.*;
 import org.springframework.messaging.core.MessageSendingOperations;
 
 import java.io.FileWriter;
@@ -67,6 +64,8 @@ public class RunnableExperiment implements Runnable {
             scheduler = new History();
         } else if ("ReverseHistory".equals(schedulerName)) {
             scheduler = new ReverseHistory();
+        } else if ("Connection".equals(schedulerName)) {
+            scheduler = new Connection();
         } else {
             scheduler = new Random();
         }

@@ -42,15 +42,16 @@ public class AlgorithmController extends BaseController {
 
     @PostConstruct
     public void init() {
-        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName("counter");
-        final List<ExecutionStatistics> tStats = new ArrayList<>();
-        tStats.addAll(stats.getStatistics());
-        for (ExecutionStatistics stat : tStats) {
-            if (!stat.getTerminationStats().get("b").equals("1")) {
-                stats.getStatistics().remove(stat);
-            }
-        }
-        algorithmStatisticsRepository.save(stats);
+//        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName("global-star");
+//        final List<ExecutionStatistics> tStats = new ArrayList<>();
+//        tStats.addAll(stats.getStatistics());
+//        for (ExecutionStatistics stat : tStats) {
+//
+//            if (stat.getScheduler() == null || stat.getScheduler().equals("Series 2") || stat.getScheduler().equals("org.netcs.scheduler.History") ) {
+//                stats.getStatistics().remove(stat);
+//            }
+//        }
+//        algorithmStatisticsRepository.save(stats);
     }
 
 

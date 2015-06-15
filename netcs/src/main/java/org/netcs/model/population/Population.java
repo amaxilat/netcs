@@ -1,6 +1,7 @@
 package org.netcs.model.population;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * Represents the population of agents.
@@ -30,4 +31,6 @@ public interface Population {
     public void initCache(final long experimentId);
 
     public void fixCacheDegree(PopulationNode node);
+
+    public Set<PopulationNode> getActiveNeighbors(PopulationNode node);
 }

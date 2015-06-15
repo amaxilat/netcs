@@ -5,6 +5,10 @@ import org.netcs.model.mongo.Algorithm;
 import org.netcs.model.mongo.AlgorithmStatistics;
 import org.netcs.model.mongo.AlgorithmStatisticsRepository;
 import org.netcs.model.mongo.ExecutionStatistics;
+import org.netcs.model.sql.Experiment;
+import org.netcs.model.sql.ExperimentRepository;
+import org.netcs.model.sql.TerminationStat;
+import org.netcs.model.sql.TerminationStatRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.core.MessageSendingOperations;
@@ -31,6 +35,10 @@ public class ExperimentExecutor {
     AlgorithmStatisticsRepository algorithmStatisticsRepository;
     @Autowired
     LookupService lookupService;
+    @Autowired
+    ExperimentRepository experimentRepository;
+    @Autowired
+    TerminationStatRepository terminationStatRepository;
     /**
      * a log4j logger to print messages.
      */
@@ -60,7 +68,7 @@ public class ExperimentExecutor {
 
     public ExperimentExecutor() {
 //        this.executors = Runtime.getRuntime().availableProcessors() > 2 ? Runtime.getRuntime().availableProcessors() - 2 : 1;
-        this.executors = Runtime.getRuntime().availableProcessors() * 2;
+        this.executors = Runtime.getRuntime().availableProcessors();
 //        this.executors = Runtime.getRuntime().availableProcessors();
 //        this.executors = 1;
 
@@ -76,7 +84,31 @@ public class ExperimentExecutor {
     @PostConstruct
     public void init() {
 
-//        final AlgorithmStatistics algo = algorithmStatisticsRepository.findByAlgorithmName("global-line3");
+
+        final List<AlgorithmStatistics> algos = algorithmStatisticsRepository.findAll();
+        for (AlgorithmStatistics algo : algos) {
+            for (ExecutionStatistics statistics : algo.getStatistics()) {
+                Experiment experiment = new Experiment();
+                experiment.setAlgorithm(algo.getAlgorithm().getName());
+                experiment.setEffectiveInteractions(statistics.getEffectiveInteractions());
+                experiment.setInteractions(statistics.getInteractions());
+                experiment.setPopulationSize(statistics.getPopulationSize());
+                experiment.setScheduler(statistics.getScheduler());
+                experiment.setSuccess(statistics.isSuccess());
+                experiment.setTerminationMessage(statistics.getTerminationMessage());
+                experiment.setTime(statistics.getTime());
+                experimentRepository.save(experiment);
+                Map<String, String> stats = statistics.getTerminationStats();
+                for (String s : stats.keySet()) {
+                    TerminationStat stat = new TerminationStat();
+                    stat.setExperiment(experiment);
+                    stat.setName(s);
+                    stat.setData(stats.get(s));
+                    terminationStatRepository.save(stat);
+                }
+
+            }
+        }
 //
 //
 //        LOGGER.info(algo);
@@ -160,7 +192,7 @@ public class ExperimentExecutor {
     void runSimpleAlgorithmExperimentsInBackground(final String algorithmName) {
 
         if (count < 800) {
-            executors = Runtime.getRuntime().availableProcessors() * 2;
+            executors = Runtime.getRuntime().availableProcessors();
         } else if (count < 1500) {
             Runtime.getRuntime().availableProcessors();
         } else {
@@ -183,7 +215,7 @@ public class ExperimentExecutor {
             }
 
             LOGGER.info("Found " + results + " experiments for " + algo.getName() + " under:" + mineSimpleScheduler + ".");
-            if (results < 200) {
+            if (results < 20) {
                 try {
                     LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
                     runExperiments(algo, count, executors, count, mineSimpleScheduler);

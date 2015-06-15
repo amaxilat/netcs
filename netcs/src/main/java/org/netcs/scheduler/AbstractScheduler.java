@@ -7,6 +7,7 @@ import org.netcs.model.population.PopulationLink;
 import org.netcs.model.population.PopulationNode;
 
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Implements an abstract scheduler.
@@ -82,6 +83,26 @@ public abstract class AbstractScheduler implements Scheduler {
      */
     protected final PopulationNode getNode(final int index) {
         return population.getAgent(index);
+    }
+
+    /**
+     * Retrieves an agent from the Population.
+     *
+     * @param index the position of the agent in the population list.
+     * @return the agent instance.
+     */
+    protected final long getDegree(final int index) {
+        return population.getDegree(getNode(index));
+    }
+
+    /**
+     * Retrieves an agent from the Population.
+     *
+     * @param index the position of the agent in the population list.
+     * @return the agent instance.
+     */
+    protected final Set<PopulationNode> getActiveNeighbors(final int index) {
+        return population.getActiveNeighbors(getNode(index));
     }
 
 
