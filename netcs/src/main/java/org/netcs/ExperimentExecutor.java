@@ -52,6 +52,8 @@ public class ExperimentExecutor {
     String mineSimpleName;
     @Value("${mine.simple.scheduler:}")
     String mineSimpleScheduler;
+    @Value("${mine.simple.threshold:}")
+    long mineSimpleThreshold;
     @Value("${mine.count:false}")
     String mineCount;
     @Value("${mine.advanced:false}")
@@ -68,7 +70,7 @@ public class ExperimentExecutor {
 
     public ExperimentExecutor() {
 //        this.executors = Runtime.getRuntime().availableProcessors() > 2 ? Runtime.getRuntime().availableProcessors() - 2 : 1;
-        this.executors = Runtime.getRuntime().availableProcessors();
+        this.executors = Runtime.getRuntime().availableProcessors() / 2;
 //        this.executors = Runtime.getRuntime().availableProcessors();
 //        this.executors = 1;
 
@@ -85,30 +87,31 @@ public class ExperimentExecutor {
     public void init() {
 
 
-        final List<AlgorithmStatistics> algos = algorithmStatisticsRepository.findAll();
-        for (AlgorithmStatistics algo : algos) {
-            for (ExecutionStatistics statistics : algo.getStatistics()) {
-                Experiment experiment = new Experiment();
-                experiment.setAlgorithm(algo.getAlgorithm().getName());
-                experiment.setEffectiveInteractions(statistics.getEffectiveInteractions());
-                experiment.setInteractions(statistics.getInteractions());
-                experiment.setPopulationSize(statistics.getPopulationSize());
-                experiment.setScheduler(statistics.getScheduler());
-                experiment.setSuccess(statistics.isSuccess());
-                experiment.setTerminationMessage(statistics.getTerminationMessage());
-                experiment.setTime(statistics.getTime());
-                experimentRepository.save(experiment);
-                Map<String, String> stats = statistics.getTerminationStats();
-                for (String s : stats.keySet()) {
-                    TerminationStat stat = new TerminationStat();
-                    stat.setExperiment(experiment);
-                    stat.setName(s);
-                    stat.setData(stats.get(s));
-                    terminationStatRepository.save(stat);
-                }
+//        final List<AlgorithmStatistics> algos = algorithmStatisticsRepository.findAll();
+//        for (AlgorithmStatistics algo : algos) {
+//            for (ExecutionStatistics statistics : algo.getStatistics()) {
+//                Experiment experiment = new Experiment();
+//                experiment.setAlgorithm(algo.getAlgorithm().getName());
+//                experiment.setEffectiveInteractions(statistics.getEffectiveInteractions());
+//                experiment.setInteractions(statistics.getInteractions());
+//                experiment.setPopulationSize(statistics.getPopulationSize());
+//                experiment.setScheduler(statistics.getScheduler());
+//                experiment.setSuccess(statistics.isSuccess());
+//                experiment.setTerminationMessage(statistics.getTerminationMessage());
+//                experiment.setTime(statistics.getTime());
+//                experimentRepository.save(experiment);
+//                Map<String, String> stats = statistics.getTerminationStats();
+//                for (String s : stats.keySet()) {
+//                    TerminationStat stat = new TerminationStat();
+//                    stat.setExperiment(experiment);
+//                    stat.setName(s);
+//                    stat.setData(stats.get(s));
+//                    terminationStatRepository.save(stat);
+//                }
+//
+//            }
+//        }
 
-            }
-        }
 //
 //
 //        LOGGER.info(algo);
@@ -134,13 +137,14 @@ public class ExperimentExecutor {
 //            lookupService.setCount("counter", 110L);
 //            this.count = lookupService.getCount("counter");
 //        }
-        Timer t = new Timer();
-        t.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                System.exit(1);
-            }
-        }, 60 * 60 * 1000);
+        
+//        Timer t = new Timer();
+//        t.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                System.exit(1);
+//            }
+//        }, 60 * 60 * 1000);
         count = 100L;
     }
 
@@ -191,13 +195,6 @@ public class ExperimentExecutor {
 
     void runSimpleAlgorithmExperimentsInBackground(final String algorithmName) {
 
-        if (count < 800) {
-            executors = Runtime.getRuntime().availableProcessors();
-        } else if (count < 1500) {
-            Runtime.getRuntime().availableProcessors();
-        } else {
-            executors = Runtime.getRuntime().availableProcessors() / 2;
-        }
 
         if (executor.getActiveCount() < executors && (executor.getTaskCount() - executor.getCompletedTaskCount()) < 2 * executors) {
             LOGGER.info("Checking experiments for " + count + " nodes...");
@@ -215,7 +212,7 @@ public class ExperimentExecutor {
             }
 
             LOGGER.info("Found " + results + " experiments for " + algo.getName() + " under:" + mineSimpleScheduler + ".");
-            if (results < 20) {
+            if (results < mineSimpleThreshold) {
                 try {
                     LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
                     runExperiments(algo, count, executors, count, mineSimpleScheduler);
@@ -396,12 +393,56 @@ public class ExperimentExecutor {
                 algorithmStatisticsRepository.save(stats);
                 LOGGER.info("Experiment:" + experiment.getIndex() + " SAVED");
 
+                storeSQL(experiment);
+
                 experiment.setStored(true);
                 sendWs(experiment);
             }
         }
         if ("true".equals(mineSimple) && mineSimpleName != null)
             runSimpleAlgorithmExperimentsInBackground(mineSimpleName);
+    }
+
+    private void storeSQL(RunnableExperiment experiment) {
+
+        LOGGER.info("Experiment:" + experiment.getIndex() + " Finished:" + experiment.isFinished() + " Stored:" + experiment.isStored());
+
+        Experiment experimentSql = new Experiment();
+        LOGGER.info("Storing under " + experiment.getScheduler().getClass().getSimpleName() + " scheduler...");
+
+        experimentSql.setAlgorithm(experiment.getAlgorithmName());
+        experimentSql.setPopulationSize(experiment.getNodeCount());
+        experimentSql.setInteractions(experiment.getExperiment().getInteractions());
+        experimentSql.setEffectiveInteractions(experiment.getExperiment().getEffectiveInteractions());
+        experimentSql.setSuccess(true);
+        experimentSql.setTime(System.currentTimeMillis());
+        experimentSql.setScheduler(experiment.getScheduler().getClass().getSimpleName());
+
+        experimentRepository.save(experimentSql);
+        Map<String, String> statistics = experiment.getExperiment().getTerminationStats();
+
+        List<TerminationStat> terminationStats = new ArrayList<>();
+
+        terminationStats.add(addStat(experimentSql, "interactions", statistics.get("interactions")));
+        terminationStats.add(addStat(experimentSql, "effectiveInteractions", statistics.get("effectiveInteractions")));
+        terminationStats.add(addStat(experimentSql, "populationSize", statistics.get("populationSize")));
+
+
+        if (experiment.getExperiment().getTerminationStats().containsKey("time")) {
+            terminationStats.add(addStat(experimentSql, "populationSize", statistics.get("time")));
+        }
+        terminationStatRepository.save(terminationStats);
+
+        LOGGER.info("Experiment:" + experiment.getIndex() + " SAVED");
+
+    }
+
+    private TerminationStat addStat(final Experiment experiment, final String name, final String data) {
+        TerminationStat interactionsStat = new TerminationStat();
+        interactionsStat.setName(name);
+        interactionsStat.setData(data);
+        interactionsStat.setId(experiment.getId());
+        return interactionsStat;
     }
 
     //@Scheduled(fixedRate = 100L)

@@ -20,6 +20,7 @@ public class MemoryPopulation implements Population {
     private final Map<DefaultEdge, PopulationLink> edges;
     protected Map<String, Long> nodesDegree;
     protected long experimentId;
+    Map<String, Set<PopulationNode>> activeNeighborsCache;
 
     /**
      * Constructor that initializes the container of agents.
@@ -28,6 +29,7 @@ public class MemoryPopulation implements Population {
         graph = new SimpleGraph<>(DefaultEdge.class);
         edges = new HashMap<>();
         nodesDegree = new HashMap<>();
+        activeNeighborsCache = new HashMap<>();
     }
 
     /**
@@ -65,6 +67,8 @@ public class MemoryPopulation implements Population {
             edges.put(defaultEdge, new PopulationLink(defaultEdge));
         }
         LOGGER.debug("Created Edges in " + (System.currentTimeMillis() - start) + "ms");
+
+        activeNeighborsCache = new HashMap<>();
     }
 
     /**
@@ -98,11 +102,19 @@ public class MemoryPopulation implements Population {
     }
 
     public long getActualDegree(PopulationNode node) {
-        return getActiveNeighbors(node).size();
+        return getActualActiveNeighbors(node).size();
     }
 
     public Set<PopulationNode> getActiveNeighbors(final PopulationNode node) {
-        Set<PopulationNode> activeNeighbors = new HashSet<>();
+        if (!activeNeighborsCache.containsKey(node.getNodeName())) {
+            return getActualActiveNeighbors(node);
+        } else {
+            return activeNeighborsCache.get(node.getNodeName());
+        }
+    }
+
+    public Set<PopulationNode> getActualActiveNeighbors(final PopulationNode node) {
+        final Set<PopulationNode> activeNeighbors = new HashSet<>();
         for (final PopulationNode node1 : getNodes()) {
             if (node.equals(node1)) {
                 continue;
@@ -112,6 +124,7 @@ public class MemoryPopulation implements Population {
                 activeNeighbors.add(node1);
             }
         }
+        activeNeighborsCache.put(node.getNodeName(), activeNeighbors);
         return activeNeighbors;
     }
 

@@ -168,6 +168,7 @@
 
                                                     <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
                                                     <br/>
+                                                    <small><span th:text="${experiment.scheduler.class.simpleName}"></span></small>
                                                     <br/>
                                                     <span th:text="${experiment.nodeCount}"></span> Nodes
                                                     <br/>
@@ -207,6 +208,7 @@
                                                         th:text="${experiment.index}"></span>
                                                     <small>(<span th:text="${experiment.algorithmName}"></span>)</small>
                                                     <br/>
+                                                    <small><span th:text="${experiment.scheduler.class.simpleName}"></span></small>
                                                     <br/>
                                                     <span th:text="${experiment.nodeCount}"></span> Nodes
                                                 </div>
