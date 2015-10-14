@@ -1,0 +1,16 @@
+debug: true
+spring.template.cache=false
+spring.thymeleaf.cache=false
+security.basic.enabled=false
+
+mine.simple=true
+mine.simple.name=global-ring
+mine.simple.scheduler=Connection
+mine.simple.threshold=30
+
+spring.datasource.url=jdbc:mysql://localhost/netcs
+spring.datasource.username=netcs
+spring.datasource.password=jLdszsb9KE23PSz6
+spring.jpa.database-platform=org.hibernate.dialect.MySQL5Dialect
+spring.datasource.driver-class-name=com.mysql.jdbc.Driver
+spring.jpa.hibernate.ddl-auto=update

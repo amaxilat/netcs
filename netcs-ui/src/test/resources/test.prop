@@ -1,0 +1,9 @@
+Transition_function:
+(q0, q0, l1, q0, q0, l2)
+(q0, q1, l1, q1, q0, l2)
+(q0, q2, l1, q2, q0, l2)
+(q0, q3, l1, q3, q0, l2)
+(q0, q4, l1, q4, q0, l2)
+(q0, q5, l1, q5, q5, l2)
+(q1, q0, l1, q1, q0, l2)
+(q1, q1, l1, q2, q0, l2)
