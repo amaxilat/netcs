@@ -11,6 +11,7 @@ import org.netcs.model.sql.ExperimentRepository;
 import org.netcs.model.sql.TerminationStat;
 import org.netcs.model.sql.TerminationStatRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,9 +28,9 @@ public class ExperimentController extends BaseController {
      */
     private static final Logger LOGGER = Logger.getLogger(ExperimentController.class);
 
+
     @Autowired
     ExperimentExecutor experimentExecutor;
-
     @Autowired
     ExperimentRepository experimentRepository;
     @Autowired
@@ -75,6 +76,33 @@ public class ExperimentController extends BaseController {
         return "experiment/list";
     }
 
+    @RequestMapping(value = "/api/experiment/max", method = RequestMethod.GET)
+    public String maxExperiments(@RequestParam("size") final int size) {
+        experimentExecutor.MAX_CONCURENT_EXPERIMENTS = size;
+        return "redirect:/";
+    }
+
+    @RequestMapping(value = "/api/experiment/algorithm", method = RequestMethod.GET)
+    public String mineSimpleName(@RequestParam("algorithm") final String algorithm) {
+        experimentExecutor.count = 100L;
+        experimentExecutor.mineSimpleName = algorithm;
+        return "redirect:/";
+    }
+
+    @RequestMapping(value = "/api/experiment/scheduler", method = RequestMethod.GET)
+    public String mineSimpleScheduler(@RequestParam("scheduler") final String scheduler) {
+        experimentExecutor.count = 100L;
+        experimentExecutor.mineSimpleScheduler = scheduler;
+        return "redirect:/";
+    }
+
+    @RequestMapping(value = "/api/experiment/limit", method = RequestMethod.GET)
+    public String mineSimpleScheduler(@RequestParam("limit") final int limit) {
+        experimentExecutor.count = 100L;
+        experimentExecutor.mineSimpleThreshold = limit;
+        return "redirect:/";
+    }
+
 
     @RequestMapping(value = "/experiment/add", method = RequestMethod.GET)
     public String addNewExperiment(final Map<String, Object> model) {
@@ -92,20 +120,20 @@ public class ExperimentController extends BaseController {
     public String viewExperiment(final Map<String, Object> model, @PathVariable("experimentId") int experimentId) {
         populateAlgorithms(model);
         model.put("title", experimentId);
-
-        RunnableExperiment experiment = experimentExecutor.getExperiment(experimentId);
-        LOGGER.info(experiment);
-        //System.out.println("experiment:" + experiment.getExperiment().getPopulation().getNodes().size() + "nodes");
-        model.put("population", experiment.getExperiment().getPopulation());
-        model.put("nodes", experiment.getExperiment().getPopulation().getNodes());
-        ArrayList<String> edges = new ArrayList<>();
-        Iterator<PopulationLink> edgesIterator = experiment.getExperiment().getPopulation().getEdges().iterator();
-        while (edgesIterator.hasNext()) {
-            PopulationLink currentEdge = edgesIterator.next();
-            if (currentEdge.getState().equals("1")) {
-                edges.add(currentEdge.getDefaultEdge().toString());
+        try {
+            RunnableExperiment experiment = experimentExecutor.getExperiment(experimentId);
+            LOGGER.info(experiment);
+            //System.out.println("experiment:" + experiment.getExperiment().getPopulation().getNodes().size() + "nodes");
+            model.put("population", experiment.getExperiment().getPopulation());
+            model.put("nodes", experiment.getExperiment().getPopulation().getNodes());
+            ArrayList<String> edges = new ArrayList<>();
+            Iterator<PopulationLink> edgesIterator = experiment.getExperiment().getPopulation().getEdges().iterator();
+            while (edgesIterator.hasNext()) {
+                PopulationLink currentEdge = edgesIterator.next();
+                if (currentEdge.getState().equals("1")) {
+                    edges.add(currentEdge.getDefaultEdge().toString());
+                }
             }
-        }
 
 //        StringBuilder sb = new StringBuilder();
 //        try {
@@ -119,11 +147,15 @@ public class ExperimentController extends BaseController {
 //        } catch (Exception e) {
 //            LOGGER.error(e, e);
 //        }
-        model.put("logs", "");
-        model.put("edges", edges);
-        model.put("experiment", experiment);
-        model.put("experimentId", experimentId);
-        return "experiment/view";
+            model.put("logs", "");
+            model.put("edges", edges);
+            model.put("experiment", experiment);
+            model.put("experimentId", experimentId);
+
+            return "experiment/view";
+        } catch (Exception e) {
+            return "redirect:/experiment";
+        }
     }
 
     @ResponseBody
@@ -147,6 +179,24 @@ public class ExperimentController extends BaseController {
             response.put(size, getAverateStat(algorithm, scheduler, size, stat));
         }
         return response;
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/api/populationSizes/{algorithm}/{scheduler}", method = RequestMethod.GET)
+    public Set<Long> viewExperiment(@PathVariable("algorithm") String algorithm, @PathVariable("scheduler") String scheduler) {
+        return experimentRepository.findPopulationSizeByAlgorithmAndScheduler(algorithm, scheduler);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/api/populationSizes/{algorithm}", method = RequestMethod.GET)
+    public Set<Long> viewExperiment(@PathVariable("algorithm") String algorithm) {
+        return experimentRepository.findPopulationSizeByAlgorithm(algorithm);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/api/stats/{algorithm}", method = RequestMethod.GET)
+    public Set<Experiment> viewExperimentStats(@PathVariable("algorithm") String algorithm) {
+        return experimentRepository.findStatsByAlgorithmAndScheduler(algorithm);
     }
 
     @ResponseBody

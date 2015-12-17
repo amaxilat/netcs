@@ -1,15 +1,16 @@
 package org.netcs.component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.log4j.Logger;
 import org.netcs.RunnableExperiment;
 import org.netcs.model.mongo.Algorithm;
 import org.netcs.model.mongo.AlgorithmStatistics;
 import org.netcs.model.mongo.AlgorithmStatisticsRepository;
 import org.netcs.model.mongo.ExecutionStatistics;
-import org.netcs.model.sql.Experiment;
-import org.netcs.model.sql.ExperimentRepository;
-import org.netcs.model.sql.TerminationStat;
-import org.netcs.model.sql.TerminationStatRepository;
+import org.netcs.model.population.PopulationLink;
+import org.netcs.model.population.PopulationNode;
+import org.netcs.model.sql.*;
 import org.netcs.service.LookupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +42,8 @@ public class ExperimentExecutor {
     ExperimentRepository experimentRepository;
     @Autowired
     TerminationStatRepository terminationStatRepository;
+    @Autowired
+    TerminationConditionRepository terminationConditionRepository;
     /**
      * a log4j logger to print messages.
      */
@@ -119,6 +122,11 @@ public class ExperimentExecutor {
                 lookupService.setCount(algo.getName(), count);
             }
         } while (!scheduled);
+    }
+
+
+    public void runExperiment(final Algorithm algorithm, final String scheduler, Long nodeCount) throws FileNotFoundException {
+        runExperiment(algorithm, scheduler, nodeCount, index++);
     }
 
 
@@ -229,18 +237,50 @@ public class ExperimentExecutor {
         if (experiment.getExperiment().getTerminationStats().containsKey("time")) {
             statistics.getTerminationStats().put("time", String.valueOf(experiment.getExperiment().getTerminationStats().get("time")));
         }
+
+
         stats.getStatistics().add(statistics);
         algorithmStatisticsRepository.save(stats);
+
         LOGGER.info("Experiment:" + experiment.getIndex() + " SAVED");
 
-        storeSQL(experiment);
+        try {
+            Experiment expSql = storeSQL(experiment);
+            TerminationCondition condition = new TerminationCondition();
+            condition.setExperiment(expSql);
+            try {
 
+                final List<CNode> cnodes = new ArrayList<>();
+                for (final PopulationNode node : experiment.getExperiment().getPopulation().getNodes()) {
+                    cnodes.add(new CNode(node.getNodeName(), node.getState()));
+                }
+                final String nodesString = new ObjectMapper().writeValueAsString(cnodes);
+                condition.setNodes(nodesString);
+            } catch (JsonProcessingException e) {
+                LOGGER.error(e, e);
+            }
+            try {
+                final List<String> cEdges = new ArrayList<>();
+                for (final PopulationLink edge : experiment.getExperiment().getPopulation().getEdges()) {
+                    if (edge.getState().equals("1")) {
+                        cEdges.add(edge.getDefaultEdge().toString());
+                    }
+                }
+                final String edgesString = new ObjectMapper().writeValueAsString(cEdges);
+                condition.setEdges(edgesString);
+            } catch (JsonProcessingException e) {
+                LOGGER.error(e, e);
+            }
+            terminationConditionRepository.save(condition);
+        } catch (Exception e) {
+            LOGGER.error(e, e);
+        }
         experiment.setStored(true);
         sendWs(experiment);
     }
 
 
-    private void storeSQL(RunnableExperiment experiment) {
+    private Experiment storeSQL(RunnableExperiment experiment) {
 
         LOGGER.info("Experiment:" + experiment.getIndex() + " Finished:" + experiment.isFinished() + " Stored:" + experiment.isStored());
 
@@ -271,7 +311,7 @@ public class ExperimentExecutor {
         terminationStatRepository.save(terminationStats);
 
         LOGGER.info("Experiment:" + experiment.getIndex() + " SAVED");
-
+        return experimentSql;
     }
 
     private TerminationStat addStat(final Experiment experiment, final String name, final String data) {

@@ -93,14 +93,6 @@
                                                th:value="${stats.algorithm.configFile.populationSize}"/>
                     </div>
                     <div class="col-md-12">
-                        populationSizeEnd: <input type="text" name="populationSizeEnd"
-                                                  th:value="${stats.algorithm.configFile.populationSize}"/>
-                    </div>
-                    <div class="col-md-12">
-                        iterations: <input type="text" name="iterations" value="1"/>
-                    </div>
-
-                    <div class="col-md-12">
                         <h4>Transitions
                             <small>(node1, node2, link, node1New, node2New, linkNew)</small>
                         </h4>
@@ -131,21 +123,24 @@
                     <th>Stats</th>
                     </thead>
                     <tbody>
-                    <th:block th:if="${stats}" th:with="stat = ${stats.statistics[0]}">
-                        <tr>
-                            <td th:text="${#dates.format(stat.time)}"></td>
-                            <td th:text="${stat.success}"></td>
-                            <td>
-                                <th:block th:each="tstats : ${stat.terminationStats}">
-                                    <a th:href="'?graph='+${tstats.key}">
-                                        <span th:text="${tstats.key}"></span>
-                                    </a>
-                                    :
-                                    <span th:text="${tstats.value}"></span>
-                                    <br/>
-                                </th:block>
-                            </td>
-                        </tr>
+                    <th:block
+                            th:if="${stats}!=null and ${stats.statistics}!=null and ${#sets.size(stats.statistics)>0}">
+                        <th:block th:with="stat = ${stats.statistics[0]}">
+                            <tr>
+                                <td th:text="${#dates.format(stat.time)}"></td>
+                                <td th:text="${stat.success}"></td>
+                                <td>
+                                    <th:block th:each="tstats : ${stat.terminationStats}">
+                                        <a th:href="'?graph='+${tstats.key}">
+                                            <span th:text="${tstats.key}"></span>
+                                        </a>
+                                        :
+                                        <span th:text="${tstats.value}"></span>
+                                        <br/>
+                                    </th:block>
+                                </td>
+                            </tr>
+                        </th:block>
                     </th:block>
                     </tbody>
                 </table>
@@ -174,9 +169,11 @@
     stats = /*[[${stats.statistics}]]*/ null;
     targetStat = /*[[${param.graph}]]*/ null;
     to = /*[[${param.to}]]*/ 100000;
+    allsizes = /*[[${sizes}]]*/ [];
+    numbers = /*[[${numbers}]]*/ [];
     targetScheduler = /*[[${param.scheduler}]]*/ "Random";
     /*]]>*/
-
+    sizes = [];
     if (to == null) {
         to = 100000;
     }
@@ -188,16 +185,21 @@
         if (stats != null) {
             console.log(stats);
             mystats = [];
-            sizes = [];
             means = [];
             schedulers = [];
+
+
+            for (var i = 0; i != allsizes.length; i++) {
+                if (allsizes [i] % 100 == 0) {
+                    sizes.push(allsizes[i]);
+                }
+            }
             for (var i = 0; i != stats.length; i++) {
                 if (stats[i].populationSize % 100 == 0) {
                     scheduler = stats[i].scheduler;
                     if (schedulers.indexOf(scheduler) == -1) {
                         schedulers.push(scheduler);
                         mystats[scheduler] = [];
-                        sizes[scheduler] = [];
                         means[scheduler] = [];
                     }
                     //if (stats[i].scheduler == targetScheduler) {
@@ -205,9 +207,7 @@
                         console.log("Dropping measurement for size: " + stats[i].populationSize);
                     } else {
                         console.log("size:" + stats[i].populationSize);
-                        if (sizes[scheduler].indexOf(stats[i].populationSize) == -1) {
-                            sizes[scheduler].push(stats[i].populationSize);
-                        }
+
                         mystats[scheduler][stats[i].populationSize] = [];
                         means[scheduler][stats[i].populationSize] = 0;
                     }
@@ -216,7 +216,7 @@
                     //}
                 }
             }
-            sizes[scheduler] = sizes[scheduler].sort(function (a, b) {
+            sizes = sizes.sort(function (a, b) {
                 return a - b
             });
             console.log(sizes);
@@ -232,9 +232,6 @@
             theoreticalInteractionsN = [];
             theoreticalInteractionsN2Logn = [];
             theoreticalInteractionsLogn = [];
-            sizes.forEach(function (item) {
-                console.log(item);
-            });
 
 
             console.log(sizes);
@@ -242,7 +239,7 @@
                 chartSizes[e] = [];
                 chartSTDEV[e] = [];
 
-                sizes[e].forEach(function (size) {
+                sizes.forEach(function (size) {
                     console.log(size);
                     bstats = [];
                     for (var i = 0; i != stats.length; i++) {
@@ -282,33 +279,6 @@
             theSizesSeries = [];
             theDeviationSeries = [];
             theYAxis = [];
-            schedulers.forEach(function (e) {
-                if (targetScheduler == null || targetScheduler == e) {
-                    theDataSeries.push(
-                            {
-                                name: e,
-                                data: values[e].slice(values[e].length / 2)
-                            });
-                    theSizesSeries.push(
-                            {
-                                name: e,
-                                data: chartSizes[e],
-                                dataLabels: {
-                                    enabled: false
-                                }
-                            }
-                    );
-                    theDeviationSeries.push(
-                            {
-                                name: e,
-                                data: chartSTDEV[e],
-                                dataLabels: {
-                                    enabled: false
-                                }
-                            }
-                    )
-                }
-            });
             theYAxis.push(
                     {
                         title: {
@@ -549,36 +519,107 @@
                 });
                 axisCount++;
             }
-            console.log("creating...");
-            console.log($('#chartdiv'));
-            console.log($(theDataSeries));
-            $(function () {
-                $('#chartdiv').highcharts({
-                    chart: {
-                        type: 'spline'
-                    },
-                    title: {
-                        text: ''
-                    },
-                    subtitle: {},
-                    xAxis: {
-                        categories: sizes[schedulers[0]]
-                    },
-                    yAxis: theYAxis,
-                    plotOptions: {
-                        line: {
-                            dataLabels: {
-                                enabled: false
-                            },
-                            marker: {
-                                enabled: false
-                            },
-                            enableMouseTracking: false
+
+
+            var yCount = new Map();
+            var ySize = new Map();
+            var ySchedulers = [];
+            numbers.forEach(function (e) {
+                if (ySchedulers.indexOf(e[0]) == -1) {
+                    ySchedulers.push(e[0]);
+                }
+            });
+            ySchedulers.forEach(function (scheduler) {
+                numbers.forEach(function (e) {
+                    if (scheduler == e[0]) {
+                        if (e[1] % 100 == 0) {
+                            if (yCount.get(scheduler) == undefined) {
+                                yCount.set(scheduler, []);
+                            }
+                            console.log(scheduler + " " + e[1] + " " + e[3]);
+                            yCount.get(scheduler).push([e[1], e[3]]);
+
+                            if (ySize.get(scheduler) == undefined) {
+                                ySize.set(scheduler, []);
+                            }
+                            console.log(scheduler + " " + e[1] + " " + e[3]);
+                            ySize.get(scheduler).push([e[1], e[2]]);
                         }
-                    },
-                    series: theDataSeries
+                    }
                 });
             });
+
+            console.log(ySchedulers);
+            console.log(yCount);
+
+            ySchedulers.forEach(function (scheduler) {
+                var values = [];
+                yCount.get(scheduler).forEach(function (e) {
+                    if (e[0] % 100 == 0) {
+                        //console.log(scheduler + " " + e[0] + " " + e[1]);
+                        values.push(e[1]);
+                    }
+
+                });
+                theDataSeries.push({name: scheduler, data: values})
+
+                var values1 = [];
+                ySize.get(scheduler).forEach(function (e) {
+                    if (e[0] % 100 == 0) {
+                        //console.log(scheduler + " " + e[0] + " " + e[1]);
+                        values1.push(e[1]);
+                    }
+
+                });
+                theSizesSeries.push(
+                        {
+                            name: scheduler,
+                            data: values1,
+                            dataLabels: {
+                                enabled: false
+                            }
+                        }
+                );
+            });
+
+
+            console.log("creating...");
+            console.log($('#chartdiv'));
+            console.log("theDataSeries:");
+            console.log(theDataSeries);
+            console.log(sizes);
+            try {
+                $(function () {
+                    $('#chartdiv').highcharts({
+                        chart: {
+                            type: 'spline'
+                        },
+                        title: {
+                            text: ''
+                        },
+                        subtitle: {},
+                        xAxis: {
+                            categories: sizes
+                        },
+                        yAxis: theYAxis,
+                        plotOptions: {
+                            line: {
+                                dataLabels: {
+                                    enabled: false
+                                },
+                                marker: {
+                                    enabled: false
+                                },
+                                enableMouseTracking: false
+                            }
+                        },
+                        series: theDataSeries
+                    });
+                });
+            }
+            catch (e) {
+
+            }
             $(function () {
                 $('#sizeChartDiv').highcharts({
                     chart: {
@@ -589,6 +630,7 @@
                     },
                     subtitle: {},
                     xAxis: {
+                        categories: sizes,
                         type: 'size'
                     },
                     yAxis: {
@@ -612,39 +654,39 @@
                     series: theSizesSeries
                 });
             });
-            $(function () {
-                $('#stdevChartDiv').highcharts({
-                    chart: {
-                        type: 'column'
-                    },
-                    title: {
-                        text: ''
-                    },
-                    subtitle: {},
-                    xAxis: {
-                        type: 'size'
-                    },
-                    yAxis: {
-                        title: {
-                            text: "deviation"
-                        },
-                        opposite: false,
-                        min: 0
-                    },
-                    plotOptions: {
-                        line: {
-                            dataLabels: {
-                                enabled: false
-                            },
-                            marker: {
-                                enabled: false
-                            },
-                            enableMouseTracking: false
-                        }
-                    },
-                    series: theDeviationSeries
-                });
-            });
+//            $(function () {
+//                $('#stdevChartDiv').highcharts({
+//                    chart: {
+//                        type: 'column'
+//                    },
+//                    title: {
+//                        text: ''
+//                    },
+//                    subtitle: {},
+//                    xAxis: {
+//                        type: 'size'
+//                    },
+//                    yAxis: {
+//                        title: {
+//                            text: "deviation"
+//                        },
+//                        opposite: false,
+//                        min: 0
+//                    },
+//                    plotOptions: {
+//                        line: {
+//                            dataLabels: {
+//                                enabled: false
+//                            },
+//                            marker: {
+//                                enabled: false
+//                            },
+//                            enableMouseTracking: false
+//                        }
+//                    },
+//                    series: theDeviationSeries
+//                });
+//            });
         }
     }
 

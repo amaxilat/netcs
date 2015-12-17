@@ -44,14 +44,12 @@ public class ProtocolGeneratorController extends BaseController {
     @RequestMapping(value = "/generate/{size}", method = RequestMethod.GET)
     public String generateRandomGet(@PathVariable("size") final int size) {
         final int randomId = doGenerateRandom(size);
-        updateMenu();
         return "redirect:/algorithm/random" + randomId;
     }
 
     @RequestMapping(value = "/generate/random", method = RequestMethod.POST)
     public String generateRandomPost(@RequestParam("size") final int size) {
         final int randomId = doGenerateRandom(size);
-        updateMenu();
         return "redirect:/algorithm/random" + randomId;
     }
 
@@ -70,8 +68,6 @@ public class ProtocolGeneratorController extends BaseController {
         stats.setStatistics(new ArrayList<ExecutionStatistics>());
         stats.setVersion(3);
         algorithmStatisticsRepository.save(stats);
-
-        updateMenu();
         return theCount;
     }
 

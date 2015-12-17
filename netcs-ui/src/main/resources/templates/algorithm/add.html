@@ -81,6 +81,16 @@
 
                     </div>
                     <div class="form-group">
+                        <label class="col-md-6">Construction:</label>
+                        <select id="construction" name="construction">
+                            <option>line</option>
+                            <option>star</option>
+                            <option>ring</option>
+                            <option>cycle-cover</option>
+                        </select>
+
+                    </div>
+                    <div class="form-group">
                         <label class="col-md-6">Transitions:</label>
                     <textarea id="transitionsText" name="transitionsText" oninput="parseStates()"
                               style="width: 400px" rows="10"></textarea>

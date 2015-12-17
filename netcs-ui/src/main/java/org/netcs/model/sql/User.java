@@ -1,6 +1,8 @@
 package org.netcs.model.sql;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "user")
@@ -20,6 +22,9 @@ public class User {
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<UserAlgorithm> userAlgorithms = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -51,5 +56,13 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Set<UserAlgorithm> getUserAlgorithms() {
+        return userAlgorithms;
+    }
+
+    public void setUserAlgorithms(Set<UserAlgorithm> userAlgorithms) {
+        this.userAlgorithms = userAlgorithms;
     }
 }

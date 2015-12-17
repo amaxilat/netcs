@@ -5,6 +5,8 @@ import org.netcs.component.ExperimentExecutor;
 import org.netcs.model.mongo.AlgorithmStatistics;
 import org.netcs.model.mongo.AlgorithmStatisticsRepository;
 import org.netcs.model.sql.User;
+import org.netcs.model.sql.UserAlgorithm;
+import org.netcs.model.sql.UserAlgorithmRepository;
 import org.netcs.model.sql.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -34,12 +36,13 @@ public class BaseController {
     ExperimentExecutor experimentExecutor;
     @Autowired
     AlgorithmStatisticsRepository algorithmStatisticsRepository;
-    private static TreeSet<String> names;
 
     @Autowired
     MongoTemplate mongoTemplate;
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    UserAlgorithmRepository userAlgorithmRepository;
 
     @PostConstruct
     public void init() {
@@ -63,28 +66,22 @@ public class BaseController {
     }
 
     protected void populateAlgorithms(final Map<String, Object> model) {
-        if (names == null) {
-            names = new TreeSet<>(new Comparator<String>() {
-                @Override
-                public int compare(final String o1, final String o2) {
-                    return o1.compareToIgnoreCase(o2);
-                }
-            });
-        }
-
-        Query query = new Query();
-        query.fields().exclude("statistics");
-        List<AlgorithmStatistics> algorithms = mongoTemplate.find(query, AlgorithmStatistics.class, "algorithmStatistics");
+        TreeSet<String> names = new TreeSet<>(new Comparator<String>() {
+            @Override
+            public int compare(final String o1, final String o2) {
+                return o1.compareToIgnoreCase(o2);
+            }
+        });
 
         if (names.isEmpty()) {
-            for (final AlgorithmStatistics algorithm : algorithms) {
-                names.add(algorithm.getAlgorithm().getName());
+            if (getUser() != null) {
+                for (final UserAlgorithm algorithm : getUser().getUserAlgorithms()) {
+                    AlgorithmStatistics algorithmMongo = algorithmStatisticsRepository.findById(algorithm.getAlgorithmId());
+                    names.add(algorithmMongo.getAlgorithm().getName());
+                }
             }
         }
         model.put("algorithmNames", names);
     }
 
-    protected void updateMenu() {
-        names = null;
-    }
 }

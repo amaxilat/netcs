@@ -8,22 +8,14 @@ import org.netcs.model.mongo.Algorithm;
 import org.netcs.model.mongo.AlgorithmStatistics;
 import org.netcs.model.mongo.AlgorithmStatisticsRepository;
 import org.netcs.model.mongo.ExecutionStatistics;
+import org.netcs.model.sql.ExperimentRepository;
+import org.netcs.model.sql.UserAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Created by amaxilatis on 9/20/14.
@@ -39,6 +31,8 @@ public class AlgorithmController extends BaseController {
     ExperimentExecutor experimentExecutor;
     @Autowired
     AlgorithmStatisticsRepository algorithmStatisticsRepository;
+    @Autowired
+    ExperimentRepository experimentRepository;
 
     @PostConstruct
     public void init() {
@@ -77,6 +71,8 @@ public class AlgorithmController extends BaseController {
         model.put("title", "View " + algorithm);
 
         AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+        model.put("sizes", experimentRepository.findPopulationSizeByAlgorithm(algorithm));
+        model.put("numbers", experimentRepository.findStatsByAlgorithmAndScheduler(algorithm));
         model.put("stats", stats);
 
         return "algorithm/view";
@@ -206,9 +202,7 @@ public class AlgorithmController extends BaseController {
     @RequestMapping(value = "/algorithm/{algorithm}", method = RequestMethod.POST)
     public String startExperiment(final Map<String, Object> model,
                                   @PathVariable("algorithm") final String algorithm,
-                                  @RequestParam("populationSize") final String populationSize,
-                                  @RequestParam("populationSizeEnd") final String populationSizeEnd,
-                                  @RequestParam("iterations") final String iterations
+                                  @RequestParam("populationSize") final String populationSize
     ) {
         populateAlgorithms(model);
 
@@ -218,12 +212,11 @@ public class AlgorithmController extends BaseController {
                 @Override
                 public void run() {
 //        TODO:
-//                    try {
-//                        experimentExecutor.start(algorithmObject.getAlgorithm(), Long.parseLong(populationSize),
-//                                Long.parseLong(iterations), Long.parseLong(populationSizeEnd));
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
+                    try {
+                        experimentExecutor.runExperiment(algorithmObject.getAlgorithm(), "Random", Long.parseLong(populationSize));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }).start();
 
@@ -233,9 +226,9 @@ public class AlgorithmController extends BaseController {
                 e.printStackTrace();
             }
         } else if (algorithmObject.getVersion() == 3) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
 //        TODO:
 //                    try {
 //                        experimentExecutor.start(algorithmObject.getAlgorithm(), Long.parseLong(populationSize),
@@ -243,8 +236,8 @@ public class AlgorithmController extends BaseController {
 //                    } catch (Exception e) {
 //                        e.printStackTrace();
 //                    }
-                }
-            }).start();
+//                }
+//            }).start();
 
             try {
                 Thread.sleep(1000L);
@@ -286,14 +279,15 @@ public class AlgorithmController extends BaseController {
     @RequestMapping(value = "/algorithm/create", method = RequestMethod.POST)
     public String createAlgorithm(final Map<String, Object> model,
                                   @RequestParam("name") final String name,
+                                  @RequestParam("construction") final String construction,
                                   @RequestParam("transitionsText") final String transitionsText,
                                   @RequestParam("initialNodeState") final String initialNodeState,
                                   @RequestParam("initialLinkState") final String initialLinkState,
                                   @RequestParam("scheduler") final String scheduler,
                                   @RequestParam("version") final String version
     ) {
-
-        AlgorithmStatistics existing = algorithmStatisticsRepository.findByAlgorithmName(name);
+        String fullName = "u" + getUser().getId() + "-" + construction + "-" + name;
+        AlgorithmStatistics existing = algorithmStatisticsRepository.findByAlgorithmName(fullName);
         if (existing == null) {
             final TransitionsResponse transitions = parseTransitions(transitionsText);
 
@@ -302,7 +296,7 @@ public class AlgorithmController extends BaseController {
             existing.setVersion(Integer.parseInt(version));
             existing.setStatistics(new ArrayList<ExecutionStatistics>());
             existing.setAlgorithm(new Algorithm());
-            existing.getAlgorithm().setName(name);
+            existing.getAlgorithm().setName(fullName);
             existing.getAlgorithm().setTransitions(transitions.getTransitions());
             existing.getAlgorithm().setConfigFile(new ConfigFile());
 
@@ -313,8 +307,12 @@ public class AlgorithmController extends BaseController {
             existing.getAlgorithm().getConfigFile().setScheduler(scheduler);
             existing.getAlgorithm().getConfigFile().setTransitions(transitions.getTransitions());
 
-            algorithmStatisticsRepository.save(existing);
-            updateMenu();
+            existing = algorithmStatisticsRepository.save(existing);
+
+            UserAlgorithm userAlgorithm = new UserAlgorithm();
+            userAlgorithm.setUser(getUser());
+            userAlgorithm.setAlgorithmId(existing.getId());
+            userAlgorithmRepository.save(userAlgorithm);
         }
         return "redirect:/experiment";
     }
