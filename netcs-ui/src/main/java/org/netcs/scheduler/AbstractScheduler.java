@@ -1,5 +1,6 @@
 package org.netcs.scheduler;
 
+import it.unimi.dsi.util.XorShift1024StarRandom;
 import org.netcs.model.AbstractProtocol;
 import org.netcs.model.Scheduler;
 import org.netcs.model.population.Population;
@@ -35,7 +36,7 @@ public abstract class AbstractScheduler implements Scheduler {
      * Default constructor.
      */
     public AbstractScheduler() {
-        randomGenerator = new Random();
+        randomGenerator = new XorShift1024StarRandom();
     }
 
     /**

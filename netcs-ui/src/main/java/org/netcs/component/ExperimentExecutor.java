@@ -31,7 +31,7 @@ import java.util.concurrent.*;
 @Component
 public class ExperimentExecutor {
 
-    private static final int MAX_CONCURENT_EXPERIMENTS = 4;
+    private static final int MAX_CONCURENT_EXPERIMENTS = 12;
     @Autowired
     private MessageSendingOperations<String> messagingTemplate;
 
