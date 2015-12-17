@@ -11,7 +11,6 @@ import org.netcs.model.sql.ExperimentRepository;
 import org.netcs.model.sql.TerminationStat;
 import org.netcs.model.sql.TerminationStatRepository;
 import org.netcs.service.LookupService;
-import org.netcs.util.ObjectSizeFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.core.MessageSendingOperations;
@@ -31,7 +30,6 @@ import java.util.concurrent.*;
 @Component
 public class ExperimentExecutor {
 
-    private static final int MAX_CONCURENT_EXPERIMENTS = 12;
     @Autowired
     private MessageSendingOperations<String> messagingTemplate;
 
@@ -48,15 +46,15 @@ public class ExperimentExecutor {
      */
     private static final Logger LOGGER = Logger.getLogger(ExperimentExecutor.class);
 
-
+    public static int MAX_CONCURENT_EXPERIMENTS = 2;
+    @Value("${mine.simple.name:}")
+    public String mineSimpleName;
+    @Value("${mine.simple.scheduler:}")
+    public String mineSimpleScheduler;
     @Value("${mine.simple:false}")
     String mineSimple;
-    @Value("${mine.simple.name:}")
-    String mineSimpleName;
-    @Value("${mine.simple.scheduler:}")
-    String mineSimpleScheduler;
     @Value("${mine.simple.threshold:}")
-    long mineSimpleThreshold;
+    public long mineSimpleThreshold;
     @Value("${mine.count:false}")
     String mineCount;
     @Value("${mine.advanced:false}")
@@ -67,7 +65,7 @@ public class ExperimentExecutor {
     private Map<Long, RunnableExperiment> experimentMap;
     private ExecutorService pool;
 
-    private Long count;
+    public Long count;
     private long index;
 
 
@@ -77,46 +75,50 @@ public class ExperimentExecutor {
         index = 1;
         futureExperiments = new ConcurrentLinkedQueue<>();
         experimentMap = new HashMap<>();
-        pool = Executors.newFixedThreadPool(MAX_CONCURENT_EXPERIMENTS);
+        pool = Executors.newCachedThreadPool();
     }
 
 
     private void scheduleExperiement(final String algorithmName) {
-
-        LOGGER.info("Checking experiments for " + count + " nodes...");
-        final AlgorithmStatistics algoStatistics = algorithmStatisticsRepository.findByAlgorithmName(algorithmName);
-
-        final Algorithm algo = algoStatistics.getAlgorithm();
-        int results = 0;
-        for (final ExecutionStatistics executionStatistics : algoStatistics.getStatistics()) {
-            if (count.equals(Long.parseLong(executionStatistics.getTerminationStats().get("populationSize")))
-                    && mineSimpleScheduler.equals(executionStatistics.getScheduler())
-//                        && executionStatistics.getTerminationMessage().contains("b=1,")
-                    ) {
-                results++;
-            }
+        Long count = 100L;
+        boolean scheduled = false;
+        ArrayList<String> schedulers = new ArrayList<>();
+        for (String s : mineSimpleScheduler.split(",")) {
+            schedulers.add(s);
         }
+        do {
+            LOGGER.info("Checking experiments for " + count + " nodes...");
+            final AlgorithmStatistics algoStatistics = algorithmStatisticsRepository.findByAlgorithmName(algorithmName);
 
-        LOGGER.info("Found " + results + " experiments for " + algo.getName() + " under:" + mineSimpleScheduler + ".");
-        if (results < mineSimpleThreshold) {
-            try {
-                LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
-                runExperiment(algo, mineSimpleScheduler, count, index++);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-//                addRunnableExperiment(algo, count);
-        } else {
-            long step = 100;
-            if (count >= 1000) {
-                step = 500;
-            }
-            final long next = count + step;
+            final Algorithm algo = algoStatistics.getAlgorithm();
 
-            LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + next + " nodes.");
-            count = next;
-            lookupService.setCount(algo.getName(), count);
-        }
+            for (String scheduler : schedulers) {
+                Long existingCount = experimentRepository.findExperimentsForAlgorithmAndScheduler(algorithmName, scheduler, count);
+                LOGGER.info("Found " + existingCount + " experiments for " + algo.getName() + " under:" + scheduler + ".");
+                if (existingCount < mineSimpleThreshold) {
+                    try {
+                        LOGGER.info("Adding " + algo.getName() + " experiment for " + count + " nodes.");
+                        runExperiment(algo, scheduler, count, index++);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    scheduled = true;
+                    break;
+                }
+            }
+
+            if (!scheduled) {
+                long step = 100;
+                if (count >= 1000) {
+                    step = 500;
+                }
+                final long next = count + step;
+
+                LOGGER.info("Enough experiments executed for " + count + " nodes, increasing count to " + next + " nodes.");
+                count = next;
+                lookupService.setCount(algo.getName(), count);
+            }
+        } while (!scheduled);
     }
 
 
@@ -178,8 +180,10 @@ public class ExperimentExecutor {
                     //remove it from the list
                     futureExperiments.remove(futureExperiment);
                     experimentMap.remove(experiment.getIndex());
-                    LOGGER.info("Removing : future: " + ObjectSizeFetcher.getObjectSize(futureExperiment) + " experiment: " + ObjectSizeFetcher.getObjectSize(experiment));
+                    long allocatedMemoryBefore = Runtime.getRuntime().totalMemory();
                     System.gc();
+                    long allocatedMemoryAfter = Runtime.getRuntime().totalMemory();
+                    LOGGER.info("Freed " + (allocatedMemoryBefore - allocatedMemoryAfter) / 1024 + "kb");
                 } catch (InterruptedException | ExecutionException e) {
                     LOGGER.error(e, e);
                 }
@@ -190,7 +194,7 @@ public class ExperimentExecutor {
         }
         LOGGER.info(runningCount + "/" + totalSize + " experiments still running...");
 
-        while (futureExperiments.size() < MAX_CONCURENT_EXPERIMENTS) {
+        while (mineSimple.equals("true") && futureExperiments.size() < MAX_CONCURENT_EXPERIMENTS) {
             scheduleExperiement(mineSimpleName);
         }
     }

@@ -4,10 +4,15 @@ import org.apache.log4j.Logger;
 import org.netcs.component.ExperimentExecutor;
 import org.netcs.model.mongo.AlgorithmStatistics;
 import org.netcs.model.mongo.AlgorithmStatisticsRepository;
+import org.netcs.model.sql.User;
+import org.netcs.model.sql.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.annotation.PostConstruct;
 import java.util.Comparator;
@@ -33,10 +38,28 @@ public class BaseController {
 
     @Autowired
     MongoTemplate mongoTemplate;
+    @Autowired
+    UserRepository userRepository;
 
     @PostConstruct
     public void init() {
 
+    }
+
+    /**
+     * Retrieve current user from security context holder.
+     *
+     * @return the User object.
+     */
+    protected final User getUser() {
+        final Object userObject = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (userObject instanceof User) {
+            final User theUser = userRepository.findById(((User) userObject).getId());
+            return theUser;
+        } else {
+            return null;
+        }
     }
 
     protected void populateAlgorithms(final Map<String, Object> model) {
