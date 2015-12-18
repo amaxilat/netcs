@@ -150,6 +150,8 @@ public class ExperimentExecutor {
             experiment.getExperiment().setLookingForStar(true);
         } else if (configFileName.toLowerCase().contains("cycle-cover")) {
             experiment.getExperiment().setLookingForCycleCover(true);
+        } else if (configFileName.toLowerCase().contains("leader")) {
+            experiment.getExperiment().setLookingForLeader(true);
         }
 
         try {
@@ -182,9 +184,14 @@ public class ExperimentExecutor {
             if (futureExperiment.isDone()) {
                 try {
                     //get the result
-                    RunnableExperiment experiment = futureExperiment.get();
-                    //store the results
-                    storeStatistics(experiment);
+                    final RunnableExperiment experiment = futureExperiment.get();
+                    if (experiment.getExperiment().getSuccess()) {
+                        //store the results
+                        storeStatistics(experiment);
+                    } else {
+                        LOGGER.error("Experiment Failed!");
+                    }
+
                     //remove it from the list
                     futureExperiments.remove(futureExperiment);
                     experimentMap.remove(experiment.getIndex());

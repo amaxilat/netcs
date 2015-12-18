@@ -4,6 +4,7 @@ package org.netcs;
 import org.apache.log4j.Logger;
 import org.netcs.model.sql.User;
 import org.netcs.model.sql.UserRepository;
+import org.netcs.service.MixPanelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -32,6 +33,8 @@ public class NETCSAuthenticationProvider
 
     @Autowired
     protected UserRepository userRepository;
+    @Autowired
+    protected MixPanelService mixPanelService;
 
     public NETCSAuthenticationProvider() {
         passwordEncoder = new BCryptPasswordEncoder();
@@ -75,6 +78,9 @@ public class NETCSAuthenticationProvider
         //7. Return an authenticated token, containing user data and authorities
         HashSet authorities = new HashSet();
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+
+        mixPanelService.login(user.getId());
+
         return new UsernamePasswordAuthenticationToken(user, null, authorities);
     }
 

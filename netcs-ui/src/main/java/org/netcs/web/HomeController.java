@@ -1,6 +1,7 @@
 package org.netcs.web;
 
 import org.apache.log4j.Logger;
+import org.json.JSONException;
 import org.netcs.component.ExperimentExecutor;
 import org.netcs.model.sql.Role;
 import org.netcs.model.sql.User;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -89,12 +92,18 @@ public class HomeController extends BaseController {
             return "register";
         }
 
+
         //Create and save the new User
         User newUser = new User();
         newUser.setEmail(email);
         newUser.setRole(Role.USER);
         newUser.setPasswordHash(passwordEncoder.encode(password));
-        userRepository.save(newUser);
+        newUser = userRepository.save(newUser);
+
+        mixPanelService.signup(newUser.getId());
+        mixPanelService.updateUserProfile(newUser.getId(), "Email", email);
+        mixPanelService.updateUserProfile(newUser.getId(), "$email", email);
+        mixPanelService.updateUserProfile(newUser.getId(), "$created", new Date());
 
         LOGGER.info(String.format("Successfully created new User with ID %d", newUser.getId()));
 

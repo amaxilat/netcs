@@ -8,6 +8,7 @@ import org.netcs.model.mongo.Algorithm;
 import org.netcs.model.mongo.AlgorithmStatistics;
 import org.netcs.model.mongo.AlgorithmStatisticsRepository;
 import org.netcs.model.mongo.ExecutionStatistics;
+import org.netcs.model.sql.Experiment;
 import org.netcs.model.sql.ExperimentRepository;
 import org.netcs.model.sql.User;
 import org.netcs.model.sql.UserAlgorithm;
@@ -81,6 +82,37 @@ public class AlgorithmController extends BaseController {
         model.put("stats", stats);
 
         return "algorithm/view";
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/algorithm/{algorithm}/csv", method = RequestMethod.GET, produces = "text/csv")
+    public String viewAlgorithmCsv(final Map<String, Object> model, @PathVariable("algorithm") final String algorithm) {
+        if (!canView(getUser(), algorithm)) {
+            return "redirect:/";
+        }
+
+        final StringBuilder sb = new StringBuilder();
+
+        sb.append("#").append("\t");
+        sb.append("scheduler").append("\t");
+        sb.append("size").append("\t");
+        sb.append("interactions").append("\t");
+        sb.append("eff.interactions").append("\t");
+        sb.append("\n");
+
+        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+
+        int count = 0;
+        for (final ExecutionStatistics executionStatistics : stats.getStatistics()) {
+            sb.append(count++).append("\t");
+            sb.append(executionStatistics.getScheduler()).append("\t");
+            sb.append(executionStatistics.getPopulationSize()).append("\t");
+            sb.append(executionStatistics.getInteractions()).append("\t");
+            sb.append(executionStatistics.getEffectiveInteractions()).append("\t");
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 
 

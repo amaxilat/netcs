@@ -8,6 +8,7 @@ import org.netcs.model.sql.User;
 import org.netcs.model.sql.UserAlgorithm;
 import org.netcs.model.sql.UserAlgorithmRepository;
 import org.netcs.model.sql.UserRepository;
+import org.netcs.service.MixPanelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -43,6 +44,8 @@ public class BaseController {
     UserRepository userRepository;
     @Autowired
     UserAlgorithmRepository userAlgorithmRepository;
+    @Autowired
+    MixPanelService mixPanelService;
 
     @PostConstruct
     public void init() {

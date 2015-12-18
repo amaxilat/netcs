@@ -73,51 +73,71 @@
         <section class="content">
 
             <div class="col-md-6">
-                <form method="post" action="/algorithm/create" class="form col-md-4">
+                <form method="post" action="/algorithm/create" class="form col-md-12">
 
-                    <div class="form-group">
-                        <label class="col-md-6">Name:</label>
-                        <input type="text" id="name" name="name"/>
+                    <div class="form-group col-md-12">
+                        <label class="col-md-4">Name</label>
+                        <input class="col-md-8" type="text" id="name" name="name" required="required"/>
 
                     </div>
-                    <div class="form-group">
-                        <label class="col-md-6">Construction:</label>
-                        <select id="construction" name="construction" class="btn">
+                    <div class="form-group col-md-12">
+                        <label class="col-md-4">Construction</label>
+                        <select id="construction" name="construction" class="btn col-md-8">
                             <option>line</option>
                             <option>star</option>
                             <option>ring</option>
                             <option>cycle-cover</option>
+                            <option value="leader">leader election (leader state = l)</option>
                         </select>
 
                     </div>
-                    <div class="form-group">
-                        <label class="col-md-6">Transitions:</label>
+                    <div class="form-group col-md-12">
+                        <label class="col-md-4">
+                            Transitions
+                            <br/>
+                            <small>
+                                i.e.,
+                                <br/>
+                                (c, c, 0, c, p, 1)
+                                <br/>
+                                (p, p, 1, p, p, 0)
+                                <br/>
+                                (c, p, 0, c, p, 1)
+                                <br/>
+                            </small>
+                        </label>
                     <textarea id="transitionsText" name="transitionsText" oninput="parseStates()"
-                              style="width: 400px" rows="10"></textarea>
+                              class="col-md-8"
+                              style="width: 400px" rows="10" required="required"></textarea>
                     </div>
-                    <div class="form-group">
-                        <label class="col-md-6">Initial Node State:</label>
-                        <input type="text" id="initialNodeState" name="initialNodeState"/>
+                    <div class="form-group col-md-12">
+                        <label class="col-md-4">Initial Node State</label>
+                        <input type="text" id="initialNodeState" name="initialNodeState" class="col-md-4"
+                               required="required"/>
+                        <label class="col-md-4">Use '?' for random</label>
 
                     </div>
-                    <div class="form-group">
-                        <label class="col-md-6">Initial Link State:</label>
-                        <input type="text" id="initialLinkState" name="initialLinkState"/>
+                    <div class="form-group col-md-12">
+                        <label class="col-md-4">Initial Link State</label>
+                        <input type="text" id="initialLinkState" name="initialLinkState" class="col-md-4"
+                               required="required"/>
+                        <label class="col-md-4"></label>
 
                     </div>
-                    <div class="form-group">
-                        <label class="col-md-6">Scheduler:</label>
-                        <input type="text" id="scheduler" name="scheduler" value="RandomScheduler"/>
+                    <div class="form-group col-md-12">
+                        <label class="col-md-4">Scheduler</label>
+                        <input type="hidden" id="scheduler" name="scheduler" value="RandomScheduler"/>
+                        <label class="col-md-8">RandomScheduler</label>
 
                     </div>
-                    <div class="form-group">
-                        <label class="col-md-6">Version:</label>
-                        <label class="col-md-6">1</label>
+                    <div class="form-group col-md-12">
+                        <label class="col-md-4">Version</label>
+                        <label class="col-md-8">1</label>
                         <input type="hidden" id="version" name="version" value="1"/>
 
                     </div>
-                    <div class="form-group">
-                        <button class="form-control">Submit</button>
+                    <div class="form-group col-md-12">
+                        <button class="form-control">Add</button>
                     </div>
                 </form>
             </div>
@@ -169,8 +189,8 @@
             })
             data.transitions.forEach(function (item) {
                 $("#transitions").append("<li>" + item.node1 + "-[" + item.link + "]-" + item.node2
-                + " -> "
-                + item.node1New + "-[" + item.linkNew + "]-" + item.node2New + "</li>");
+                        + " -> "
+                        + item.node1New + "-[" + item.linkNew + "]-" + item.node2New + "</li>");
             })
         });
     }

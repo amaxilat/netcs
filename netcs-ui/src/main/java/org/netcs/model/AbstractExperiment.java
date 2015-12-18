@@ -4,6 +4,7 @@ import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.netcs.config.ConfigFile;
+import org.netcs.config.Transition;
 import org.netcs.model.population.MemoryPopulation;
 import org.netcs.model.population.Population;
 import org.netcs.model.population.PopulationLink;
@@ -68,6 +69,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     private long cardinalityStart;
     private boolean hadCardinality;
     final SummaryStatistics cardinalityFactorStatistics;
+    private boolean lookingForLeader;
 
     /**
      * Default constructor.
@@ -81,6 +83,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         this.population = new MemoryPopulation(configFile.getPopulationSize());
         this.configFile = configFile;
         this.index = index;
+        this.success = false;
         // Initialize Population
         initPopulation();
 
@@ -92,6 +95,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         this.lookingForStar = false;
         this.lookingForCircle = false;
         this.lookingForCycleCover = false;
+        this.lookingForLeader = false;
         this.lookingForLine = false;
         this.finished = false;
         this.terminationStats = new HashMap<>();
@@ -105,15 +109,44 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
      */
     public void initPopulation() {
         final long start = System.currentTimeMillis();
-        Iterator<PopulationNode> nodeIterator = getPopulation().getNodes().iterator();
-        while (nodeIterator.hasNext()) {
-            PopulationNode node = nodeIterator.next();
-            node.setState(configFile.getInitialNodeState());
-            LOGGER.debug(node);
+
+        if (configFile.getInitialNodeState().equals("?")) {
+            final Set<String> states = new HashSet<>();
+            for (final Transition transition : configFile.getTransitions()) {
+                states.add(transition.getNode1());
+                states.add(transition.getNode1New());
+                states.add(transition.getNode2());
+                states.add(transition.getNode2New());
+            }
+            final String[] statesArray = states.toArray(new String[states.size()]);
+            final Random rand = new Random();
+            int count = 0;
+            final Iterator<PopulationNode> nodeIterator = getPopulation().getNodes().iterator();
+            while (nodeIterator.hasNext()) {
+                if (count < states.size()) {
+                    final PopulationNode node = nodeIterator.next();
+                    node.setState(statesArray[count]);
+                    LOGGER.debug(node);
+                } else {
+                    final PopulationNode node = nodeIterator.next();
+                    node.setState(statesArray[rand.nextInt(states.size())]);
+                    LOGGER.debug(node);
+                }
+                count++;
+            }
+        } else {
+            final Iterator<PopulationNode> nodeIterator = getPopulation().getNodes().iterator();
+            while (nodeIterator.hasNext()) {
+                final PopulationNode node = nodeIterator.next();
+                node.setState(configFile.getInitialNodeState());
+                LOGGER.debug(node);
+            }
         }
-        Iterator<PopulationLink> edgeIterator = getPopulation().getEdges().iterator();
+
+
+        final Iterator<PopulationLink> edgeIterator = getPopulation().getEdges().iterator();
         while (edgeIterator.hasNext()) {
-            PopulationLink edge = edgeIterator.next();
+            final PopulationLink edge = edgeIterator.next();
             edge.setState(configFile.getInitialLinkState());
             LOGGER.debug(edge);
         }
@@ -163,11 +196,12 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
                 // increase interactions counter
                 interactions++;
 
-//                //exit after too many interactions
-//                if (interactions > getPopulationSize() * 10000 * 10) {
-//                    finished = true;
-//                    success = false;
-//                }
+                //exit after too many interactions
+                if (interactions > 2000000) {
+                    finished = true;
+                    success = false;
+                    break;
+                }
 //                //exit after a lot of interactions and cardinality
 //                if (interactions > getPopulationSize() * 10000 && terminationStats.containsKey("cardinalityExistsFactor")) {
 //                    finished = true;
@@ -224,21 +258,31 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         if (lookingForStar && checkStar()) {
             LOGGER.info("<================ FOUND STAR");
             finished = true;
+            success = true;
             return true;
         }
         if (lookingForCircle && checkCircle()) {
             LOGGER.info("<================ FOUND CIRCLE");
             finished = true;
+            success = true;
             return true;
         }
         if (lookingForCycleCover && checkCycleCover()) {
             LOGGER.info("<================ FOUND CCOVER");
             finished = true;
+            success = true;
+            return true;
+        }
+        if (lookingForLeader && checkLeader()) {
+            LOGGER.info("<================ FOUND LEADER");
+            finished = true;
+            success = true;
             return true;
         }
         if (lookingForLine && checkLine()) {
             LOGGER.info("<================ FOUND LINE");
             finished = true;
+            success = true;
             return true;
         }
         finished = false;
@@ -361,6 +405,33 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 //        }
 //        LOGGER.debug(edgesStringBuilder.toString());
 
+        return result;
+    }
+
+    protected boolean checkLeader() {
+        reportStatus(String.format("[%d] check-leader", index));
+
+        Boolean result = false;
+        long leaders = 0;
+        for (PopulationNode populationNode : population.getNodes()) {
+            if (populationNode.getState().equals("l")) {
+                leaders++;
+                if (leaders > 1) {
+                    return false;
+                }
+            }
+        }
+        if (leaders == 1) {
+            success = true;
+            result = true;
+        }
+        reportStatus(String.format("[%d] network-stats {leaders:%d}", index, leaders));
+
+        if (result) {
+            reportStatus(String.format("[%d] terminating-condition leader", index));
+            success = true;
+            return true;
+        }
         return result;
     }
 
@@ -620,8 +691,16 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         return lookingForCycleCover;
     }
 
+    public boolean isLookingForLeader() {
+        return lookingForLeader;
+    }
+
     public void setLookingForCycleCover(boolean lookingForCycleCover) {
         this.lookingForCycleCover = lookingForCycleCover;
+    }
+
+    public void setLookingForLeader(boolean lookingForLeader) {
+        this.lookingForLeader = lookingForLeader;
     }
 
     public boolean isLookingForLine() {
@@ -655,4 +734,5 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     public Map<String, String> getTerminationStats() {
         return terminationStats;
     }
+
 }

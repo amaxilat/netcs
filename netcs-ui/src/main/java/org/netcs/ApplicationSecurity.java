@@ -63,6 +63,7 @@ public class ApplicationSecurity
         http.authorizeRequests()
                 .antMatchers("/").permitAll()
                 .antMatchers("/register").permitAll()
+                .antMatchers("/ws/**").permitAll()
                 .antMatchers("/algorithm/**").hasRole("USER")
                 .antMatchers("/algorithm2/**").hasRole("USER")
                 .antMatchers("/transitions/**").hasRole("USER")
