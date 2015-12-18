@@ -42,7 +42,12 @@ public class AlgorithmCreateController extends BaseController {
                                   @RequestParam("initialLinkState") final String initialLinkState,
                                   @RequestParam("scheduler") final String scheduler,
                                   @RequestParam("version") final String version) {
-        String fullName = "u" + getUser().getId() + "-" + construction + "-" + name;
+
+
+        final String fullName = "u" + getUser().getId() + "-" + construction + "-" + name;
+
+        mixPanelService.log(getUser(), "algorithm", "create", fullName);
+
         AlgorithmStatistics existing = algorithmStatisticsRepository.findByAlgorithmName(fullName);
         if (existing == null) {
             final TransitionsResponse transitions = parseTransitions(transitionsText);

@@ -56,6 +56,8 @@ public class AlgorithmController extends BaseController {
         populateAlgorithms(model);
         model.put("title", "Add algorithm");
 
+        mixPanelService.log(getUser(), "algorithm", "view", "add");
+
         return "algorithm/add";
     }
 
@@ -75,6 +77,8 @@ public class AlgorithmController extends BaseController {
             return "redirect:/";
         }
 
+        mixPanelService.log(getUser(), "algorithm", "view", algorithm);
+
         final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
         model.put("title", "View " + algorithm);
         model.put("sizes", experimentRepository.findPopulationSizeByAlgorithm(algorithm));
@@ -90,6 +94,8 @@ public class AlgorithmController extends BaseController {
         if (!canView(getUser(), algorithm)) {
             return "redirect:/";
         }
+
+        mixPanelService.log(getUser(), "algorithm", "download-csv", algorithm);
 
         final StringBuilder sb = new StringBuilder();
 
@@ -261,6 +267,8 @@ public class AlgorithmController extends BaseController {
         if (!canView(getUser(), algorithm)) {
             return "redirect:/";
         }
+
+        mixPanelService.log(getUser(), "algorithm", "run", algorithm);
 
         populateAlgorithms(model);
 

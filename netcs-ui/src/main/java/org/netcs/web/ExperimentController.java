@@ -55,6 +55,9 @@ public class ExperimentController extends BaseController {
     public String listExperiments(final Map<String, Object> model) {
         model.put("title", "Experiments");
         populateAlgorithms(model);
+
+        mixPanelService.log(getUser(), "experiment", "view", "all");
+
         SortedSet<RunnableExperiment> experimentSet = new TreeSet<>(new Comparator<RunnableExperiment>() {
             @Override
             public int compare(RunnableExperiment o1, RunnableExperiment o2) {
@@ -119,9 +122,13 @@ public class ExperimentController extends BaseController {
     @RequestMapping(value = "/experiment/{experimentId}", method = RequestMethod.GET)
     public String viewExperiment(final Map<String, Object> model, @PathVariable("experimentId") int experimentId) {
         populateAlgorithms(model);
+
         model.put("title", experimentId);
         try {
             RunnableExperiment experiment = experimentExecutor.getExperiment(experimentId);
+
+            mixPanelService.log(getUser(), "experiment", "view", experiment.getAlgorithmName());
+
             LOGGER.info(experiment);
             //System.out.println("experiment:" + experiment.getExperiment().getPopulation().getNodes().size() + "nodes");
             model.put("population", experiment.getExperiment().getPopulation());
