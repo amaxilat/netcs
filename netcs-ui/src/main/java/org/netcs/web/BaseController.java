@@ -66,6 +66,7 @@ public class BaseController {
     }
 
     protected void populateAlgorithms(final Map<String, Object> model) {
+        model.put("user", getUser());
         TreeSet<String> names = new TreeSet<>(new Comparator<String>() {
             @Override
             public int compare(final String o1, final String o2) {
@@ -84,4 +85,13 @@ public class BaseController {
         model.put("algorithmNames", names);
     }
 
+    protected boolean canView(final User user, final String algorithm) {
+        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+        for (final UserAlgorithm alg : user.getUserAlgorithms()) {
+            if (stats.getId().equals(alg.getAlgorithmId())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

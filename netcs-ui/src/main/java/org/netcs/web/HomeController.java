@@ -40,7 +40,6 @@ public class HomeController extends BaseController {
     public String home(final Map<String, Object> model) {
         populateAlgorithms(model);
         model.put("title", "Home");
-        model.put("user", getUser());
         return "home";
     }
 

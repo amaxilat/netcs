@@ -9,6 +9,7 @@ import org.netcs.model.mongo.AlgorithmStatistics;
 import org.netcs.model.mongo.AlgorithmStatisticsRepository;
 import org.netcs.model.mongo.ExecutionStatistics;
 import org.netcs.model.sql.ExperimentRepository;
+import org.netcs.model.sql.User;
 import org.netcs.model.sql.UserAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -68,9 +69,13 @@ public class AlgorithmController extends BaseController {
     @RequestMapping(value = "/algorithm/{algorithm}", method = RequestMethod.GET)
     public String viewAlgorithm(final Map<String, Object> model, @PathVariable("algorithm") final String algorithm) {
         populateAlgorithms(model);
-        model.put("title", "View " + algorithm);
 
-        AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+        if (!canView(getUser(), algorithm)) {
+            return "redirect:/";
+        }
+
+        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+        model.put("title", "View " + algorithm);
         model.put("sizes", experimentRepository.findPopulationSizeByAlgorithm(algorithm));
         model.put("numbers", experimentRepository.findStatsByAlgorithmAndScheduler(algorithm));
         model.put("stats", stats);
@@ -78,12 +83,17 @@ public class AlgorithmController extends BaseController {
         return "algorithm/view";
     }
 
+
     @RequestMapping(value = "/algorithm/{algorithm}/details", method = RequestMethod.GET)
     public String viewAlgorithmDetails(final Map<String, Object> model, @PathVariable("algorithm") final String algorithm) {
         populateAlgorithms(model);
-        model.put("title", "View " + algorithm);
 
-        AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+        if (!canView(getUser(), algorithm)) {
+            return "redirect:/";
+        }
+
+        model.put("title", "View " + algorithm);
+        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
         model.put("stats", stats);
 
         return "algorithm/details";
@@ -93,7 +103,11 @@ public class AlgorithmController extends BaseController {
     @RequestMapping(value = "/algorithm/{algorithm}/ocoef", method = RequestMethod.GET, produces = "text/plain")
     public String ocoef(@PathVariable("algorithm") final String algorithm) {
 
-        AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+        if (!canView(getUser(), algorithm)) {
+            return "redirect:/";
+        }
+
+        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
         StringBuilder response = new StringBuilder();
         Map<Long, Double> sizes = new HashMap<>();
         Map<Long, Double> counts = new HashMap<>();
@@ -125,7 +139,11 @@ public class AlgorithmController extends BaseController {
     @RequestMapping(value = "/algorithm/{algorithm}/counterStats/{b}", method = RequestMethod.GET, produces = "text/plain")
     public String counterStats(@PathVariable("algorithm") final String algorithm, @PathVariable("b") final Double b_target) {
 
-        AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+        if (!canView(getUser(), algorithm)) {
+            return "redirect:/";
+        }
+
+        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
         StringBuilder response = new StringBuilder();
         Map<Long, Double> interactions = new HashMap<>();
         Map<Long, Double> sizeCounted = new HashMap<>();
@@ -163,7 +181,11 @@ public class AlgorithmController extends BaseController {
     @RequestMapping(value = "/algorithm/{algorithm}/failureRates/{b}", method = RequestMethod.GET, produces = "text/plain")
     public String failureRates(@PathVariable("algorithm") final String algorithm, @PathVariable("b") final Double b_target) {
 
-        AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+        if (!canView(getUser(), algorithm)) {
+            return "redirect:/";
+        }
+
+        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
         StringBuilder response = new StringBuilder();
         Map<Long, Double> successfulExperiments = new HashMap<>();
         Map<Long, Double> totalExperiments = new HashMap<>();
@@ -202,8 +224,12 @@ public class AlgorithmController extends BaseController {
     @RequestMapping(value = "/algorithm/{algorithm}", method = RequestMethod.POST)
     public String startExperiment(final Map<String, Object> model,
                                   @PathVariable("algorithm") final String algorithm,
-                                  @RequestParam("populationSize") final String populationSize
-    ) {
+                                  @RequestParam("populationSize") final String populationSize) {
+
+        if (!canView(getUser(), algorithm)) {
+            return "redirect:/";
+        }
+
         populateAlgorithms(model);
 
         final AlgorithmStatistics algorithmObject = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
@@ -252,8 +278,12 @@ public class AlgorithmController extends BaseController {
     public String startExperiment2(@PathVariable("algorithm") final String algorithm,
                                    @RequestParam("populationSize") final String populationSize,
                                    @RequestParam("populationSizeEnd") final String populationSizeEnd,
-                                   @RequestParam("iterations") final String iterations
-    ) {
+                                   @RequestParam("iterations") final String iterations) {
+
+        if (!canView(getUser(), algorithm)) {
+            return "redirect:/";
+        }
+
         final AlgorithmStatistics algorithmObject = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
         new Thread(new Runnable() {
             @Override
@@ -274,108 +304,5 @@ public class AlgorithmController extends BaseController {
             e.printStackTrace();
         }
         return "redirect:/experiment";
-    }
-
-    @RequestMapping(value = "/algorithm/create", method = RequestMethod.POST)
-    public String createAlgorithm(final Map<String, Object> model,
-                                  @RequestParam("name") final String name,
-                                  @RequestParam("construction") final String construction,
-                                  @RequestParam("transitionsText") final String transitionsText,
-                                  @RequestParam("initialNodeState") final String initialNodeState,
-                                  @RequestParam("initialLinkState") final String initialLinkState,
-                                  @RequestParam("scheduler") final String scheduler,
-                                  @RequestParam("version") final String version
-    ) {
-        String fullName = "u" + getUser().getId() + "-" + construction + "-" + name;
-        AlgorithmStatistics existing = algorithmStatisticsRepository.findByAlgorithmName(fullName);
-        if (existing == null) {
-            final TransitionsResponse transitions = parseTransitions(transitionsText);
-
-
-            existing = new AlgorithmStatistics();
-            existing.setVersion(Integer.parseInt(version));
-            existing.setStatistics(new ArrayList<ExecutionStatistics>());
-            existing.setAlgorithm(new Algorithm());
-            existing.getAlgorithm().setName(fullName);
-            existing.getAlgorithm().setTransitions(transitions.getTransitions());
-            existing.getAlgorithm().setConfigFile(new ConfigFile());
-
-            existing.getAlgorithm().getConfigFile().setPopulationSize(100);
-            existing.getAlgorithm().getConfigFile().setInitialLinkState(initialLinkState);
-            existing.getAlgorithm().getConfigFile().setInitialNodeState(initialNodeState);
-            existing.getAlgorithm().getConfigFile().setIterations(100);
-            existing.getAlgorithm().getConfigFile().setScheduler(scheduler);
-            existing.getAlgorithm().getConfigFile().setTransitions(transitions.getTransitions());
-
-            existing = algorithmStatisticsRepository.save(existing);
-
-            UserAlgorithm userAlgorithm = new UserAlgorithm();
-            userAlgorithm.setUser(getUser());
-            userAlgorithm.setAlgorithmId(existing.getId());
-            userAlgorithmRepository.save(userAlgorithm);
-        }
-        return "redirect:/experiment";
-    }
-
-
-    @ResponseBody
-    @RequestMapping(value = "/transitions/parse", method = RequestMethod.POST)
-    public TransitionsResponse parse(@RequestParam("transitionsText") final String transitionsText) {
-        return parseTransitions(transitionsText);
-    }
-
-    private TransitionsResponse parseTransitions(final String transitionsText) {
-        final List<Transition> transitions = new ArrayList<>();
-        Set<String> nodeStates = new HashSet<>();
-        Set<String> linkStates = new HashSet<>();
-        final String[] lines = transitionsText.split("\n");
-        for (final String line : lines) {
-            if (!line.startsWith("#")) {
-                final String cline = line.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("->", ",").replaceAll(" ", "").replaceAll("\r", "").replaceAll("\n", "");
-                final String[] parts = cline.split(",");
-                LOGGER.info(line);
-                LOGGER.info(parts);
-                LOGGER.info(parts.length);
-                if (parts.length >= 6) {
-                    Transition newTransition = new Transition(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
-                    nodeStates.add(parts[0]);
-                    nodeStates.add(parts[1]);
-                    nodeStates.add(parts[3]);
-                    nodeStates.add(parts[4]);
-                    linkStates.add(parts[2]);
-                    linkStates.add(parts[5]);
-                    LOGGER.info(newTransition.toString());
-                    transitions.add(newTransition);
-                }
-            }
-        }
-        LOGGER.info("Read " + transitions.size() + " transitions.");
-
-        return new TransitionsResponse(transitions, nodeStates, linkStates);
-    }
-
-    class TransitionsResponse {
-
-        private final List<Transition> transitions;
-        private final Set<String> nodeStates;
-        private final Set<String> linkStates;
-
-        public TransitionsResponse(final List<Transition> transitions, final Set<String> nodeStates, final Set<String> linkStates) {
-            this.transitions = transitions;
-            this.nodeStates = nodeStates;
-            this.linkStates = linkStates;
-        }
-
-        public List<Transition> getTransitions() {
-            return transitions;
-        }
-
-        public Set<String> getNodeStates() {
-            return nodeStates;
-        }
-
-        public Set<String> getLinkStates() {
-            return linkStates;
-        }
     }
 }
