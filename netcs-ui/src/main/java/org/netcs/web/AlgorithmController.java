@@ -8,10 +8,7 @@ import org.netcs.model.mongo.Algorithm;
 import org.netcs.model.mongo.AlgorithmStatistics;
 import org.netcs.model.mongo.AlgorithmStatisticsRepository;
 import org.netcs.model.mongo.ExecutionStatistics;
-import org.netcs.model.sql.Experiment;
-import org.netcs.model.sql.ExperimentRepository;
-import org.netcs.model.sql.User;
-import org.netcs.model.sql.UserAlgorithm;
+import org.netcs.model.sql.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +32,10 @@ public class AlgorithmController extends BaseController {
     AlgorithmStatisticsRepository algorithmStatisticsRepository;
     @Autowired
     ExperimentRepository experimentRepository;
+    @Autowired
+    TerminationConditionRepository terminationConditionRepository;
+    @Autowired
+    TerminationStatRepository terminationStatRepository;
 
     @PostConstruct
     public void init() {
@@ -86,6 +87,37 @@ public class AlgorithmController extends BaseController {
         model.put("stats", stats);
 
         return "algorithm/view";
+    }
+
+    @RequestMapping(value = "/algorithm/{algorithm}/delete", method = RequestMethod.POST)
+    public String viewAlgorithm(final Map<String, Object> model, @PathVariable("algorithm") final String algorithm,
+                                @RequestParam("algorithm") final String algorithmText) {
+        populateAlgorithms(model);
+
+        if (!canView(getUser(), algorithm)) {
+            return "redirect:/";
+        }
+
+        mixPanelService.log(getUser(), "algorithm", "delete", algorithm);
+
+        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+        algorithmStatisticsRepository.delete(stats);
+
+        for (final UserAlgorithm userAlgorithm : userRepository.findByEmail(getUser().getEmail()).getUserAlgorithms()) {
+            if (stats.getId().equals(userAlgorithm.getAlgorithmId())) {
+                userAlgorithmRepository.delete(userAlgorithm);
+                //TODO: check validity
+                final Set<Experiment> experiments = experimentRepository.findStatsByAlgorithmAndScheduler(algorithm);
+                for (final Experiment experiment : experiments) {
+                    terminationConditionRepository.delete(terminationConditionRepository.findByExperiment(experiment));
+                }
+                experimentRepository.delete(experiments);
+                final Set<TerminationStat> terminationStats = terminationStatRepository.findByExperimentAlgorithm(algorithm);
+                terminationStatRepository.delete(terminationStats);
+            }
+        }
+
+        return "redirect:/";
     }
 
     @ResponseBody
