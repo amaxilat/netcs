@@ -120,14 +120,16 @@ public class AlgorithmController extends BaseController {
             LOGGER.info(gvFilePng);
 
             File file = new File(gvFilePng);
+            LOGGER.info("FileLength:" + file.length());
+            final FileInputStream steam = new FileInputStream(gvFileName);
+            LOGGER.info("Available:" + steam.available());
 
             HttpHeaders respHeaders = new HttpHeaders();
             respHeaders.setContentType(MediaType.valueOf("application/postscript"));
             respHeaders.setContentLength(file.length());
             respHeaders.setContentDispositionFormData("attachment", gvFilePng);
-
-            InputStreamResource isr = new InputStreamResource(new FileInputStream(gvFileName));
-            return new ResponseEntity<InputStreamResource>(isr, respHeaders, HttpStatus.OK);
+            final InputStreamResource isr = new InputStreamResource(steam);
+            return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
         } catch (IOException e) {
             LOGGER.error(e, e);
         }
