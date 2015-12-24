@@ -11,15 +11,11 @@ import org.netcs.model.sql.UserRepository;
 import org.netcs.service.MixPanelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.annotation.PostConstruct;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -81,7 +77,11 @@ public class BaseController {
             if (getUser() != null) {
                 for (final UserAlgorithm algorithm : getUser().getUserAlgorithms()) {
                     AlgorithmStatistics algorithmMongo = algorithmStatisticsRepository.findById(algorithm.getAlgorithmId());
-                    names.add(algorithmMongo.getAlgorithm().getName());
+                    try {
+                        names.add(algorithmMongo.getAlgorithm().getName());
+                    } catch (Exception e) {
+                        LOGGER.error(e, e);
+                    }
                 }
             }
         }
