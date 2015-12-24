@@ -88,7 +88,7 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                    <form th:action="'algorithm/'+${stats.algorithm.name}'/delete'" method="post">
+                                    <form th:action="'algorithm/'+${stats.algorithm.name}+'/delete'" method="post">
                                         <input type="hidden" th:value="${stats.algorithm.name}"/>
                                         <input type="submit" class="btn btn-danger" value="Delete"/>
                                     </form>
