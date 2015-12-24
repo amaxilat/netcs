@@ -65,9 +65,40 @@
                 <span th:text="${title}"></span>
             </h1>
             <ol class="breadcrumb">
-                <!--<li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>-->
+                <li>
+                    <!-- Button trigger modal -->
+                    <button type="button" data-toggle="modal" data-target="#deleteAlgoritmModal">
+                        Launch demo modal
+                    </button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="deleteAlgoritmModal" tabindex="-1" role="dialog"
+                         aria-labelledby="deleteAlgoritmModalLabel">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                            aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="deleteAlgoritmModalLabel">
+                                        Delete <span th:text="${stats.algorithm.name}"></span>
+                                    </h4>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete <span th:text="${stats.algorithm.name}"></span>?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <form th:action="'algorithm/'+${stats.algorithm.name}'/delete'" method="post">
+                                        <input type="hidden" th:value="${stats.algorithm.name}"/>
+                                        <input type="submit" class="btn btn-danger" value="Delete"/>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
                 <li class="active" th:text="${title}">Blank page</li>
-                <li class="active" >Blank page</li>
             </ol>
         </section>
 
@@ -121,7 +152,8 @@
                 <div class="col-md-12">
                     <h3>
                         <span><span th:text="${#lists.size(stats.statistics)}"></span> Experiments run until now</span>
-                        <span class="pull-right"><a th:href="@{__${#httpServletRequest.requestURI}__/csv}">Download as results as csv</a> </span>
+                        <span class="pull-right"><a th:href="@{__${#httpServletRequest.requestURI}__/csv}">Download as
+                            results as csv</a> </span>
                     </h3>
                 </div>
 
@@ -187,7 +219,7 @@
         to = 100000;
     }
 
-    var divSize =10;
+    var divSize = 10;
 
     $(document).ready(function () {
         $('.datatables').DataTable();
