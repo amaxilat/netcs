@@ -123,7 +123,7 @@ public class AlgorithmController extends BaseController {
 
             HttpHeaders respHeaders = new HttpHeaders();
             respHeaders.setContentType(MediaType.valueOf("application/postscript"));
-            respHeaders.setContentLength(12345678);
+            respHeaders.setContentLength(file.length());
             respHeaders.setContentDispositionFormData("attachment", gvFilePng);
 
             InputStreamResource isr = new InputStreamResource(new FileInputStream(gvFileName));
