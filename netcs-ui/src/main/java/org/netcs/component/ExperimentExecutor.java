@@ -1,14 +1,11 @@
 package org.netcs.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.log4j.Logger;
 import org.netcs.RunnableExperiment;
 import org.netcs.model.mongo.Algorithm;
 import org.netcs.model.mongo.AlgorithmStatistics;
 import org.netcs.model.mongo.AlgorithmStatisticsRepository;
 import org.netcs.model.mongo.ExecutionStatistics;
-import org.netcs.model.population.PopulationLink;
 import org.netcs.model.population.PopulationNode;
 import org.netcs.model.sql.*;
 import org.netcs.service.LookupService;
@@ -251,33 +248,24 @@ public class ExperimentExecutor {
 
         LOGGER.info("Experiment:" + experiment.getIndex() + " SAVED");
 
+
         try {
             Experiment expSql = storeSQL(experiment);
             TerminationCondition condition = new TerminationCondition();
             condition.setExperiment(expSql);
-            try {
+            final StringBuilder nodesString = new StringBuilder();
+            final StringBuilder edgesString = new StringBuilder();
+            for (final PopulationNode node : experiment.getExperiment().getPopulation().getNodes()) {
+                nodesString.append(node.getNodeName() + "_" + node.getState() + "; ");
 
-                final List<CNode> cnodes = new ArrayList<>();
-                for (final PopulationNode node : experiment.getExperiment().getPopulation().getNodes()) {
-                    cnodes.add(new CNode(node.getNodeName(), node.getState()));
+                Set<PopulationNode> edges = experiment.getExperiment().getPopulation().getActiveNeighbors(node);
+                for (PopulationNode edge : edges) {
+                    edgesString.append(node.getNodeName() + "_" + node.getState() + "->" +
+                            edge.getNodeName() + "_" + edge.getState() + "[dir=none];\n");
                 }
-                final String nodesString = new ObjectMapper().writeValueAsString(cnodes);
-                condition.setNodes(nodesString);
-            } catch (JsonProcessingException e) {
-                LOGGER.error(e, e);
             }
-            try {
-                final List<String> cEdges = new ArrayList<>();
-                for (final PopulationLink edge : experiment.getExperiment().getPopulation().getEdges()) {
-                    if (edge.getState().equals("1")) {
-                        cEdges.add(edge.getDefaultEdge().toString());
-                    }
-                }
-                final String edgesString = new ObjectMapper().writeValueAsString(cEdges);
-                condition.setEdges(edgesString);
-            } catch (JsonProcessingException e) {
-                LOGGER.error(e, e);
-            }
+            condition.setNodes(nodesString.toString());
+            condition.setEdges(edgesString.toString());
             terminationConditionRepository.save(condition);
         } catch (Exception e) {
             LOGGER.error(e, e);

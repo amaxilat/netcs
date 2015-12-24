@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface TerminationConditionRepository extends JpaRepository<TerminationCondition, Long> {
+    TerminationCondition findById(long id);
     TerminationCondition findByExperiment(Experiment experiment);
 }
 

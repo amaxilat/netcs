@@ -2,19 +2,28 @@ package org.netcs.web;
 
 import org.apache.log4j.Logger;
 import org.netcs.component.ExperimentExecutor;
-import org.netcs.config.ConfigFile;
-import org.netcs.config.Transition;
-import org.netcs.model.mongo.Algorithm;
 import org.netcs.model.mongo.AlgorithmStatistics;
 import org.netcs.model.mongo.AlgorithmStatisticsRepository;
 import org.netcs.model.mongo.ExecutionStatistics;
 import org.netcs.model.sql.*;
+import org.netcs.service.ExperimentPrintService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by amaxilatis on 9/20/14.
@@ -36,6 +45,8 @@ public class AlgorithmController extends BaseController {
     TerminationConditionRepository terminationConditionRepository;
     @Autowired
     TerminationStatRepository terminationStatRepository;
+    @Autowired
+    ExperimentPrintService experimentPrintService;
 
     @PostConstruct
     public void init() {
@@ -87,6 +98,40 @@ public class AlgorithmController extends BaseController {
         model.put("stats", stats);
 
         return "algorithm/view";
+    }
+
+
+    @RequestMapping(value = "/algorithm/{algorithm}/experiment/{experimentId}/eps", method = RequestMethod.GET)
+    public ResponseEntity<InputStreamResource> viewAlgorithm(final Map<String, Object> model, @PathVariable("algorithm") final String algorithm, @PathVariable("experimentId") final long experimentId) {
+        populateAlgorithms(model);
+
+        if (!canView(getUser(), algorithm)) {
+            return null;
+        }
+
+        final TerminationCondition condition = terminationConditionRepository.findById(experimentId);
+
+        String gvFileText = experimentPrintService.createGvFile(condition);
+        LOGGER.info(gvFileText);
+        String gvFileName = experimentPrintService.write2GvFile(gvFileText);
+        LOGGER.info(gvFileName);
+        try {
+            String gvFilePng = experimentPrintService.generatePng(gvFileName);
+            LOGGER.info(gvFilePng);
+
+            File file = new File(gvFilePng);
+
+            HttpHeaders respHeaders = new HttpHeaders();
+            respHeaders.setContentType(MediaType.valueOf("application/postscript"));
+            respHeaders.setContentLength(12345678);
+            respHeaders.setContentDispositionFormData("attachment", gvFilePng);
+
+            InputStreamResource isr = new InputStreamResource(new FileInputStream(gvFileName));
+            return new ResponseEntity<InputStreamResource>(isr, respHeaders, HttpStatus.OK);
+        } catch (IOException e) {
+            LOGGER.error(e, e);
+        }
+        return null;
     }
 
     @RequestMapping(value = "/algorithm/{algorithm}/delete", method = RequestMethod.POST)
