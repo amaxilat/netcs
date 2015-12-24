@@ -121,7 +121,7 @@ public class AlgorithmController extends BaseController {
 
             File file = new File(gvFilePng);
             LOGGER.info("FileLength:" + file.length());
-            final FileInputStream steam = new FileInputStream(gvFileName);
+            final FileInputStream steam = new FileInputStream(gvFilePng);
             LOGGER.info("Available:" + steam.available());
 
             HttpHeaders respHeaders = new HttpHeaders();
