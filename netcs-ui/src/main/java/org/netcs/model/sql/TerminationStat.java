@@ -55,6 +55,7 @@ public class TerminationStat {
         return "{" +
                 "name='" + name + '\'' +
                 ", data='" + data + '\'' +
+                ", experimentId='" + experiment.getId() + '\'' +
                 '}';
     }
 }

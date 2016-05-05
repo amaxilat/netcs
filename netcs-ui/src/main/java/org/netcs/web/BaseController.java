@@ -78,7 +78,11 @@ public class BaseController {
                 for (final UserAlgorithm algorithm : getUser().getUserAlgorithms()) {
                     AlgorithmStatistics algorithmMongo = algorithmStatisticsRepository.findById(algorithm.getAlgorithmId());
                     try {
-                        names.add(algorithmMongo.getAlgorithm().getName());
+                        if (algorithmMongo != null && algorithmMongo.getAlgorithm() != null) {
+                            names.add(algorithmMongo.getAlgorithm().getName());
+                        }else{
+                            LOGGER.warn(algorithmMongo);
+                        }
                     } catch (Exception e) {
                         LOGGER.error(e, e);
                     }

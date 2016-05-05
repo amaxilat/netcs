@@ -67,6 +67,8 @@ public class RunnableExperiment implements Runnable {
             scheduler = new ReverseHistory();
         } else if ("Connection".equals(schedulerName)) {
             scheduler = new Connection();
+        } else if ("PerfectMatching".equals(schedulerName)) {
+            scheduler = new PerfectMatching();
         } else {
             scheduler = new Random();
         }
@@ -119,6 +121,7 @@ public class RunnableExperiment implements Runnable {
                 totalExecutionStatistics.append("Execution:Iterations").append("\n");
             }
 
+            LOGGER.info("calling initPopulation");
             experiment.initPopulation();
 
 

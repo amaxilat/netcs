@@ -138,7 +138,7 @@ public class ExperimentController extends BaseController {
             while (edgesIterator.hasNext()) {
                 PopulationLink currentEdge = edgesIterator.next();
                 if (currentEdge.getState().equals("1")) {
-                    edges.add(currentEdge.getDefaultEdge().toString());
+//                    edges.add(currentEdge.getDefaultEdge().toString());
                 }
             }
 

@@ -1,23 +1,27 @@
 package org.netcs.model;
 
+import org.apache.log4j.Logger;
 import org.netcs.config.ConfigFile;
 import org.netcs.model.population.PopulationLink;
 import org.netcs.model.population.PopulationNode;
+import org.netcs.scheduler.PerfectMatching;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Abstract implementation of a population protocol.
- *
  */
 public abstract class AbstractProtocol {
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractProtocol.class);
 
     /**
      * Map of state-pairs to state-pairs.
      */
     private final Map<StateTriple, StateTriple> transitions;
     public ConfigFile configFile;
+    private StateTriple defaultState = new StateTriple("5", "5", "0");
 
     /**
      * Default constructor.
@@ -65,10 +69,15 @@ public abstract class AbstractProtocol {
         } else if (initiator.getState().equals("l") && responder.getState().equals("q1")) {
             initiator.incCount2();
         }
-        final StateTriple newState = transitions.get(startingState);
+        StateTriple newState = transitions.get(startingState);
         // undefined interaction
+        if (newState == null) {
+            //TODO: remove this when done
+            newState = defaultState;
+        }
         if (newState != null) {
             // Change the states of the agents.
+            LOGGER.info("interaction [ " + startingState + "-->" + newState + "]");
             initiator.setState(newState.getInitiatorState());
             responder.setState(newState.getResponderState());
             link.setState(newState.getLinkState());

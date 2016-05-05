@@ -98,4 +98,19 @@ public class Experiment {
     public void setScheduler(String scheduler) {
         this.scheduler = scheduler;
     }
+
+    @Override
+    public String toString() {
+        return "Experiment{" +
+                "id=" + id +
+                ", algorithm='" + algorithm + '\'' +
+                ", scheduler='" + scheduler + '\'' +
+                ", time=" + time +
+                ", interactions=" + interactions +
+                ", effectiveInteractions=" + effectiveInteractions +
+                ", populationSize=" + populationSize +
+                ", success=" + success +
+                ", terminationMessage='" + terminationMessage + '\'' +
+                '}';
+    }
 }

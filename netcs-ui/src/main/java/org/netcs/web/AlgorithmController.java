@@ -20,10 +20,7 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Created by amaxilatis on 9/20/14.
@@ -92,6 +89,16 @@ public class AlgorithmController extends BaseController {
         mixPanelService.log(getUser(), "algorithm", "view", algorithm);
 
         final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+        List<Experiment> experiments = experimentRepository.findByAlgorithm(algorithm);
+
+        final Set<TerminationStat> terminationStats = new HashSet<>();
+        for (Experiment experiment : experiments) {
+            terminationStats.addAll(terminationStatRepository.findByExperiment(experiment));
+        }
+        for (TerminationStat terminationStat : terminationStats) {
+            LOGGER.info(terminationStat);
+        }
+
         model.put("title", "View " + algorithm);
         model.put("sizes", experimentRepository.findPopulationSizeByAlgorithm(algorithm));
         model.put("numbers", experimentRepository.findStatsByAlgorithmAndScheduler(algorithm));
@@ -136,34 +143,36 @@ public class AlgorithmController extends BaseController {
         return null;
     }
 
-    @RequestMapping(value = "/algorithm/{algorithm}/delete", method = RequestMethod.POST)
+    @RequestMapping(value = "/algorithm/{algorithm}/delete", method = RequestMethod.GET)
     public String viewAlgorithm(final Map<String, Object> model, @PathVariable("algorithm") final String algorithm,
                                 @RequestParam("algorithm") final String algorithmText) {
-        populateAlgorithms(model);
+//        populateAlgorithms(model);
+//
+//        if (!canView(getUser(), algorithm)) {
+//            return "redirect:/";
+//        }
 
-        if (!canView(getUser(), algorithm)) {
-            return "redirect:/";
-        }
+//        mixPanelService.log(getUser(), "algorithm", "delete", algorithm);
+        try {
+            final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
+            algorithmStatisticsRepository.delete(stats);
 
-        mixPanelService.log(getUser(), "algorithm", "delete", algorithm);
-
-        final AlgorithmStatistics stats = algorithmStatisticsRepository.findByAlgorithmName(algorithm);
-        algorithmStatisticsRepository.delete(stats);
-
-        for (final UserAlgorithm userAlgorithm : userRepository.findByEmail(getUser().getEmail()).getUserAlgorithms()) {
-            if (stats.getId().equals(userAlgorithm.getAlgorithmId())) {
-                userAlgorithmRepository.delete(userAlgorithm);
-                //TODO: check validity
-                final Set<Experiment> experiments = experimentRepository.findStatsByAlgorithmAndScheduler(algorithm);
-                for (final Experiment experiment : experiments) {
-                    terminationConditionRepository.delete(terminationConditionRepository.findByExperiment(experiment));
+            for (final UserAlgorithm userAlgorithm : userRepository.findByEmail(getUser().getEmail()).getUserAlgorithms()) {
+                if (stats.getId().equals(userAlgorithm.getAlgorithmId())) {
+                    userAlgorithmRepository.delete(userAlgorithm);
+                    //TODO: check validity
+                    final Set<Experiment> experiments = experimentRepository.findStatsByAlgorithmAndScheduler(algorithm);
+                    for (final Experiment experiment : experiments) {
+                        terminationConditionRepository.delete(terminationConditionRepository.findByExperiment(experiment));
+                    }
+                    experimentRepository.delete(experiments);
+                    final Set<TerminationStat> terminationStats = terminationStatRepository.findByExperimentAlgorithm(algorithm);
+                    terminationStatRepository.delete(terminationStats);
                 }
-                experimentRepository.delete(experiments);
-                final Set<TerminationStat> terminationStats = terminationStatRepository.findByExperimentAlgorithm(algorithm);
-                terminationStatRepository.delete(terminationStats);
             }
+        } catch (Exception e) {
+            LOGGER.error(e, e);
         }
-
         return "redirect:/";
     }
 
@@ -358,7 +367,7 @@ public class AlgorithmController extends BaseController {
                 public void run() {
 //        TODO:
                     try {
-                        experimentExecutor.runExperiment(algorithmObject.getAlgorithm(), "Random", Long.parseLong(populationSize));
+                        experimentExecutor.runExperiment(algorithmObject.getAlgorithm(), "PerfectMatching", Long.parseLong(populationSize));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

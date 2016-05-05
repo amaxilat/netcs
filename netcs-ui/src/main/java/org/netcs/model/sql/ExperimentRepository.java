@@ -15,6 +15,8 @@ public interface ExperimentRepository extends CrudRepository<Experiment, Long> {
 
     List<Experiment> findByScheduler(String scheduler);
 
+    List<Experiment> findByAlgorithm(String algorithm);
+
     Set<Experiment> findByAlgorithmAndScheduler(String algorithm, String scheduler);
 
     @Query("SELECT u.populationSize FROM Experiment u where u.algorithm=?1")

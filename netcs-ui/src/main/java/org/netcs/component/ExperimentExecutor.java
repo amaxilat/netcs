@@ -149,6 +149,8 @@ public class ExperimentExecutor {
             experiment.getExperiment().setLookingForCycleCover(true);
         } else if (configFileName.toLowerCase().contains("leader")) {
             experiment.getExperiment().setLookingForLeader(true);
+        } else if (configFileName.toLowerCase().contains("all5")) {
+            experiment.getExperiment().setLookingForAll5(true);
         }
 
         try {
@@ -238,6 +240,8 @@ public class ExperimentExecutor {
         statistics.getTerminationStats().put("effectiveInteractions", String.valueOf(statistics.getEffectiveInteractions()));
         statistics.getTerminationStats().put("populationSize", String.valueOf(statistics.getPopulationSize()));
 
+        LOGGER.info("minStateCardinality:" + experiment.getExperiment().getTerminationStats().get("minStateCardinality"));
+
         if (experiment.getExperiment().getTerminationStats().containsKey("time")) {
             statistics.getTerminationStats().put("time", String.valueOf(experiment.getExperiment().getTerminationStats().get("time")));
         }
@@ -290,11 +294,12 @@ public class ExperimentExecutor {
         experimentSql.setTime(System.currentTimeMillis());
         experimentSql.setScheduler(experiment.getScheduler().getClass().getSimpleName());
 
-        experimentRepository.save(experimentSql);
+        experimentSql = experimentRepository.save(experimentSql);
         Map<String, String> statistics = experiment.getExperiment().getTerminationStats();
-
+        LOGGER.info("experimentSql:" + experimentSql.getId());
         List<TerminationStat> terminationStats = new ArrayList<>();
 
+        terminationStats.add(addStat(experimentSql, "minStateCardinality", statistics.get("minStateCardinality")));
         terminationStats.add(addStat(experimentSql, "interactions", statistics.get("interactions")));
         terminationStats.add(addStat(experimentSql, "effectiveInteractions", statistics.get("effectiveInteractions")));
         terminationStats.add(addStat(experimentSql, "populationSize", statistics.get("populationSize")));
@@ -313,7 +318,7 @@ public class ExperimentExecutor {
         TerminationStat interactionsStat = new TerminationStat();
         interactionsStat.setName(name);
         interactionsStat.setData(data);
-        interactionsStat.setId(experiment.getId());
+        interactionsStat.setExperiment(experiment);
         return interactionsStat;
     }
 

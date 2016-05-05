@@ -60,6 +60,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     protected boolean lookingForCycleCover;
     protected boolean lookingForLine;
     protected boolean lookingForSize;
+    protected boolean lookingForAll5;
     protected boolean finished;
     private boolean success;
     private String terminationMessage;
@@ -70,6 +71,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     private boolean hadCardinality;
     final SummaryStatistics cardinalityFactorStatistics;
     private boolean lookingForLeader;
+    private int minStateCount;
 
     /**
      * Default constructor.
@@ -97,6 +99,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         this.lookingForCycleCover = false;
         this.lookingForLeader = false;
         this.lookingForLine = false;
+        this.lookingForAll5 = false;
         this.finished = false;
         this.terminationStats = new HashMap<>();
         this.hadCardinality = false;
@@ -134,6 +137,17 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
                 }
                 count++;
             }
+        } else if (configFile.getInitialNodeState().equals("%")) {
+            final String[] statesArray = new String[]{"1", "0"};
+            final Random rand = new Random();
+            int count = 0;
+            final Iterator<PopulationNode> nodeIterator = getPopulation().getNodes().iterator();
+            while (nodeIterator.hasNext()) {
+                final PopulationNode node = nodeIterator.next();
+                node.setState(statesArray[count % 2]);
+                LOGGER.debug(node);
+                count++;
+            }
         } else {
             final Iterator<PopulationNode> nodeIterator = getPopulation().getNodes().iterator();
             while (nodeIterator.hasNext()) {
@@ -152,6 +166,24 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         }
 
         population.initCache(index);
+
+        final Set<String> states = new HashSet<>();
+        for (final PopulationNode node : getPopulation().getNodes()) {
+            states.add(node.getState());
+        }
+        minStateCount = getPopulation().getNodes().size();
+        for (final String state : states) {
+            int count = 0;
+            for (final PopulationNode node : getPopulation().getNodes()) {
+                if (node.getState().equals(state)) {
+                    count++;
+                }
+            }
+            if (minStateCount > count) {
+                minStateCount = count;
+            }
+        }
+
         LOGGER.info("initPopulation:" + (System.currentTimeMillis() - start) + "ms");
     }
 
@@ -281,6 +313,12 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         }
         if (lookingForLine && checkLine()) {
             LOGGER.info("<================ FOUND LINE");
+            finished = true;
+            success = true;
+            return true;
+        }
+        if (lookingForAll5 && checkAll5()) {
+            LOGGER.info("<================ FOUND ALL 5");
             finished = true;
             success = true;
             return true;
@@ -624,6 +662,37 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         return result;
     }
 
+    protected Boolean checkAll5() {
+        reportStatus(String.format("[%d] check-all5", index));
+
+        final Collection<PopulationNode> nodes = getPopulation().getNodes();
+
+        boolean result = true;
+
+        final Set<String> states = new HashSet<>();
+        for (final PopulationNode node : nodes) {
+            states.add(node.getState());
+            if (!node.getState().equals("5")) {
+                result = false;
+            }
+        }
+        for (final String state : states) {
+            int count = 0;
+            for (final PopulationNode node : nodes) {
+                if (node.getState().equals(state)) {
+                    count++;
+                }
+            }
+            LOGGER.info("STATE{" + interactions + "," + state + "}:" + count);
+            if (minStateCount > count) {
+                minStateCount = count;
+            }
+        }
+        terminationStats.put("minStateCardinality", String.valueOf(minStateCount));
+
+        return result;
+    }
+
     protected void checkCardinalities() {
 
         final Collection<PopulationNode> nodes = getPopulation().getNodes();
@@ -709,6 +778,15 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
 
     public void setLookingForLine(boolean lookingForLine) {
         this.lookingForLine = lookingForLine;
+    }
+
+    public boolean isLookingForAll5() {
+        return lookingForAll5;
+    }
+
+    public void setLookingForAll5(boolean lookingForAll5) {
+        this.lookingForAll5 = lookingForAll5;
+
     }
 
     public boolean isLookingForSize() {
