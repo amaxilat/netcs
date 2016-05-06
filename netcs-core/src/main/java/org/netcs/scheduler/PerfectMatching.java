@@ -38,9 +38,8 @@ public class PerfectMatching extends AbstractScheduler {
             String responderPopulationNodeState = responderPopulationNode.getState();
             final PopulationLink link = population.getEdge(initiatorPopulationNode, responderPopulationNode);
             final String prevState = link.getState();
-            LOGGER.debug(link);
             // Conduct interaction for given pair of agents
-            result = interact(initiatorPopulationNode, responderPopulationNode, link)|| result ;
+            result = interact(initiatorPopulationNode, responderPopulationNode, link) || result;
 //            if (initiatorPopulationNode.getState().equals("l")) {
 //                LOGGER.debug(String.format("[%d] interaction [ %s:%s -- %s:%s ] c1:%d c2:%d", index, initiatorPopulationNode.getNodeName(), initiatorPopulationNodeState, responderPopulationNode.getNodeName(), responderPopulationNodeState, initiatorPopulationNode.getCount1(), initiatorPopulationNode.getCount2()));
 //            }
