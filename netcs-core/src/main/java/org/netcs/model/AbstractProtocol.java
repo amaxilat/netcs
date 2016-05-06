@@ -21,7 +21,7 @@ public abstract class AbstractProtocol {
      */
     private final Map<StateTriple, StateTriple> transitions;
     public ConfigFile configFile;
-    private StateTriple defaultState = new StateTriple("5", "5", "0");
+    private StateTriple defaultState = new StateTriple("q", "q", "0");
 
     /**
      * Default constructor.
