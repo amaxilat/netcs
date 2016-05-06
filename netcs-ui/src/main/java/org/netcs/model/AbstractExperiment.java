@@ -5,10 +5,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.netcs.config.ConfigFile;
 import org.netcs.config.Transition;
-import org.netcs.model.population.MemoryPopulation;
-import org.netcs.model.population.Population;
-import org.netcs.model.population.PopulationLink;
-import org.netcs.model.population.PopulationNode;
+import org.netcs.model.population.*;
 import org.netcs.scheduler.AbstractScheduler;
 import org.netcs.service.LookupService;
 import org.springframework.messaging.core.MessageSendingOperations;
@@ -60,7 +57,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     protected boolean lookingForCycleCover;
     protected boolean lookingForLine;
     protected boolean lookingForSize;
-    protected boolean lookingForAll5;
+    protected boolean lookingForAllq;
     protected boolean finished;
     private boolean success;
     private String terminationMessage;
@@ -82,7 +79,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
     public AbstractExperiment(final ConfigFile configFile, final AbstractProtocol protocol, final AbstractScheduler scheduler, long index, final LookupService lookupService) {
         // Construct population
         this.protocol = protocol;
-        this.population = new MemoryPopulation(configFile.getPopulationSize());
+        this.population = new SimplePopulation(configFile.getPopulationSize());
         this.configFile = configFile;
         this.index = index;
         this.success = false;
@@ -99,7 +96,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         this.lookingForCycleCover = false;
         this.lookingForLeader = false;
         this.lookingForLine = false;
-        this.lookingForAll5 = false;
+        this.lookingForAllq = false;
         this.finished = false;
         this.terminationStats = new HashMap<>();
         this.hadCardinality = false;
@@ -166,23 +163,24 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         }
 
         population.initCache(index);
+//
+//        final Set<String> states = new HashSet<>();
+//        for (final PopulationNode node : getPopulation().getNodes()) {
+//            states.add(node.getState());
+//        }
 
-        final Set<String> states = new HashSet<>();
-        for (final PopulationNode node : getPopulation().getNodes()) {
-            states.add(node.getState());
-        }
         minStateCount = getPopulation().getNodes().size();
-        for (final String state : states) {
-            int count = 0;
-            for (final PopulationNode node : getPopulation().getNodes()) {
-                if (node.getState().equals(state)) {
-                    count++;
-                }
-            }
-            if (minStateCount > count) {
-                minStateCount = count;
-            }
-        }
+//        for (final String state : states) {
+//            int count = 0;
+//            for (final PopulationNode node : getPopulation().getNodes()) {
+//                if (node.getState().equals(state)) {
+//                    count++;
+//                }
+//            }
+//            if (minStateCount > count) {
+//                minStateCount = count;
+//            }
+//        }
 
         LOGGER.info("initPopulation:" + (System.currentTimeMillis() - start) + "ms");
     }
@@ -317,7 +315,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
             success = true;
             return true;
         }
-        if (lookingForAll5 && checkAll5()) {
+        if (lookingForAllq && checkAllq()) {
             LOGGER.info("<================ FOUND ALL 5");
             finished = true;
             success = true;
@@ -662,8 +660,8 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         return result;
     }
 
-    protected Boolean checkAll5() {
-        reportStatus(String.format("[%d] check-all5", index));
+    protected Boolean checkAllq() {
+        reportStatus(String.format("[%d] check-allq", index));
 
         final Collection<PopulationNode> nodes = getPopulation().getNodes();
 
@@ -672,7 +670,7 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         final Set<String> states = new HashSet<>();
         for (final PopulationNode node : nodes) {
             states.add(node.getState());
-            if (!node.getState().equals("5")) {
+            if (!node.getState().equals("q")) {
                 result = false;
             }
         }
@@ -780,12 +778,12 @@ public abstract class AbstractExperiment<State, Protocol extends AbstractProtoco
         this.lookingForLine = lookingForLine;
     }
 
-    public boolean isLookingForAll5() {
-        return lookingForAll5;
+    public boolean isLookingForAllq() {
+        return lookingForAllq;
     }
 
-    public void setLookingForAll5(boolean lookingForAll5) {
-        this.lookingForAll5 = lookingForAll5;
+    public void setLookingForAllq(boolean lookingForAllq) {
+        this.lookingForAllq = lookingForAllq;
 
     }
 

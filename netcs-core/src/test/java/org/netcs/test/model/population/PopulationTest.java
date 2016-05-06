@@ -22,14 +22,14 @@ public class PopulationTest {
     @Test
     public void testPopulation() {
         final Population population = new MemoryPopulation();
-        Assert.assertEquals(population.size(), 0);
+        Assert.assertEquals(0, population.size());
     }
 
     @Test
     public void testPopulationWithSize() {
         final int populationSize = 10;
         final Population population = new MemoryPopulation(populationSize);
-        Assert.assertEquals(population.size(), populationSize);
+        Assert.assertEquals(populationSize, population.size());
     }
 
     @Test
@@ -41,7 +41,7 @@ public class PopulationTest {
         for (int j = populationSize - 1; j > 0; j--) {
             expectedEdgeCount += j;
         }
-        Assert.assertEquals(edges.size(), expectedEdgeCount);
+        Assert.assertEquals(expectedEdgeCount, edges.size());
     }
 
 }

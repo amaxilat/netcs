@@ -150,7 +150,7 @@ public class ExperimentExecutor {
         } else if (configFileName.toLowerCase().contains("leader")) {
             experiment.getExperiment().setLookingForLeader(true);
         } else if (configFileName.toLowerCase().contains("all5")) {
-            experiment.getExperiment().setLookingForAll5(true);
+            experiment.getExperiment().setLookingForAllq(true);
         }
 
         try {
